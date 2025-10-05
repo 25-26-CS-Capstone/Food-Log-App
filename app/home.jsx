@@ -36,9 +36,26 @@ const home = () => {
     }
   }
 
+  const sendNotificationNow = async () => {
+    try {
+      // presentNotificationAsync shows a notification immediately (no scheduling)
+      await Notifications.presentNotificationAsync({
+        title: 'Food Log — Immediate',
+        body: 'This notification was sent immediately.',
+        data: { screen: 'Home', immediate: true },
+      })
+      Alert.alert('Sent', 'Notification was sent immediately.')
+    } catch (e) {
+      console.warn('Failed to present notification', e)
+      Alert.alert('Error', 'Could not send notification now.')
+    }
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Home</Text>
+      <Button title="Send Notification Now" onPress={sendNotificationNow} />
+      <View style={{height:12}} />
       <Button title="Schedule Test Notification (10s)" onPress={scheduleTestNotification} />
     </View>
   )
