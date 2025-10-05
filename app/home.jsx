@@ -1,8 +1,9 @@
 import { StyleSheet, Text, View, Button, Alert } from 'react-native'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import * as Notifications from 'expo-notifications'
 
 const home = () => {
+  const [lastNotification, setLastNotification] = useState(null)
   useEffect(() => {
     // Request notification permissions on mount
     ;(async () => {
@@ -20,7 +21,7 @@ const home = () => {
 
   const scheduleTestNotification = async () => {
     try {
-      await Notifications.scheduleNotificationAsync({
+      const id = await Notifications.scheduleNotificationAsync({
         content: {
           title: 'Food Log Reminder',
           body: 'This is a test reminder from your Food Log app.',
@@ -29,6 +30,8 @@ const home = () => {
         // deliver after ~10 seconds
         trigger: { seconds: 10 },
       })
+      // record the scheduled notification
+      setLastNotification({ id, type: 'scheduled', title: 'Food Log Reminder', body: 'This is a test reminder from your Food Log app.', when: new Date().toISOString() })
       Alert.alert('Scheduled', 'Notification scheduled for about 10 seconds from now.')
     } catch (e) {
       console.warn('Failed to schedule notification', e)
@@ -44,6 +47,8 @@ const home = () => {
         body: 'This notification was sent immediately.',
         data: { screen: 'Home', immediate: true },
       })
+      // record the immediate notification
+      setLastNotification({ id: null, type: 'immediate', title: 'Food Log — Immediate', body: 'This notification was sent immediately.', when: new Date().toISOString() })
       Alert.alert('Sent', 'Notification was sent immediately.')
     } catch (e) {
       console.warn('Failed to present notification', e)
@@ -51,12 +56,22 @@ const home = () => {
     }
   }
 
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Home</Text>
       <Button title="Send Notification Now" onPress={sendNotificationNow} />
       <View style={{height:12}} />
       <Button title="Schedule Test Notification (10s)" onPress={scheduleTestNotification} />
+
+      {lastNotification ? (
+        <View style={styles.confirmCard}>
+          <Text style={styles.confirmTitle}>{lastNotification.type === 'immediate' ? 'Last notification sent' : 'Last notification scheduled'}</Text>
+          <Text style={styles.confirmText}>{lastNotification.title}</Text>
+          <Text style={styles.confirmText}>{lastNotification.body}</Text>
+          <Text style={styles.confirmWhen}>{new Date(lastNotification.when).toLocaleString()}</Text>
+        </View>
+      ) : null}
     </View>
   )
 }
