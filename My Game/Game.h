@@ -5,9 +5,10 @@
 #define __L4RC_GAME_GAME_H__
 
 #include "Component.h"
+#include "Common.h"
+#include "ObjectManager.h"
 #include "Settings.h"
-#include "SpriteDesc.h"
-#include "SpriteRenderer.h"
+#include  "Player.h"
 
 /// \brief The game class.
 ///
@@ -20,12 +21,13 @@
 
 class CGame: 
   public LComponent, 
-  public LSettings{ 
+  public LSettings,
+  public CCommon{ 
 
   private:
     bool m_bDrawFrameRate = false; ///< Draw the frame rate.
-    LSpriteDesc2D* m_pSpriteDesc = nullptr; ///< Sprite descriptor.
-    LSpriteRenderer* m_pRenderer = nullptr; ///< Pointer to renderer.
+//    LSpriteDesc2D* m_pSpriteDesc = nullptr; ///< Sprite descriptor.
+//    LSpriteRenderer* m_pRenderer = nullptr; ///< Pointer to renderer.
     
     void LoadImages(); ///< Load images.
     void LoadSounds(); ///< Load sounds.

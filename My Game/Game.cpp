@@ -9,11 +9,12 @@
 
 #include "shellapi.h"
 
+
 /// Delete the sprite descriptor. The renderer needs to be deleted before this
 /// destructor runs so it will be done elsewhere.
 
 CGame::~CGame(){
-  delete m_pSpriteDesc;
+    delete m_pObjectManager;
 } //destructor
 
 /// Create the renderer and the sprite descriptor load images and sounds, and
@@ -23,6 +24,8 @@ void CGame::Initialize(){
   m_pRenderer = new LSpriteRenderer(eSpriteMode::Batched2D); 
   m_pRenderer->Initialize(eSprite::Size); 
   LoadImages(); //load images from xml file list
+
+  m_pObjectManager = new CObjectManager;
   LoadSounds(); //load the sounds for this game
 
   BeginGame();
@@ -41,6 +44,15 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::Background, "background"); 
   m_pRenderer->Load(eSprite::TextWheel,  "textwheel"); 
   m_pRenderer->Load(eSprite::PIGSPRITE, "pig");
+
+  m_pRenderer->Load(eSprite::InuitIdleLeftSheet, "InuitIdleLeftSheet");
+  m_pRenderer->Load(eSprite::InuitIdleLeft, "InuitIdleLeft");
+  m_pRenderer->Load(eSprite::InuitIdleRightSheet, "InuitIdleRightSheet");
+  m_pRenderer->Load(eSprite::InuitIdleRight, "InuitIdleRight");
+  m_pRenderer->Load(eSprite::InuitRunLeftSheet, "InuitRunLeftSheet");
+  m_pRenderer->Load(eSprite::InuitRunLeft, "InuitRunLeft");
+  m_pRenderer->Load(eSprite::InuitRunRightSheet, "InuitRunRightSheet");
+  m_pRenderer->Load(eSprite::InuitRunRight, "InuitRunRight");
 
   m_pRenderer->EndResourceUpload();
 } //LoadImages
@@ -66,9 +78,17 @@ void CGame::Release(){
 /// program.
 
 void CGame::BeginGame(){  
-  delete m_pSpriteDesc;
-  m_pSpriteDesc = new LSpriteDesc2D((UINT)eSprite::TextWheel, m_vWinCenter); 
+    m_pObjectManager->clear();  //clear old objects
+    CreateObjects(); //creat new objects
 } //BeginGame
+
+
+//create objects
+void CGame::CreateObjects() {
+    const float h = m_pRenderer->GetHeight(eSprite::InuitIdleRight);
+    m_pPlayer = (CPlayer*)m_pObjectManager->create(eSprite::InuitIdleRight,
+        Vector2(100.0f, h / 2.0f));
+}
 
 /// Poll the keyboard state and respond to the key presses that happened since
 /// the last frame.
@@ -93,6 +113,17 @@ void CGame::KeyboardHandler(){
   
   if(m_pKeyboard->TriggerDown(VK_BACK)) //restart game
     BeginGame(); //restart game
+
+
+  if (m_pKeyboard->TriggerDown('D'))
+      m_pPlayer->RunRight();
+  if (m_pKeyboard->TriggerUp('D'))
+      m_pPlayer->IdleRight();
+
+  if (m_pKeyboard->TriggerDown('A'))
+      m_pPlayer->RunLeft();
+  if (m_pKeyboard->TriggerUp('A'))
+      m_pPlayer->IdleLeft();
 } //KeyboardHandler
 
 /// Draw the current frame rate to a hard-coded position in the window.
@@ -112,7 +143,7 @@ void CGame::RenderFrame(){
   m_pRenderer->BeginFrame(); //required before rendering
   
   m_pRenderer->Draw(eSprite::Background, m_vWinCenter); //draw background
-  m_pRenderer->Draw(m_pSpriteDesc); //draw text sprite
+  m_pObjectManager->draw(); //draw objects
   m_pRenderer->Draw(eSprite::PIGSPRITE, m_vWinCenter/4);
   if(m_bDrawFrameRate)DrawFrameRateText(); //draw frame rate, if required
 
@@ -130,8 +161,8 @@ void CGame::ProcessFrame(){
   m_pAudio->BeginFrame(); //notify audio player that frame has begun
 
   m_pTimer->Tick([&](){ //all time-dependent function calls should go here
-    const float t = m_pTimer->GetFrameTime(); //frame interval in seconds
-    m_pSpriteDesc->m_fRoll += 0.125f*XM_2PI*t; //rotate at 1/8 RPS
+//    const float t = m_pTimer->GetFrameTime(); //frame interval in seconds
+      m_pObjectManager->move(); //move all objects
   });
 
   RenderFrame(); //render a frame of animation

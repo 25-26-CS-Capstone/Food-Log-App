@@ -13,6 +13,78 @@
     <sprite name="background" file="background.png"/>
     <sprite name="textwheel" file="textwheel.png"/>
     <sprite name="pig" file="pig.png"/>
+	
+	<sprite name="InuitIdleLeftSheet" file="InuitIdleLeft.png"/>
+	<sprite name="InuitIdleLeft" sheet="InuitIdleLeftSheet" frames="20">
+		<frame index="0" left="0"	top="0" right="140"	bottom="264"/>>
+		<frame index="1" left="140"	top="0"	right="280" bottom="264"/>>
+		<frame index="2" left="280" top="0" right="420" bottom="264"/>>
+		<frame index="3" left="420" top="0" right="560" bottom="264"/>>
+		<frame index="4" left="560" top="0" right="700" bottom="264"/>>
+		<frame index="5" left="700" top="0" right="840" bottom="264"/>>
+		<frame index="6" left="0" top="264" right="140" bottom="528"/>>
+		<frame index="7" left="140" top="264" right="280" bottom="528"/>>
+		<frame index="8" left="280" top="264" right="420" bottom="528"/>>
+		<frame index="9" left="420" top="264" right="560" bottom="528"/>>
+		<frame index="10" left="560" top="264" right="700" bottom="528"/>>
+		<frame index="11" left="700" top="264" right="840" bottom="528"/>>
+		<frame index="12" left="0" top="528" right="140" bottom="792"/>>
+		<frame index="13" left="140" top="528" right="280" bottom="792"/>>
+		<frame index="14" left="280" top="528" right="420" bottom="792"/>>
+		<frame index="15" left="420" top="528" right="560" bottom="792"/>>
+		<frame index="16" left="560" top="528" right="700" bottom="792"/>>
+		<frame index="17" left="700" top="528" right="840" bottom="792"/>>
+		<frame index="18" left="0" top="792" right="140" bottom="1056"/>>
+		<frame index="19" left="140" top="792" right="280" bottom="1056"/>>
+	</sprite>
+	
+	<sprite name="InuitIdleRightSheet" file="InuitIdleRight.png"/>
+	<sprite name="InuitIdleRight" sheet="InuitIdleRightSheet" frames="20">
+		<frame index="0" left="0"	top="0" right="140"	bottom="264"/>>
+		<frame index="1" left="140"	top="0"	right="280" bottom="264"/>>
+		<frame index="2" left="280" top="0" right="420" bottom="264"/>>
+		<frame index="3" left="420" top="0" right="560" bottom="264"/>>
+		<frame index="4" left="560" top="0" right="700" bottom="264"/>>
+		<frame index="5" left="700" top="0" right="840" bottom="264"/>>
+		<frame index="6" left="0" top="264" right="140" bottom="528"/>>
+		<frame index="7" left="140" top="264" right="280" bottom="528"/>>
+		<frame index="8" left="280" top="264" right="420" bottom="528"/>>
+		<frame index="9" left="420" top="264" right="560" bottom="528"/>>
+		<frame index="10" left="560" top="264" right="700" bottom="528"/>>
+		<frame index="11" left="700" top="264" right="840" bottom="528"/>>
+		<frame index="12" left="0" top="528" right="140" bottom="792"/>>
+		<frame index="13" left="140" top="528" right="280" bottom="792"/>>
+		<frame index="14" left="280" top="528" right="420" bottom="792"/>>
+		<frame index="15" left="420" top="528" right="560" bottom="792"/>>
+		<frame index="16" left="560" top="528" right="700" bottom="792"/>>
+		<frame index="17" left="700" top="528" right="840" bottom="792"/>>
+		<frame index="18" left="0" top="792" right="140" bottom="1056"/>>
+		<frame index="19" left="140" top="792" right="280" bottom="1056"/>>
+	</sprite>
+	
+	<sprite name="InuitRunLeftSheet" file="InuitRunLeft.png"/>
+	<sprite name="InuitRunLeft" sheet="InuitRunLeftSheet" frames="8">
+		<frame index="0" left="0"	top="0" right="156"	bottom="272"/>>
+		<frame index="1" left="156"	top="0"	right="312" bottom="272"/>>
+		<frame index="2" left="312" top="0" right="468" bottom="272"/>>
+		<frame index="3" left="468" top="0" right="624" bottom="272"/>>
+		<frame index="4" left="0" top="272" right="156" bottom="544"/>>
+		<frame index="5" left="156" top="272" right="312" bottom="544"/>>
+		<frame index="6" left="312" top="272" right="468" bottom="544"/>>
+		<frame index="7" left="468" top="272" right="624" bottom="544"/>>
+	</sprite>
+	
+	<sprite name="InuitRunRightSheet" file="InuitRunRight.png"/>
+	<sprite name="InuitRunRight" sheet="InuitRunRightSheet" frames="8">
+		<frame index="0" left="0"	top="0" right="156"	bottom="272"/>>
+		<frame index="1" left="156"	top="0"	right="312" bottom="272"/>>
+		<frame index="2" left="312" top="0" right="468" bottom="272"/>>
+		<frame index="3" left="468" top="0" right="624" bottom="272"/>>
+		<frame index="4" left="0" top="272" right="156" bottom="544"/>>
+		<frame index="5" left="156" top="272" right="312" bottom="544"/>>
+		<frame index="6" left="312" top="272" right="468" bottom="544"/>>
+		<frame index="7" left="468" top="272" right="624" bottom="544"/>>
+	</sprite>
   </sprites>
 
   <!-- sound -->
