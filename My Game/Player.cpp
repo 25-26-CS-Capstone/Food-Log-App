@@ -74,6 +74,10 @@ void CPlayer::IdleRight() {
     m_nCurrentFrame = 0;
 }
 
+void CPlayer::changeHealth(float f) {
+    currentHealth += f;
+}
+
 /*
 /// Change the sprite to a standing sprite, depending on which direction the
 /// player is walking.

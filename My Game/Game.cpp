@@ -97,7 +97,7 @@ void CGame::KeyboardHandler(){
   m_pKeyboard->GetState(); //get current keyboard state 
   
   if (m_pKeyboard->TriggerDown('O'))
-      m_pAudio->play(eSound::OINK);
+      m_pPlayer->changeHealth(-1.0);
 
   if(m_pKeyboard->TriggerDown(VK_F1)) //help
     ShellExecute(0, 0, "https://larc.unt.edu/code/physics/blank/", 0, 0, SW_SHOW);
