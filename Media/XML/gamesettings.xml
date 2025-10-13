@@ -13,6 +13,7 @@
     <sprite name="background" file="background.png"/>
     <sprite name="textwheel" file="textwheel.png"/>
     <sprite name="pig" file="pig.png"/>
+    <sprite name="healthBar" file="HealthBar.png"/>
 	
 	<sprite name="InuitIdleLeftSheet" file="InuitIdleLeft.png"/>
 	<sprite name="InuitIdleLeft" sheet="InuitIdleLeftSheet" frames="20">

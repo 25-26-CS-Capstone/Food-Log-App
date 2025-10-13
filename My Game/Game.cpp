@@ -6,7 +6,6 @@
 #include "GameDefines.h"
 #include "SpriteRenderer.h"
 #include "ComponentIncludes.h"
-
 #include "shellapi.h"
 
 
@@ -27,7 +26,7 @@ void CGame::Initialize(){
 
   m_pObjectManager = new CObjectManager;
   LoadSounds(); //load the sounds for this game
-
+  mHud = new HUD(m_pRenderer);
   BeginGame();
 } //Initialize
 
@@ -44,7 +43,7 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::Background, "background"); 
   m_pRenderer->Load(eSprite::TextWheel,  "textwheel"); 
   m_pRenderer->Load(eSprite::PIGSPRITE, "pig");
-
+  m_pRenderer->Load(eSprite::healthBar, "healthBar");
   m_pRenderer->Load(eSprite::InuitIdleLeftSheet, "InuitIdleLeftSheet");
   m_pRenderer->Load(eSprite::InuitIdleLeft, "InuitIdleLeft");
   m_pRenderer->Load(eSprite::InuitIdleRightSheet, "InuitIdleRightSheet");
@@ -145,6 +144,7 @@ void CGame::RenderFrame(){
   m_pRenderer->Draw(eSprite::Background, m_vWinCenter); //draw background
   m_pObjectManager->draw(); //draw objects
   m_pRenderer->Draw(eSprite::PIGSPRITE, m_vWinCenter/4);
+  mHud->Render();
   if(m_bDrawFrameRate)DrawFrameRateText(); //draw frame rate, if required
 
   m_pRenderer->EndFrame(); //required after rendering
