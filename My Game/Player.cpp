@@ -30,6 +30,12 @@ void CPlayer::move(){
   else if(m_nSpriteIndex == (UINT)eSprite::InuitRunLeft)
     m_vPos -= delta*Vector2::UnitX*3;
   
+  else if (m_nSpriteIndex == (UINT)eSprite::InuitRunDown)
+      m_vPos -= delta * Vector2::UnitY * 3;
+
+  else if (m_nSpriteIndex == (UINT)eSprite::InuitRunUp)
+      m_vPos += delta * Vector2::UnitY * 3;
+
   UpdateFramenumber(); //choose current frame
 } //move
 
@@ -72,6 +78,24 @@ void CPlayer::IdleRight() {
         m_nSpriteIndex = (UINT)eSprite::InuitIdleRight;
 
     m_nCurrentFrame = 0;
+}
+
+void CPlayer::RunUp() {
+    if (m_nSpriteIndex != (UINT)eSprite::InuitRunUp)
+        m_nSpriteIndex = (UINT)eSprite::InuitRunUp;
+
+    m_nCurrentFrame = 0;
+}
+
+void CPlayer::RunDown() {
+    if (m_nSpriteIndex != (UINT)eSprite::InuitRunDown)
+        m_nSpriteIndex = (UINT)eSprite::InuitRunDown;
+
+    m_nCurrentFrame = 0;
+}
+
+void CPlayer::changeHealth(float f) {
+    currentHealth += f;
 }
 
 /*

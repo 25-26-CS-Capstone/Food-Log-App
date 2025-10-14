@@ -85,6 +85,26 @@
 		<frame index="6" left="312" top="272" right="468" bottom="544"/>>
 		<frame index="7" left="468" top="272" right="624" bottom="544"/>>
 	</sprite>
+	
+	<sprite name="InuitRunUpSheet" file="InuitRunUp.png"/>
+	<sprite name="InuitRunUp" sheet="InuitRunUpSheet" frames="6">
+		<frame index="0" left="0"	top="0" right="140"	bottom="260"/>>
+		<frame index="1" left="140"	top="0"	right="280" bottom="260"/>>
+		<frame index="2" left="280" top="0" right="420" bottom="260"/>>
+		<frame index="3" left="0" top="260" right="140" bottom="520"/>>
+		<frame index="4" left="140" top="260" right="280" bottom="520"/>>
+		<frame index="5" left="280" top="260" right="420" bottom="520"/>
+	</sprite>
+	
+		<sprite name="InuitRunDownSheet" file="InuitRunDown.png"/>
+	<sprite name="InuitRunDown" sheet="InuitRunDownSheet" frames="6">
+		<frame index="0" left="0"	top="0" right="140"	bottom="260"/>>
+		<frame index="1" left="140"	top="0"	right="280" bottom="260"/>>
+		<frame index="2" left="280" top="0" right="420" bottom="260"/>>
+		<frame index="3" left="0" top="260" right="140" bottom="520"/>>
+		<frame index="4" left="140" top="260" right="280" bottom="520"/>>
+		<frame index="5" left="280" top="260" right="420" bottom="520"/>
+	</sprite>
   </sprites>
 
   <!-- sound -->

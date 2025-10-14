@@ -31,6 +31,13 @@ CObject* CObjectManager::create(eSprite t, const Vector2& pos) {
         pObj = new CPlayer(eSprite::InuitRunRight, pos);
         break;
 
+    case eSprite::InuitRunUp:
+        pObj = new CPlayer(eSprite::InuitRunUp, pos);
+        break;
+
+    case eSprite::InuitRunDown:
+        pObj = new CPlayer(eSprite::InuitRunDown, pos);
+        break;
     default: pObj = new CObject(t, pos);
     } //switch
 
