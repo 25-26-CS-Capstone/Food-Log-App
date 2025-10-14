@@ -19,6 +19,7 @@ class CPlayer: public CObject{
     void UpdateFramenumber(); ///< Update frame number.
 
     float currentHealth = 3.0;
+    float maxHealth = 3.0;
 
   public:
     CPlayer(eSprite t, const Vector2& p); ///< Constructor.
@@ -31,8 +32,10 @@ class CPlayer: public CObject{
     void RunLeft(); ///<run sprite facing left
     void RunRight(); ///<run sprite facing right
 
-    void Stop(); ///< Stop walking.
+    //void Stop(); ///< Stop walking.
     void changeHealth(float);
+    float getCurrentHealth();
+    float getMaxHealth();
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

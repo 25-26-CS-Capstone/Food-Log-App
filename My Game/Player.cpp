@@ -92,3 +92,11 @@ void CPlayer::Stop(){
   m_nCurrentFrame = 0;
 } //Stop
 */
+
+float CPlayer::getCurrentHealth() {
+    return currentHealth;
+}
+
+float CPlayer::getMaxHealth() {
+    return maxHealth;
+}

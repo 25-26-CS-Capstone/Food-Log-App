@@ -26,7 +26,7 @@ void CGame::Initialize(){
 
   m_pObjectManager = new CObjectManager;
   LoadSounds(); //load the sounds for this game
-  mHud = new HUD(m_pRenderer);
+  
   BeginGame();
 } //Initialize
 
@@ -44,6 +44,7 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::TextWheel,  "textwheel"); 
   m_pRenderer->Load(eSprite::PIGSPRITE, "pig");
   m_pRenderer->Load(eSprite::healthBar, "healthBar");
+  m_pRenderer->Load(eSprite::healthBarBackground, "healthBarBackground");
   m_pRenderer->Load(eSprite::InuitIdleLeftSheet, "InuitIdleLeftSheet");
   m_pRenderer->Load(eSprite::InuitIdleLeft, "InuitIdleLeft");
   m_pRenderer->Load(eSprite::InuitIdleRightSheet, "InuitIdleRightSheet");
@@ -79,6 +80,7 @@ void CGame::Release(){
 void CGame::BeginGame(){  
     m_pObjectManager->clear();  //clear old objects
     CreateObjects(); //creat new objects
+    mHud = new HUD(m_pRenderer, m_pPlayer);
 } //BeginGame
 
 

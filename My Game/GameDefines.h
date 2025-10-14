@@ -16,8 +16,8 @@ const float screenHeight = 768.0f;
 /// integer and used for the index of the corresponding texture in graphics
 /// memory. `Size` must be last.
 
-enum class eSprite: UINT{
-  Background, TextWheel,  PIGSPRITE, healthBar, InuitIdleRightSheet,
+enum class eSprite : UINT {
+	Background, TextWheel, PIGSPRITE, healthBar, healthBarBackground, InuitIdleRightSheet,
   InuitIdleRight, InuitIdleLeftSheet, InuitIdleLeft, InuitRunRightSheet,
   InuitRunRight, InuitRunLeftSheet, InuitRunLeft,
   Size  //MUST BE LAST
