@@ -25,6 +25,11 @@ const ViewLogs = () => {
   const loadLogs = async () => {
     try {
       const allLogs = await getAllLogs();
+      console.log('Loaded logs:', allLogs.length, 'entries');
+      // Debug: log the first few entries to check their structure
+      if (allLogs.length > 0) {
+        console.log('First entry structure:', JSON.stringify(allLogs[0], null, 2));
+      }
       setLogs(allLogs);
     } catch (error) {
       console.error('Error loading logs:', error);
@@ -41,6 +46,7 @@ const ViewLogs = () => {
   };
 
   const deleteEntry = (entry) => {
+    console.log('Attempting to delete entry:', entry);
     Alert.alert(
       'Delete Entry',
       `Are you sure you want to delete this ${entry.type} entry?`,
@@ -51,20 +57,32 @@ const ViewLogs = () => {
           style: 'destructive',
           onPress: async () => {
             try {
+              console.log('Delete confirmed for entry ID:', entry.id, 'Type:', entry.type);
               let success;
               if (entry.type === 'food') {
+                console.log('Calling deleteFoodEntry...');
                 success = await deleteFoodEntry(entry.id);
-              } else {
+              } else if (entry.type === 'symptom') {
+                console.log('Calling deleteSymptomEntry...');
                 success = await deleteSymptomEntry(entry.id);
+              } else {
+                console.log('Unknown entry type:', entry.type);
+                Alert.alert('Error', `Unknown entry type: ${entry.type}`);
+                return;
               }
               
+              console.log('Delete operation result:', success);
               if (success) {
+                console.log('Delete successful, refreshing logs...');
+                Alert.alert('Success', 'Entry deleted successfully');
                 loadLogs(); // Refresh the list
               } else {
+                console.log('Delete failed');
                 Alert.alert('Error', 'Failed to delete entry');
               }
             } catch (error) {
-              Alert.alert('Error', 'Failed to delete entry');
+              console.error('Error in deleteEntry:', error);
+              Alert.alert('Error', `Failed to delete entry: ${error.message}`);
             }
           }
         }
@@ -177,11 +195,35 @@ const ViewLogs = () => {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Your Logs</Text>
-        {logs.length > 0 && (
-          <TouchableOpacity style={styles.clearAllButton} onPress={clearAll}>
-            <Text style={styles.clearAllText}>Clear All</Text>
-          </TouchableOpacity>
-        )}
+        <View style={styles.headerButtons}>
+          {logs.length > 0 && (
+            <TouchableOpacity style={styles.debugButton} onPress={() => {
+              console.log('All current logs:', logs);
+              logs.forEach((log, index) => {
+                console.log(`Entry ${index}: ID="${log.id}" (type: ${typeof log.id}), Type="${log.type}"`);
+              });
+              Alert.alert('Debug', `Found ${logs.length} entries. Check console for details.`);
+            }}>
+              <Text style={styles.debugButtonText}>Debug</Text>
+            </TouchableOpacity>
+          )}
+          {logs.length > 0 && (
+            <TouchableOpacity style={styles.testDeleteButton} onPress={() => {
+              const firstEntry = logs[0];
+              Alert.alert('Test Delete', `Try to delete first entry: ${firstEntry.type} "${firstEntry.foodName || firstEntry.symptomType}"?`, [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Delete', onPress: () => deleteEntry(firstEntry) }
+              ]);
+            }}>
+              <Text style={styles.testDeleteText}>Test Del</Text>
+            </TouchableOpacity>
+          )}
+          {logs.length > 0 && (
+            <TouchableOpacity style={styles.clearAllButton} onPress={clearAll}>
+              <Text style={styles.clearAllText}>Clear All</Text>
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <ScrollView
@@ -253,6 +295,10 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  headerButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -265,6 +311,28 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   clearAllText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  debugButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  debugButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  testDeleteButton: {
+    backgroundColor: '#FF9500',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+  testDeleteText: {
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
