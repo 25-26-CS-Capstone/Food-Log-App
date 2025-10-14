@@ -3,7 +3,7 @@
 
 import axios from 'axios';
 
-const API_KEY = 'szC85PUO2yeTgtt7yKLImnFV0wr7Z0kgSIQNZqJg'; // Replace this with your actual USDA API key
+const API_KEY = 'szC85PUO2yeTgtt7yKLImnFV0wr7Z0kgSIQNZqJg';
 const BASE_URL = 'https://api.nal.usda.gov/fdc/v1';
 
 // Search foods by keyword
@@ -28,7 +28,7 @@ export async function getFoodDetails(fdcId) {
 
     const food = response.data;
 
-    // Extract nutrients, ingredients, and allergens if present
+    // Extract ingredients and allergens
     const calories =
       food.foodNutrients?.find(n => n.nutrientName === 'Energy')?.value || 'N/A';
     const ingredients = food.ingredients || 'No ingredients listed';
