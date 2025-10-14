@@ -1,0 +1,32 @@
+[
+    {
+        "food": "Apple",
+        "calories": 95,
+        "timestamp": "2025-10-11T23:41:01.110941"
+    },
+    {
+        "food": "Apple",
+        "calories": 95,
+        "timestamp": "2025-10-12T00:04:44.724404"
+    },
+    {
+        "food": "Apple",
+        "calories": 95,
+        "timestamp": "2025-10-12T00:25:19.431503"
+    },
+    {
+        "food": "Apple",
+        "calories": 95,
+        "timestamp": "2025-10-12T00:25:46.038828"
+    },
+    {
+        "food": "Apple",
+        "calories": 95,
+        "timestamp": "2025-10-12T01:07:57.275800"
+    },
+    {
+        "food": "Apple",
+        "calories": 95,
+        "timestamp": "2025-10-12T01:12:54.847284"
+    }
+]
