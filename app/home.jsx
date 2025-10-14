@@ -37,6 +37,10 @@ const home = () => {
     router.push('/viewLogs')
   }
 
+  const navigateToFoodInfo = () => {
+    router.push('/foodInfo')
+  }
+
   const addTestData = async () => {
     console.log('Adding test data...')
     await addSampleData()
@@ -62,6 +66,11 @@ const home = () => {
         <TouchableOpacity style={styles.tertiaryButton} onPress={navigateToViewLogs}>
           <Text style={styles.tertiaryButtonText}>📊 View Logs</Text>
           <Text style={styles.buttonDescription}>Review your entries</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.infoButton} onPress={navigateToFoodInfo}>
+          <Text style={styles.infoButtonText}>🔍 Food Info Lookup</Text>
+          <Text style={styles.buttonDescription}>Search nutritional database</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.testButton} onPress={addTestData}>
@@ -197,6 +206,26 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   testButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  infoButton: {
+    backgroundColor: '#FF9500',
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  infoButtonText: {
     color: '#fff',
     fontSize: 20,
     fontWeight: '600',

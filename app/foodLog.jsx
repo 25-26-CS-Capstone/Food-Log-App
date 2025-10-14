@@ -9,9 +9,12 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { saveFoodEntry } from '../utils/storage';
+import { searchFood, getFoodDetails, formatFoodSearchResult } from '../utils/usdaAPI';
 
 const FoodLog = () => {
   const router = useRouter();
@@ -19,6 +22,12 @@ const FoodLog = () => {
   const [calories, setCalories] = useState('');
   const [notes, setNotes] = useState('');
   const [isLogging, setIsLogging] = useState(false);
+  
+  // Food search states
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [selectedFood, setSelectedFood] = useState(null);
 
   const handleLogFood = async () => {
     if (!foodName.trim()) {
@@ -29,14 +38,24 @@ const FoodLog = () => {
     setIsLogging(true);
     
     try {
-      // Create food entry
+      // Create food entry with enhanced data
       const foodEntry = {
         id: Date.now().toString(),
         foodName: foodName.trim(),
         calories: calories ? parseInt(calories) : null,
         notes: notes.trim(),
         timestamp: new Date().toISOString(),
-        type: 'food'
+        type: 'food',
+        // Enhanced USDA data
+        usdaData: selectedFood ? {
+          fdcId: selectedFood.fdcId,
+          brandName: selectedFood.brandName,
+          protein: selectedFood.protein,
+          carbs: selectedFood.carbs,
+          fat: selectedFood.fat,
+          ingredients: selectedFood.ingredients,
+          allergens: selectedFood.allergens
+        } : null
       };
 
       // Save to AsyncStorage
@@ -67,6 +86,61 @@ const FoodLog = () => {
     setFoodName('');
     setCalories('');
     setNotes('');
+    setSearchResults([]);
+    setShowSearch(false);
+    setSelectedFood(null);
+  };
+
+  const handleFoodSearch = async (query) => {
+    if (!query || query.length < 2) {
+      setSearchResults([]);
+      setShowSearch(false);
+      return;
+    }
+    
+    setIsSearching(true);
+    setShowSearch(true);
+    
+    try {
+      const results = await searchFood(query);
+      const formattedResults = results.map(formatFoodSearchResult);
+      setSearchResults(formattedResults);
+    } catch (error) {
+      console.error('Search error:', error);
+      Alert.alert('Search Error', 'Failed to search for food items');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const selectFoodFromSearch = async (foodItem) => {
+    setIsSearching(true);
+    
+    try {
+      const details = await getFoodDetails(foodItem.fdcId);
+      if (details) {
+        setFoodName(details.name);
+        setCalories(details.calories ? details.calories.toString() : '');
+        setSelectedFood(details);
+        setShowSearch(false);
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error('Error getting food details:', error);
+      Alert.alert('Error', 'Failed to get food details');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleFoodNameChange = (text) => {
+    setFoodName(text);
+    // Trigger search after user stops typing
+    setTimeout(() => {
+      if (text === foodName) { // Only search if text hasn't changed
+        handleFoodSearch(text);
+      }
+    }, 500);
   };
 
   return (
@@ -82,11 +156,71 @@ const FoodLog = () => {
             <Text style={styles.label}>Food Name *</Text>
             <TextInput
               style={styles.input}
-              placeholder="e.g., Apple, Chicken Sandwich"
+              placeholder="Search for food (e.g., Apple, Chicken Sandwich)"
               value={foodName}
-              onChangeText={setFoodName}
+              onChangeText={handleFoodNameChange}
               autoCapitalize="words"
             />
+            
+            {isSearching && (
+              <View style={styles.searchingContainer}>
+                <ActivityIndicator size="small" color="#007AFF" />
+                <Text style={styles.searchingText}>Searching USDA database...</Text>
+              </View>
+            )}
+            
+            {showSearch && searchResults.length > 0 && (
+              <View style={styles.searchResults}>
+                <Text style={styles.searchResultsTitle}>Search Results:</Text>
+                <FlatList
+                  data={searchResults.slice(0, 5)} // Show top 5 results
+                  keyExtractor={(item) => item.fdcId.toString()}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.searchResultItem}
+                      onPress={() => selectFoodFromSearch(item)}
+                    >
+                      <Text style={styles.searchResultName}>{item.displayName}</Text>
+                      {item.brandName && (
+                        <Text style={styles.searchResultBrand}>{item.brandName}</Text>
+                      )}
+                    </TouchableOpacity>
+                  )}
+                  nestedScrollEnabled={true}
+                  style={styles.searchResultsList}
+                />
+              </View>
+            )}
+            
+            {selectedFood && (
+              <View style={styles.foodDetailsCard}>
+                <Text style={styles.foodDetailsTitle}>📊 Nutrition Info</Text>
+                <View style={styles.nutritionRow}>
+                  <Text style={styles.nutritionLabel}>Calories:</Text>
+                  <Text style={styles.nutritionValue}>
+                    {selectedFood.calories ? `${selectedFood.calories} kcal` : 'N/A'}
+                  </Text>
+                </View>
+                {selectedFood.protein && (
+                  <View style={styles.nutritionRow}>
+                    <Text style={styles.nutritionLabel}>Protein:</Text>
+                    <Text style={styles.nutritionValue}>{selectedFood.protein}g</Text>
+                  </View>
+                )}
+                {selectedFood.carbs && (
+                  <View style={styles.nutritionRow}>
+                    <Text style={styles.nutritionLabel}>Carbs:</Text>
+                    <Text style={styles.nutritionValue}>{selectedFood.carbs}g</Text>
+                  </View>
+                )}
+                {selectedFood.fat && (
+                  <View style={styles.nutritionRow}>
+                    <Text style={styles.nutritionLabel}>Fat:</Text>
+                    <Text style={styles.nutritionValue}>{selectedFood.fat}g</Text>
+                  </View>
+                )}
+              </View>
+            )}
           </View>
 
           <View style={styles.inputGroup}>
@@ -211,6 +345,77 @@ const styles = StyleSheet.create({
     color: '#007AFF',
     fontSize: 16,
     fontWeight: '600',
+  },
+  searchingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+  },
+  searchingText: {
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#666',
+  },
+  searchResults: {
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    backgroundColor: '#f9f9f9',
+  },
+  searchResultsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    padding: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  searchResultsList: {
+    maxHeight: 150,
+  },
+  searchResultItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  searchResultName: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#333',
+  },
+  searchResultBrand: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 2,
+  },
+  foodDetailsCard: {
+    marginTop: 12,
+    padding: 16,
+    backgroundColor: '#e8f4f8',
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: '#007AFF',
+  },
+  foodDetailsTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  nutritionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 2,
+  },
+  nutritionLabel: {
+    fontSize: 14,
+    color: '#555',
+  },
+  nutritionValue: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
   },
 });
 

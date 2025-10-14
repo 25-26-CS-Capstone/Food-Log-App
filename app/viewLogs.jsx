@@ -133,6 +133,23 @@ const ViewLogs = () => {
             <Text style={styles.entryDetail}>Calories: {entry.calories}</Text>
           )}
           
+          {isFood && entry.usdaData && (
+            <View style={styles.nutritionInfo}>
+              {entry.usdaData.protein && (
+                <Text style={styles.nutritionText}>Protein: {entry.usdaData.protein}g</Text>
+              )}
+              {entry.usdaData.carbs && (
+                <Text style={styles.nutritionText}>Carbs: {entry.usdaData.carbs}g</Text>
+              )}
+              {entry.usdaData.fat && (
+                <Text style={styles.nutritionText}>Fat: {entry.usdaData.fat}g</Text>
+              )}
+              {entry.usdaData.brandName && (
+                <Text style={styles.brandName}>Brand: {entry.usdaData.brandName}</Text>
+              )}
+            </View>
+          )}
+          
           {!isFood && (
             <Text style={[styles.entryDetail, styles.severityText]}>
               Severity: {entry.severity}
@@ -378,6 +395,25 @@ const styles = StyleSheet.create({
     padding: 8,
     backgroundColor: '#f9f9f9',
     borderRadius: 6,
+  },
+  nutritionInfo: {
+    marginTop: 8,
+    padding: 8,
+    backgroundColor: '#e8f4f8',
+    borderRadius: 6,
+    borderLeftWidth: 3,
+    borderLeftColor: '#007AFF',
+  },
+  nutritionText: {
+    fontSize: 12,
+    color: '#555',
+    marginVertical: 1,
+  },
+  brandName: {
+    fontSize: 12,
+    color: '#777',
+    fontStyle: 'italic',
+    marginTop: 2,
   },
 });
 
