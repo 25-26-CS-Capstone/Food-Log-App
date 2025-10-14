@@ -45,76 +45,64 @@ const ViewLogs = () => {
     loadLogs();
   };
 
-  const deleteEntry = (entry) => {
-    console.log('Attempting to delete entry:', entry);
-    Alert.alert(
-      'Delete Entry',
-      `Are you sure you want to delete this ${entry.type} entry?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              console.log('Delete confirmed for entry ID:', entry.id, 'Type:', entry.type);
-              let success;
-              if (entry.type === 'food') {
-                console.log('Calling deleteFoodEntry...');
-                success = await deleteFoodEntry(entry.id);
-              } else if (entry.type === 'symptom') {
-                console.log('Calling deleteSymptomEntry...');
-                success = await deleteSymptomEntry(entry.id);
-              } else {
-                console.log('Unknown entry type:', entry.type);
-                Alert.alert('Error', `Unknown entry type: ${entry.type}`);
-                return;
-              }
-              
-              console.log('Delete operation result:', success);
-              if (success) {
-                console.log('Delete successful, refreshing logs...');
-                Alert.alert('Success', 'Entry deleted successfully');
-                loadLogs(); // Refresh the list
-              } else {
-                console.log('Delete failed');
-                Alert.alert('Error', 'Failed to delete entry');
-              }
-            } catch (error) {
-              console.error('Error in deleteEntry:', error);
-              Alert.alert('Error', `Failed to delete entry: ${error.message}`);
-            }
-          }
-        }
-      ]
-    );
+  const deleteEntry = async (entry) => {
+    console.log('🔥🔥🔥 DELETE ENTRY FUNCTION CALLED! 🔥🔥🔥');
+    console.log('Entry received:', entry);
+    console.log('🔥 DELETE BUTTON PRESSED! Entry:', entry);
+    console.log('🔥 Entry ID:', entry.id, 'Type:', entry.type);
+    
+    // TEMPORARY: Skip Alert and go straight to deletion for debugging
+    try {
+      console.log('Delete confirmed for entry ID:', entry.id, 'Type:', entry.type);
+      let success;
+      if (entry.type === 'food') {
+        console.log('Calling deleteFoodEntry...');
+        success = await deleteFoodEntry(entry.id);
+      } else if (entry.type === 'symptom') {
+        console.log('Calling deleteSymptomEntry...');
+        success = await deleteSymptomEntry(entry.id);
+      } else {
+        console.log('Unknown entry type:', entry.type);
+        console.log('ERROR: Unknown entry type:', entry.type);
+        return;
+      }
+      
+      console.log('Delete operation result:', success);
+      if (success) {
+        console.log('Delete successful, refreshing logs...');
+        console.log('SUCCESS: Entry deleted successfully');
+        loadLogs(); // Refresh the list
+      } else {
+        console.log('Delete failed');
+        console.log('ERROR: Failed to delete entry');
+      }
+    } catch (error) {
+      console.error('Error in deleteEntry:', error);
+      console.log('ERROR: Failed to delete entry:', error.message);
+    }
   };
 
-  const clearAll = () => {
-    Alert.alert(
-      'Clear All Logs',
-      'Are you sure you want to delete ALL entries? This cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete All',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              const success = await clearAllLogs();
-              if (success) {
-                setLogs([]);
-                Alert.alert('Success', 'All logs have been cleared');
-              } else {
-                Alert.alert('Error', 'Failed to clear logs');
-              }
-            } catch (error) {
-              Alert.alert('Error', 'Failed to clear logs');
-            }
-          }
-        }
-      ]
-    );
+  const clearAll = async () => {
+    console.log('🔥🔥🔥 CLEAR ALL FUNCTION CALLED! 🔥🔥🔥');
+    console.log('🔥 CLEAR ALL BUTTON PRESSED!');
+    
+    // TEMPORARY: Skip Alert and go straight to clearing for debugging
+    try {
+      console.log('Clear all confirmed, calling clearAllLogs...');
+      const success = await clearAllLogs();
+      console.log('Clear all operation result:', success);
+      if (success) {
+        console.log('Clear all successful, updating state...');
+        setLogs([]);
+        console.log('SUCCESS: All logs have been cleared');
+        loadLogs(); // Refresh to be sure
+      } else {
+        console.log('ERROR: Failed to clear logs');
+      }
+    } catch (error) {
+      console.error('Error in clearAll:', error);
+      console.log('ERROR: Failed to clear logs:', error.message);
+    }
   };
 
   const formatDate = (timestamp) => {
