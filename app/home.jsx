@@ -1,9 +1,29 @@
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useRouter } from 'expo-router'
+import { addSampleData, hasSampleData } from '../utils/sampleData'
 
 const home = () => {
   const router = useRouter()
+
+  // Add sample data on first load
+  useEffect(() => {
+    const initializeSampleData = async () => {
+      try {
+        const hasData = await hasSampleData()
+        if (!hasData) {
+          console.log('No existing data found, adding sample data...')
+          await addSampleData()
+        } else {
+          console.log('Existing data found, skipping sample data.')
+        }
+      } catch (error) {
+        console.error('Error initializing sample data:', error)
+      }
+    }
+    
+    initializeSampleData()
+  }, [])
 
   const navigateToFoodLog = () => {
     router.push('/foodLog')
@@ -15,6 +35,12 @@ const home = () => {
 
   const navigateToViewLogs = () => {
     router.push('/viewLogs')
+  }
+
+  const addTestData = async () => {
+    console.log('Adding test data...')
+    await addSampleData()
+    console.log('Test data added!')
   }
 
   return (
@@ -36,6 +62,11 @@ const home = () => {
         <TouchableOpacity style={styles.tertiaryButton} onPress={navigateToViewLogs}>
           <Text style={styles.tertiaryButtonText}>📊 View Logs</Text>
           <Text style={styles.buttonDescription}>Review your entries</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.testButton} onPress={addTestData}>
+          <Text style={styles.testButtonText}>🧪 Add Test Data</Text>
+          <Text style={styles.buttonDescription}>Add sample entries for testing</Text>
         </TouchableOpacity>
       </View>
 
@@ -150,5 +181,25 @@ const styles = StyleSheet.create({
     color: '#5a6c7d',
     lineHeight: 20,
     textAlign: 'center',
+  },
+  testButton: {
+    backgroundColor: '#9B59B6',
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  testButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 4,
   },
 })
