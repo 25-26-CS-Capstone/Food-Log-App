@@ -1,12 +1,18 @@
-import { StyleSheet, Text, View, Image } from 'react-native'
-import { Link } from 'expo-router'
+import { StyleSheet, View, Button } from 'react-native'
+import { useRouter } from 'expo-router';
 import React from 'react'
 
 const index = () => {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
-        <Link href="/login" style={styles.link}>Login</Link>
-        <Link href="/register" style={styles.link}>New account</Link>
+      <View style={{marginVertical:5}}>
+        <Button title="Login" onPress={() => router.navigate('/login')} />
+      </View>
+      <View style={{marginVertical:5}}>
+        <Button title="New account" onPress={() => router.navigate('/register')} />
+      </View>    
     </View>
   )
 }
@@ -15,15 +21,8 @@ export default index
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
-        justifyContent: 'center',
-    },
-    link: {
-      marginVertical: 10,
-      padding: 10,
+      flex: 1,
+      justifyContent: 'center',
       margin: 80,
-      color: 'white',
-      textAlign: 'center',
-      backgroundColor: 'darkgrey'
     }
 })

@@ -1,16 +1,33 @@
-import { StyleSheet, Text, View, TextInput } from 'react-native'
-import React from 'react'
-import { Link } from 'expo-router'
+import { StyleSheet, Text, View, TextInput, Alert, AppState, Button, Platform } from 'react-native'
+import React, { useState } from 'react'
+import { supabase } from '../lib/supabase'
 
 const register = () => {
+  const [email, setEmail] = useState('')  
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function signUpWithEmail () {
+    setLoading(true)
+    const {error} = await supabase.auth.signUp({ email, password })
+
+    if (Platform.OS === 'web') {
+            if (error) window.alert(error.message)
+    }
+    if (error) Alert.alert(error.message) 
+  
+    setLoading(false)
+  }
+
   return (
     <View style={{margin:20}}>
       <Text style={{paddingBottom:5}}>Enter email</Text>
-      <TextInput placeholder="Email" style={styles.input}/>
+      <TextInput value={email} onChangeText={setEmail} placeholder="Email" style={styles.input}/>
 
       <Text style={{paddingBottom:5}}>Enter password</Text>
-      <TextInput placeholder="Password" style={styles.input}/>
-      <Link href="/home" style={styles.link}>Submit</Link>
+      <TextInput value={password} onChangeText={setPassword} placeholder="Password" style={styles.input} secureTextEntry/>
+  
+      <Button title="Submit" onPress={signUpWithEmail} disabled={loading} />
     </View>
   )
 }
@@ -23,12 +40,5 @@ const styles = StyleSheet.create({
       padding: 20,
       borderColor: '#000',
       borderWidth: 1
-    },
-    link: {
-      marginVertical: 10,
-      padding: 10,
-      color: 'white',
-      textAlign: 'center',
-      backgroundColor: 'darkgrey'
     }
 })
