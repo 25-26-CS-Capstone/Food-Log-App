@@ -3,14 +3,14 @@
 
 <settings>
   <game name="Blank 2D Game" />
-  <renderer width="1024" height="768"/>
+  <renderer width="1400" height="760"/>
    
   <font file="Media\Fonts\AverageSans_24.spritefont"/>
 
   <!-- sprites -->
    
   <sprites path="Media\Images">
-    <sprite name="background" file="background.png"/>
+    <sprite name="background" file="StoneLevel.png"/>
     <sprite name="textwheel" file="textwheel.png"/>
     <sprite name="pig" file="pig.png"/>
 	
@@ -61,8 +61,47 @@
 		<frame index="18" left="0" top="792" right="140" bottom="1056"/>>
 		<frame index="19" left="140" top="792" right="280" bottom="1056"/>>
 	</sprite>
-	
-	<sprite name="InuitRunLeftSheet" file="InuitRunLeft.png"/>
+
+	  <sprite name="InuitIdleUpSheet" file="InuitIdleUp.png"/>
+	  <sprite name="InuitIdleUp" sheet="InuitIdleUpSheet" frames="16">
+		  <frame index="0" left="0"	top="0" right="140"	bottom="260"/>>
+		  <frame index="1" left="140"	top="0"	right="280" bottom="260"/>>
+		  <frame index="2" left="280" top="0" right="420" bottom="260"/>>
+		  <frame index="3" left="420" top="0" right="560" bottom="260"/>>
+		  <frame index="4" left="560" top="0" right="700" bottom="260"/>>
+		  <frame index="5" left="0" top="260" right="140" bottom="520"/>>
+		  <frame index="6" left="140" top="260" right="280" bottom="520"/>>
+		  <frame index="7" left="280" top="260" right="420" bottom="520"/>>
+		  <frame index="8" left="420" top="260" right="560" bottom="520"/>>
+		  <frame index="9" left="560" top="260" right="700" bottom="520"/>>
+		  <frame index="10" left="0" top="520" right="140" bottom="780"/>>
+		  <frame index="11" left="140" top="520" right="280" bottom="780"/>>
+		  <frame index="12" left="280" top="520" right="420" bottom="780"/>>
+		  <frame index="13" left="420" top="520" right="560" bottom="780"/>>
+		  <frame index="14" left="560" top="520" right="700" bottom="780"/>>
+		  <frame index="15" left="0" top="780" right="140" bottom="1040"/>>
+	  </sprite>
+
+	  <sprite name="InuitIdleDownSheet" file="InuitIdleDown.png"/>
+	  <sprite name="InuitIdleDown" sheet="InuitIdleDownSheet" frames="15">
+		  <frame index="0" left="0"	top="0" right="140"	bottom="260"/>>
+		  <frame index="1" left="140"	top="0"	right="280" bottom="260"/>>
+		  <frame index="2" left="280" top="0" right="420" bottom="260"/>>
+		  <frame index="3" left="420" top="0" right="560" bottom="260"/>>
+		  <frame index="4" left="560" top="0" right="700" bottom="260"/>>
+		  <frame index="5" left="0" top="260" right="140" bottom="520"/>>
+		  <frame index="6" left="140" top="260" right="280" bottom="520"/>>
+		  <frame index="7" left="280" top="260" right="420" bottom="520"/>>
+		  <frame index="8" left="420" top="260" right="560" bottom="520"/>>
+		  <frame index="9" left="560" top="260" right="700" bottom="520"/>>
+		  <frame index="10" left="0" top="520" right="140" bottom="780"/>>
+		  <frame index="11" left="140" top="520" right="280" bottom="780"/>>
+		  <frame index="12" left="280" top="520" right="420" bottom="780"/>>
+		  <frame index="13" left="420" top="520" right="560" bottom="780"/>>
+		  <frame index="14" left="560" top="520" right="700" bottom="780"/>>
+	  </sprite>
+	  
+		  <sprite name="InuitRunLeftSheet" file="InuitRunLeft.png"/>
 	<sprite name="InuitRunLeft" sheet="InuitRunLeftSheet" frames="8">
 		<frame index="0" left="0"	top="0" right="156"	bottom="272"/>>
 		<frame index="1" left="156"	top="0"	right="312" bottom="272"/>>
@@ -93,7 +132,7 @@
 		<frame index="2" left="280" top="0" right="420" bottom="260"/>>
 		<frame index="3" left="0" top="260" right="140" bottom="520"/>>
 		<frame index="4" left="140" top="260" right="280" bottom="520"/>>
-		<frame index="5" left="280" top="260" right="420" bottom="520"/>
+		<frame index="5" left="280" top="260" right="420" bottom="520"/>>
 	</sprite>
 	
 		<sprite name="InuitRunDownSheet" file="InuitRunDown.png"/>
@@ -103,7 +142,19 @@
 		<frame index="2" left="280" top="0" right="420" bottom="260"/>>
 		<frame index="3" left="0" top="260" right="140" bottom="520"/>>
 		<frame index="4" left="140" top="260" right="280" bottom="520"/>>
-		<frame index="5" left="280" top="260" right="420" bottom="520"/>
+		<frame index="5" left="280" top="260" right="420" bottom="520"/>>
+	</sprite>
+	
+		<sprite name="InuitRollSheet" file="InuitRoll.png"/>
+	<sprite name="InuitRoll" sheet="InuitRollSheet" frames="8">
+		<frame index="0" left="0"	top="0" right="140"	bottom="260"/>>
+		<frame index="1" left="140"	top="0"	right="280" bottom="260"/>>
+		<frame index="2" left="280" top="0" right="420" bottom="260"/>>
+		<frame index="3" left="420" top="0" right="560" bottom="260"/>>
+		<frame index="4" left="0" top="260" right="140" bottom="520"/>>
+		<frame index="5" left="140" top="260" right="280" bottom="520"/>>
+		<frame index="6" left="280" top="260" right="420" bottom="520"/>>
+		<frame index="7" left="420" top="260" right="560" bottom="520"/>>
 	</sprite>
   </sprites>
 

@@ -17,7 +17,9 @@ enum class eSprite: UINT{
   Background, TextWheel,  PIGSPRITE, InuitIdleRightSheet,
   InuitIdleRight, InuitIdleLeftSheet, InuitIdleLeft, InuitRunRightSheet,
   InuitRunRight, InuitRunLeftSheet, InuitRunLeft,InuitRunUpSheet,
-  InuitRunUp, InuitRunDownSheet, InuitRunDown,
+  InuitRunUp, InuitRunDownSheet, InuitRunDown,InuitIdleUpSheet,
+  InuitIdleUp, InuitIdleDownSheet, InuitIdleDown,InuitRollSheet,
+  InuitRoll,
   Size  //MUST BE LAST
 }; //eSprite
 

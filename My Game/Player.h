@@ -17,8 +17,20 @@ class CPlayer: public CObject{
     LEventTimer* m_pFrameEvent = nullptr; ///< Frame event timer.
     
     void UpdateFramenumber(); ///< Update frame number.
+    
+    int playerState = 0;    //states: 0 = normal, 1 = roll, 
 
     float currentHealth = 3.0;
+    float xspeed = 0.0;
+    float yspeed = 0.0;
+    float MAXSPEED = 2.25f;
+    float SPEEDINC = 0.4f;
+    float SPEEDDEC = 0.13f;
+    float ROLLSPEED = 8.0f;
+
+    int counter = 0;
+    char recentInput = 'D';
+    unsigned int lastSprite;
 
   public:
     CPlayer(eSprite t, const Vector2& p); ///< Constructor.
@@ -28,12 +40,14 @@ class CPlayer: public CObject{
     
     void IdleLeft(); ///< idle sprite facing left
     void IdleRight(); ///< idle sprite facing right
+    void IdleUp();
+    void IdleDown();
     void RunLeft(); ///<run sprite facing left
     void RunRight(); ///<run sprite facing right
     void RunUp();
     void RunDown();
+    void Roll();
 
-    void Stop(); ///< Stop walking.
     void changeHealth(float);
 }; //CPlayer
 

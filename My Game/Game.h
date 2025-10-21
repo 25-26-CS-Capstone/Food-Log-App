@@ -9,6 +9,7 @@
 #include "ObjectManager.h"
 #include "Settings.h"
 #include  "Player.h"
+#include "Windows.h"
 
 /// \brief The game class.
 ///

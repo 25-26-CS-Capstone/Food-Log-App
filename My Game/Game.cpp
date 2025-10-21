@@ -49,6 +49,10 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::InuitIdleLeft, "InuitIdleLeft");
   m_pRenderer->Load(eSprite::InuitIdleRightSheet, "InuitIdleRightSheet");
   m_pRenderer->Load(eSprite::InuitIdleRight, "InuitIdleRight");
+  m_pRenderer->Load(eSprite::InuitIdleUpSheet, "InuitIdleUpSheet");
+  m_pRenderer->Load(eSprite::InuitIdleUp, "InuitIdleUp");
+  m_pRenderer->Load(eSprite::InuitIdleDownSheet, "InuitIdleDownSheet");
+  m_pRenderer->Load(eSprite::InuitIdleDown, "InuitIdleDown");
   m_pRenderer->Load(eSprite::InuitRunLeftSheet, "InuitRunLeftSheet");
   m_pRenderer->Load(eSprite::InuitRunLeft, "InuitRunLeft");
   m_pRenderer->Load(eSprite::InuitRunRightSheet, "InuitRunRightSheet");
@@ -57,6 +61,8 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::InuitRunUp, "InuitRunUp");
   m_pRenderer->Load(eSprite::InuitRunDownSheet, "InuitRunDownSheet");
   m_pRenderer->Load(eSprite::InuitRunDown, "InuitRunDown");
+  m_pRenderer->Load(eSprite::InuitRollSheet, "InuitRollSheet");
+  m_pRenderer->Load(eSprite::InuitRoll, "InuitRoll");
 
   m_pRenderer->EndResourceUpload();
 } //LoadImages
@@ -97,46 +103,29 @@ void CGame::CreateObjects() {
 /// Poll the keyboard state and respond to the key presses that happened since
 /// the last frame.
 
-void CGame::KeyboardHandler(){
-  m_pKeyboard->GetState(); //get current keyboard state 
-  
-  if (m_pKeyboard->TriggerDown('O'))
-      m_pPlayer->changeHealth(-1.0);
+void CGame::KeyboardHandler() {
+    m_pKeyboard->GetState(); //get current keyboard state 
 
-  if(m_pKeyboard->TriggerDown(VK_F1)) //help
-    ShellExecute(0, 0, "https://larc.unt.edu/code/physics/blank/", 0, 0, SW_SHOW);
-  
-  if(m_pKeyboard->TriggerDown(VK_F2)) //toggle frame rate 
-    m_bDrawFrameRate = !m_bDrawFrameRate;
-  
-  if(m_pKeyboard->TriggerDown(VK_SPACE)) //play sound
-    m_pAudio->play(eSound::Clang);
 
-  if(m_pKeyboard->TriggerUp(VK_SPACE)) //play sound
-    m_pAudio->play(eSound::Grunt);
-  
-  if(m_pKeyboard->TriggerDown(VK_BACK)) //restart game
-    BeginGame(); //restart game
 
-  if (m_pKeyboard->TriggerDown('W'))
-      m_pPlayer->RunUp();
-  if (m_pKeyboard->TriggerUp('W'))
-      m_pPlayer->IdleRight();
+    if (m_pKeyboard->TriggerDown('O'))
+        m_pPlayer->changeHealth(-1.0);
 
-  if (m_pKeyboard->TriggerDown('A'))
-      m_pPlayer->RunLeft();
-  if (m_pKeyboard->TriggerUp('A'))
-      m_pPlayer->IdleLeft();
+    if (m_pKeyboard->TriggerDown(VK_F1)) //help
+        ShellExecute(0, 0, "https://larc.unt.edu/code/physics/blank/", 0, 0, SW_SHOW);
 
-  if (m_pKeyboard->TriggerDown('S'))
-      m_pPlayer->RunDown();
-  if (m_pKeyboard->TriggerUp('S'))
-      m_pPlayer->IdleLeft();
+    if (m_pKeyboard->TriggerDown(VK_F2)) //toggle frame rate 
+        m_bDrawFrameRate = !m_bDrawFrameRate;
 
-  if (m_pKeyboard->TriggerDown('D'))
-      m_pPlayer->RunRight();
-  if (m_pKeyboard->TriggerUp('D'))
-      m_pPlayer->IdleRight();
+    if (m_pKeyboard->TriggerDown(VK_SPACE)) //play sound
+        m_pAudio->play(eSound::Clang);
+
+    if (m_pKeyboard->TriggerUp(VK_SPACE)) //play sound
+        m_pAudio->play(eSound::Grunt);
+
+    if (m_pKeyboard->TriggerDown(VK_BACK)) //restart game
+        BeginGame(); //restart game
+
 } //KeyboardHandler
 
 /// Draw the current frame rate to a hard-coded position in the window.
@@ -157,7 +146,6 @@ void CGame::RenderFrame(){
   
   m_pRenderer->Draw(eSprite::Background, m_vWinCenter); //draw background
   m_pObjectManager->draw(); //draw objects
-  m_pRenderer->Draw(eSprite::PIGSPRITE, m_vWinCenter/4);
   if(m_bDrawFrameRate)DrawFrameRateText(); //draw frame rate, if required
 
   m_pRenderer->EndFrame(); //required after rendering
