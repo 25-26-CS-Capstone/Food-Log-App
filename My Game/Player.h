@@ -36,6 +36,7 @@ class CPlayer: public CObject{
     void changeHealth(float);
     float getCurrentHealth();
     float getMaxHealth();
+    void onCollision(CObject*);
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

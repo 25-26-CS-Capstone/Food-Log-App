@@ -10,6 +10,8 @@
 
 CPlayer::CPlayer(eSprite t, const Vector2& p): CObject(t, p){ 
   m_pFrameEvent = new LEventTimer(0.12f);
+  width = 140.0f;
+  height = 264.0f;
 } //constructor
 
 /// Destructor.
@@ -20,6 +22,11 @@ CPlayer::~CPlayer(){
 
 /// Move in response to device input. The amount of motion is proportional to
 /// the frame time.
+
+void CPlayer::onCollision(CObject* obj) {
+    changeHealth(-1.0f);
+}
+
 
 void CPlayer::move(){
   const float delta = 200.0f*m_pTimer->GetFrameTime(); //change in position

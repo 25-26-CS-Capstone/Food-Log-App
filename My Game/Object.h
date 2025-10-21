@@ -29,7 +29,9 @@ public:
     ~CObject();// destructor
 
     CObject(eSprite, const Vector2&); ///< Constructor.
-
+    float width;
+    float height;
+    virtual void onCollision(CObject*);
     void move(); ///< Move object.
     void draw(); ///< Draw object.
 }; //CObject

@@ -17,6 +17,10 @@ CObject::CObject(eSprite t, const Vector2& p) :
 CObject::~CObject() {
 }
 
+
+void CObject::onCollision(CObject* obj) {
+
+}
 /// The only object in this game is the text wheel, which slowly rotates at 1/8
 /// revolutions per second. This is achieved by adding a small amount to its
 /// roll angle, proportional to frame time.
