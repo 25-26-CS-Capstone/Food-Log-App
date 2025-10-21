@@ -103,29 +103,17 @@ export const clearAllLogs = async () => {
 // Delete individual entry
 export const deleteFoodEntry = async (entryId) => {
   try {
-    console.log('deleteFoodEntry called with ID:', entryId, 'Type:', typeof entryId);
     const logs = await getFoodLogs();
-    console.log('Current food logs count:', logs.length);
-    
-    // Debug: show all IDs
-    console.log('All food entry IDs:', logs.map(log => `"${log.id}" (${typeof log.id})`));
-    console.log('Looking for entry with ID:', entryId);
     
     // Convert both to strings to ensure comparison works
     const entryIdStr = String(entryId);
-    const targetEntry = logs.find(log => String(log.id) === entryIdStr);
-    console.log('Found target entry:', targetEntry ? `Yes: ${targetEntry.foodName}` : 'No');
-    
     const updatedLogs = logs.filter(log => String(log.id) !== entryIdStr);
-    console.log('Updated logs count after filter:', updatedLogs.length, '(removed:', logs.length - updatedLogs.length, ')');
     
     if (logs.length === updatedLogs.length) {
-      console.log('WARNING: No entries were removed - ID not found');
-      return false;
+      return false; // No entries were removed - ID not found
     }
     
     await AsyncStorage.setItem(FOOD_LOG_KEY, JSON.stringify(updatedLogs));
-    console.log('Food entry deleted successfully');
     return true;
   } catch (error) {
     console.error('Error deleting food entry:', error);
@@ -135,29 +123,17 @@ export const deleteFoodEntry = async (entryId) => {
 
 export const deleteSymptomEntry = async (entryId) => {
   try {
-    console.log('deleteSymptomEntry called with ID:', entryId, 'Type:', typeof entryId);
     const logs = await getSymptomLogs();
-    console.log('Current symptom logs count:', logs.length);
-    
-    // Debug: show all IDs
-    console.log('All symptom entry IDs:', logs.map(log => `"${log.id}" (${typeof log.id})`));
-    console.log('Looking for entry with ID:', entryId);
     
     // Convert both to strings to ensure comparison works
     const entryIdStr = String(entryId);
-    const targetEntry = logs.find(log => String(log.id) === entryIdStr);
-    console.log('Found target entry:', targetEntry ? `Yes: ${targetEntry.symptomName}` : 'No');
-    
     const updatedLogs = logs.filter(log => String(log.id) !== entryIdStr);
-    console.log('Updated logs count after filter:', updatedLogs.length, '(removed:', logs.length - updatedLogs.length, ')');
     
     if (logs.length === updatedLogs.length) {
-      console.log('WARNING: No entries were removed - ID not found');
-      return false;
+      return false; // No entries were removed - ID not found
     }
     
     await AsyncStorage.setItem(SYMPTOMS_LOG_KEY, JSON.stringify(updatedLogs));
-    console.log('Symptom entry deleted successfully');
     return true;
   } catch (error) {
     console.error('Error deleting symptom entry:', error);

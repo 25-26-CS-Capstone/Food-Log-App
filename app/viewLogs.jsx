@@ -25,11 +25,6 @@ const ViewLogs = () => {
   const loadLogs = async () => {
     try {
       const allLogs = await getAllLogs();
-      console.log('Loaded logs:', allLogs.length, 'entries');
-      // Debug: log the first few entries to check their structure
-      if (allLogs.length > 0) {
-        console.log('First entry structure:', JSON.stringify(allLogs[0], null, 2));
-      }
       setLogs(allLogs);
     } catch (error) {
       console.error('Error loading logs:', error);
@@ -45,64 +40,70 @@ const ViewLogs = () => {
     loadLogs();
   };
 
-  const deleteEntry = async (entry) => {
-    console.log('🔥🔥🔥 DELETE ENTRY FUNCTION CALLED! 🔥🔥🔥');
-    console.log('Entry received:', entry);
-    console.log('🔥 DELETE BUTTON PRESSED! Entry:', entry);
-    console.log('🔥 Entry ID:', entry.id, 'Type:', entry.type);
-    
-    // TEMPORARY: Skip Alert and go straight to deletion for debugging
-    try {
-      console.log('Delete confirmed for entry ID:', entry.id, 'Type:', entry.type);
-      let success;
-      if (entry.type === 'food') {
-        console.log('Calling deleteFoodEntry...');
-        success = await deleteFoodEntry(entry.id);
-      } else if (entry.type === 'symptom') {
-        console.log('Calling deleteSymptomEntry...');
-        success = await deleteSymptomEntry(entry.id);
-      } else {
-        console.log('Unknown entry type:', entry.type);
-        console.log('ERROR: Unknown entry type:', entry.type);
-        return;
-      }
-      
-      console.log('Delete operation result:', success);
-      if (success) {
-        console.log('Delete successful, refreshing logs...');
-        console.log('SUCCESS: Entry deleted successfully');
-        loadLogs(); // Refresh the list
-      } else {
-        console.log('Delete failed');
-        console.log('ERROR: Failed to delete entry');
-      }
-    } catch (error) {
-      console.error('Error in deleteEntry:', error);
-      console.log('ERROR: Failed to delete entry:', error.message);
-    }
+  const deleteEntry = (entry) => {
+    Alert.alert(
+      'Delete Entry',
+      `Are you sure you want to delete this ${entry.type} entry?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              let success;
+              if (entry.type === 'food') {
+                success = await deleteFoodEntry(entry.id);
+              } else if (entry.type === 'symptom') {
+                success = await deleteSymptomEntry(entry.id);
+              } else {
+                Alert.alert('Error', `Unknown entry type: ${entry.type}`);
+                return;
+              }
+              
+              if (success) {
+                Alert.alert('Success', 'Entry deleted successfully');
+                loadLogs(); // Refresh the list
+              } else {
+                Alert.alert('Error', 'Failed to delete entry');
+              }
+            } catch (error) {
+              console.error('Error in deleteEntry:', error);
+              Alert.alert('Error', `Failed to delete entry: ${error.message}`);
+            }
+          }
+        }
+      ]
+    );
   };
 
-  const clearAll = async () => {
-    console.log('🔥🔥🔥 CLEAR ALL FUNCTION CALLED! 🔥🔥🔥');
-    console.log('🔥 CLEAR ALL BUTTON PRESSED!');
-    
-    // TEMPORARY: Skip Alert and go straight to clearing for debugging
-    try {
-      console.log('Clear all confirmed, calling clearAllLogs...');
-      const success = await clearAllLogs();
-      console.log('Clear all operation result:', success);
-      if (success) {
-        console.log('Clear all successful, updating state...');
-        setLogs([]);
-        console.log('SUCCESS: All logs have been cleared');
-        loadLogs(); // Refresh to be sure
-      } else {
-        console.log('ERROR: Failed to clear logs');
-      }
-    } catch (error) {
-      console.error('Error in clearAll:', error);
-      console.log('ERROR: Failed to clear logs:', error.message);
-    }
+  const clearAll = () => {
+    Alert.alert(
+      'Clear All Logs',
+      'Are you sure you want to delete ALL entries? This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete All',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const success = await clearAllLogs();
+              if (success) {
+                setLogs([]);
+                Alert.alert('Success', 'All logs have been cleared');
+                loadLogs(); // Refresh to be sure
+              } else {
+                Alert.alert('Error', 'Failed to clear logs');
+              }
+            } catch (error) {
+              console.error('Error in clearAll:', error);
+              Alert.alert('Error', 'Failed to clear logs');
+            }
+          }
+        }
+      ]
+    );
   };
 
   const formatDate = (timestamp) => {
@@ -184,28 +185,6 @@ const ViewLogs = () => {
       <View style={styles.header}>
         <Text style={styles.title}>Your Logs</Text>
         <View style={styles.headerButtons}>
-          {logs.length > 0 && (
-            <TouchableOpacity style={styles.debugButton} onPress={() => {
-              console.log('All current logs:', logs);
-              logs.forEach((log, index) => {
-                console.log(`Entry ${index}: ID="${log.id}" (type: ${typeof log.id}), Type="${log.type}"`);
-              });
-              Alert.alert('Debug', `Found ${logs.length} entries. Check console for details.`);
-            }}>
-              <Text style={styles.debugButtonText}>Debug</Text>
-            </TouchableOpacity>
-          )}
-          {logs.length > 0 && (
-            <TouchableOpacity style={styles.testDeleteButton} onPress={() => {
-              const firstEntry = logs[0];
-              Alert.alert('Test Delete', `Try to delete first entry: ${firstEntry.type} "${firstEntry.foodName || firstEntry.symptomType}"?`, [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'Delete', onPress: () => deleteEntry(firstEntry) }
-              ]);
-            }}>
-              <Text style={styles.testDeleteText}>Test Del</Text>
-            </TouchableOpacity>
-          )}
           {logs.length > 0 && (
             <TouchableOpacity style={styles.clearAllButton} onPress={clearAll}>
               <Text style={styles.clearAllText}>Clear All</Text>
@@ -299,28 +278,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   clearAllText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  debugButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  debugButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  testDeleteButton: {
-    backgroundColor: '#FF9500',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  testDeleteText: {
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
