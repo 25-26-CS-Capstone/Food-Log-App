@@ -140,3 +140,88 @@ export const deleteSymptomEntry = async (entryId) => {
     return false;
   }
 };
+
+// Date-based filtering functions for calendar
+export const getEntriesByDate = async (dateString) => {
+  try {
+    const foodLogs = await getFoodLogs();
+    const symptomLogs = await getSymptomLogs();
+    
+    // Filter entries for specific date
+    const targetDate = new Date(dateString);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    const nextDate = new Date(targetDate);
+    nextDate.setDate(nextDate.getDate() + 1);
+    
+    const foodEntriesForDate = foodLogs.filter(entry => {
+      const entryDate = new Date(entry.timestamp);
+      return entryDate >= targetDate && entryDate < nextDate;
+    }).map(entry => ({ ...entry, type: 'food' }));
+    
+    const symptomEntriesForDate = symptomLogs.filter(entry => {
+      const entryDate = new Date(entry.timestamp);
+      return entryDate >= targetDate && entryDate < nextDate;
+    }).map(entry => ({ ...entry, type: 'symptom' }));
+    
+    return [...foodEntriesForDate, ...symptomEntriesForDate].sort(
+      (a, b) => new Date(a.timestamp) - new Date(b.timestamp)
+    );
+  } catch (error) {
+    console.error('Error getting entries by date:', error);
+    return [];
+  }
+};
+
+export const getDatesWithEntries = async () => {
+  try {
+    const foodLogs = await getFoodLogs();
+    const symptomLogs = await getSymptomLogs();
+    
+    const allEntries = [...foodLogs, ...symptomLogs];
+    const datesWithEntries = new Set();
+    
+    allEntries.forEach(entry => {
+      const dateString = new Date(entry.timestamp).toISOString().split('T')[0];
+      datesWithEntries.add(dateString);
+    });
+    
+    return Array.from(datesWithEntries);
+  } catch (error) {
+    console.error('Error getting dates with entries:', error);
+    return [];
+  }
+};
+
+export const getCalendarMarkedDates = async () => {
+  try {
+    const foodLogs = await getFoodLogs();
+    const symptomLogs = await getSymptomLogs();
+    
+    const marked = {};
+    
+    // Mark dates with food entries
+    foodLogs.forEach(entry => {
+      const dateString = new Date(entry.timestamp).toISOString().split('T')[0];
+      if (!marked[dateString]) {
+        marked[dateString] = { marked: true, dotColor: '#007AFF' };
+      }
+    });
+    
+    // Mark dates with symptom entries (different color)
+    symptomLogs.forEach(entry => {
+      const dateString = new Date(entry.timestamp).toISOString().split('T')[0];
+      if (!marked[dateString]) {
+        marked[dateString] = { marked: true, dotColor: '#FF3B30' };
+      } else {
+        // If both food and symptoms exist, use a mixed color
+        marked[dateString].dotColor = '#FF9500';
+      }
+    });
+    
+    return marked;
+  } catch (error) {
+    console.error('Error getting calendar marked dates:', error);
+    return {};
+  }
+};

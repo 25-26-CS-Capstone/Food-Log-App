@@ -41,6 +41,10 @@ const home = () => {
     router.push('/foodInfo')
   }
 
+  const navigateToCalendar = () => {
+    router.push('/calendar')
+  }
+
   const addTestData = async () => {
     console.log('Adding test data...')
     await addSampleData()
@@ -71,6 +75,11 @@ const home = () => {
         <TouchableOpacity style={styles.infoButton} onPress={navigateToFoodInfo}>
           <Text style={styles.infoButtonText}>🔍 Food Info Lookup</Text>
           <Text style={styles.buttonDescription}>Search nutritional database</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.calendarButton} onPress={navigateToCalendar}>
+          <Text style={styles.calendarButtonText}>📅 Food Calendar</Text>
+          <Text style={styles.buttonDescription}>View entries by date</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.testButton} onPress={addTestData}>
@@ -226,6 +235,26 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   infoButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  calendarButton: {
+    backgroundColor: '#8E4EC6',
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  calendarButtonText: {
     color: '#fff',
     fontSize: 20,
     fontWeight: '600',
