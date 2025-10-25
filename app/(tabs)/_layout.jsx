@@ -1,7 +1,6 @@
 import { StyleSheet } from 'react-native'
 import React from 'react'
 import { Tabs } from 'expo-router'
-import { Link } from 'expo-router'
 
 
 const TabsLayout = () => {

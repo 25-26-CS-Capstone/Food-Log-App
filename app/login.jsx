@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TextInput, Alert, AppState, Button, Platform } from 'react-native'
+import { StyleSheet, Text, View, TextInput, Alert, Button, Platform } from 'react-native'
 import React, { useState } from 'react'
 import { supabase } from '../lib/supabase'
 
@@ -8,7 +8,17 @@ const login = () => {
   const [loading, setLoading] = useState(false)
 
   async function signInWithEmail () {
+    if (email.trim() === '' || password.trim() === '') {
+      if (Platform.OS === 'web') {
+          window.alert('Please enter both email and password.')
+          return
+      }
+      Alert.alert('Error', 'Please enter both email and password.');
+      return
+    }
+
     setLoading(true)
+
     const {error} = await supabase.auth.signInWithPassword({ email, password })
     
     if (Platform.OS === 'web') {
@@ -22,9 +32,9 @@ const login = () => {
   return (
     <View style={{margin:20}}>
       <Text style={{paddingBottom:5}}>Enter email</Text>
-      <TextInput value={email} onChangeText={setEmail} placeholder="Email" style={styles.input}/>
+      <TextInput value={email} onChangeText={setEmail} placeholder="Email" placeholderTextColor="gray" style={styles.input}/>
       <Text style={{paddingBottom:5}}>Enter password</Text>
-      <TextInput value={password} onChangeText={setPassword} placeholder="Password" style={styles.input} secureTextEntry/>
+      <TextInput value={password} onChangeText={setPassword} placeholder="Password" placeholderTextColor="gray" style={styles.input} secureTextEntry/>
       <Button title="Login" onPress={signInWithEmail} disabled={loading} />
     </View>
   )
