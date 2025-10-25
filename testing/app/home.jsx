@@ -78,7 +78,7 @@ const styles = StyleSheet.create({
   name: { fontWeight: 'bold', fontSize: 16 },
 });
 */
-
+/*
 import React, { useState } from 'react';
 import {
   StyleSheet,
@@ -176,3 +176,40 @@ const styles = StyleSheet.create({
   detailsTitle: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
   detailText: { marginBottom: 8, fontSize: 16 },
 });
+*/
+
+import React, { useEffect, useState } from 'react';
+import { View, Text, Button } from 'react-native';
+import { supabase } from '../app/lib/supabase';
+import { useRouter } from 'expo-router';
+
+export default function Home() {
+  const [user, setUser] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const session = supabase.auth.getSession().then(({ data }) => {
+      if (data.session) setUser(data.session.user);
+      else router.replace('/login');
+    });
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) setUser(session.user);
+      else router.replace('/login');
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.replace('/login');
+  };
+
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text>Welcome, {user?.email}</Text>
+      <Button title="Logout" onPress={handleLogout} />
+    </View>
+  );
+}
