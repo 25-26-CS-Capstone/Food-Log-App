@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, Button, Platform } from 'react-native'
 import React from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../AuthContext'
+import { navigate } from 'expo-router/build/global-state/routing'
 
 const home = () => {
   const { setAuth } = useAuth()
@@ -18,6 +19,14 @@ const home = () => {
   return (
     <View style={styles.container}>
       <View style={styles.buttonWrapper}>
+      <Button title="Enter New Food Log(s)" onPress={() => navigate('../food_log')}/>
+      </View>
+
+      <View style={styles.buttonWrapper}>
+      <Button title="View Previous Food Log(s)" onPress={() => navigate('../previous_logs')}/>
+      </View>
+
+      <View style={styles.buttonWrapper}>
       <Button title="Logout" onPress={onLogout}/>
       </View>
     </View>
@@ -33,6 +42,6 @@ const styles = StyleSheet.create({
     flex: 1
   }, 
   buttonWrapper: {
-    width: 100
+    width: 250
   }
 })

@@ -4,6 +4,7 @@ import { Stack, Link, useRouter } from 'expo-router'
 import { AuthProvider, useAuth } from './AuthContext'
 import { supabase } from '../lib/supabase'
 
+
 const _layout = ()=>{
   return (
       <AuthProvider>
@@ -13,7 +14,7 @@ const _layout = ()=>{
 }
 
 const helpButton = (colorScheme) => (
-  <Link href="/modal" asChild>
+  <Link href="/help_modal" asChild>
     <Pressable style={({ pressed }) => [{ marginRight: 150, opacity: pressed ? 0.5 : 1 }]}>
       <Text style={{ fontSize: 18, color: colorScheme === 'white' ? 'dark' : 'blue' }}>
         Help
@@ -45,8 +46,11 @@ const RootLayout = () => {
         <Stack.Screen name="welcome" options={{ headerShown: true, title: '', headerLeft: () => null, headerBackVisible: false, headerRight: () => helpButton(colorScheme)}} />
         <Stack.Screen name="login" options={{title: 'Login'}} />
         <Stack.Screen name="register" options={{title: 'Register'}} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Help' }} />
-        <Stack.Screen name="(tabs)" options={{headerShown: false}}/>
+        <Stack.Screen name="help_modal" options={{ presentation: 'modal', title: 'Help' }} />
+        <Stack.Screen name="(tabs)" options={{title: 'Home', headerShown: false}}/>
+        <Stack.Screen name="food_log" options={{title: 'Food Log'}} />
+        <Stack.Screen name="symptom_log" options={{title: 'Symptom Log'}} />
+        <Stack.Screen name="previous_logs" options={{title: 'Previous Logs'}} />
         <Stack.Screen name="index" options={{headerShown: false}}/>
       </Stack>
   )

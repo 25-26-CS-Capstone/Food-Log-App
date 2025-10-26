@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Platform, StyleSheet, Pressable, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';  // Import useRouter
 
-export default function modal() {
+export default function help_modal() {
   const router = useRouter();  // Get router instance
 
   return (
