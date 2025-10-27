@@ -211,7 +211,7 @@ void CPlayer::Roll() {
     }
 
     playerState = 1;
-    counter = 12;
+    counter = 8;
 }
 
 

@@ -24,9 +24,9 @@ class CPlayer: public CObject{
     float xspeed = 0.0;
     float yspeed = 0.0;
     float MAXSPEED = 2.25f;
-    float SPEEDINC = 0.4f;
-    float SPEEDDEC = 0.13f;
-    float ROLLSPEED = 8.0f;
+    float SPEEDINC = 0.5f;  //must be at least more than the 2x the decrement value
+    float SPEEDDEC = 0.2f; //must be at least less than half the increment value
+    float ROLLSPEED = 6.0f;
 
     int counter = 0;
     char recentInput = 'D';
