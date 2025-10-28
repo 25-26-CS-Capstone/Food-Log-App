@@ -10,6 +10,15 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { clearAllLogs } from '../utils/storage';
+import { 
+  scheduleMealReminders, 
+  sendDailyReminder, 
+  sendSymptomReminder,
+  cancelAllNotifications,
+  getScheduledNotifications,
+  sendCustomNotification,
+  sendAppOpenNotification
+} from '../utils/notifications';
 
 const Settings = () => {
   const router = useRouter();
@@ -70,6 +79,70 @@ const Settings = () => {
     );
   };
 
+  const handleNotificationToggle = async (value) => {
+    setNotifications(value);
+    if (value) {
+      // Enable notifications - schedule meal reminders
+      await scheduleMealReminders();
+      await sendCustomNotification(
+        '🔔 Notifications Enabled!', 
+        'You\'ll now receive meal and symptom reminders'
+      );
+    } else {
+      // Disable notifications - cancel all scheduled
+      await cancelAllNotifications();
+      Alert.alert('Notifications Disabled', 'All scheduled notifications have been cancelled');
+    }
+  };
+
+  const handleTestNotification = async () => {
+    await sendCustomNotification(
+      '🧪 Test Notification',
+      'This is a test notification from Food Log App!'
+    );
+    Alert.alert('Test Sent', 'Check your notifications!');
+  };
+
+  const handleWelcomeNotification = async () => {
+    await sendAppOpenNotification();
+    Alert.alert('Welcome Notification Sent', 'Check your notifications for the welcome message!');
+  };
+
+  const handleScheduleMealReminders = async () => {
+    try {
+      await scheduleMealReminders();
+      Alert.alert(
+        'Meal Reminders Scheduled',
+        'You\'ll receive reminders for breakfast (8:00 AM), lunch (12:30 PM), and dinner (6:00 PM)'
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to schedule meal reminders');
+    }
+  };
+
+  const handleSymptomReminder = async () => {
+    try {
+      await sendSymptomReminder();
+      Alert.alert('Symptom Reminder Sent', 'Check your notifications!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to send symptom reminder');
+    }
+  };
+
+  const handleViewScheduledNotifications = async () => {
+    try {
+      const scheduled = await getScheduledNotifications();
+      const count = scheduled.length;
+      Alert.alert(
+        'Scheduled Notifications',
+        `You have ${count} scheduled notification${count !== 1 ? 's' : ''}.\n\nCheck console for details.`
+      );
+      console.log('Scheduled notifications:', scheduled);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to get scheduled notifications');
+    }
+  };
+
   const handlePrivacyPolicy = () => {
     Alert.alert(
       'Privacy Policy',
@@ -127,7 +200,7 @@ const Settings = () => {
             rightComponent={
               <Switch
                 value={notifications}
-                onValueChange={setNotifications}
+                onValueChange={handleNotificationToggle}
                 trackColor={{ false: '#767577', true: '#007AFF' }}
                 thumbColor={notifications ? '#fff' : '#f4f3f4'}
               />
@@ -158,6 +231,34 @@ const Settings = () => {
                 thumbColor={dataSync ? '#fff' : '#f4f3f4'}
               />
             }
+          />
+        </SettingsSection>
+
+        <SettingsSection title="Notification Management">
+          <SettingsItem
+            title="Send Welcome Notification"
+            subtitle='Send "Welcome to the food app" message'
+            onPress={handleWelcomeNotification}
+          />
+          <SettingsItem
+            title="Test Notification"
+            subtitle="Send a test notification now"
+            onPress={handleTestNotification}
+          />
+          <SettingsItem
+            title="Schedule Meal Reminders"
+            subtitle="Set up daily meal time notifications"
+            onPress={handleScheduleMealReminders}
+          />
+          <SettingsItem
+            title="Send Symptom Reminder"
+            subtitle="Get reminded to log symptoms"
+            onPress={handleSymptomReminder}
+          />
+          <SettingsItem
+            title="View Scheduled Notifications"
+            subtitle="See all upcoming notifications"
+            onPress={handleViewScheduledNotifications}
           />
         </SettingsSection>
 

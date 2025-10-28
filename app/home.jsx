@@ -2,14 +2,24 @@ import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-nati
 import React, { useEffect } from 'react'
 import { useRouter } from 'expo-router'
 import { addSampleData, hasSampleData } from '../utils/sampleData'
+import { initNotifications, sendAppOpenNotification, sendCustomNotification } from '../utils/notifications'
 
 const home = () => {
   const router = useRouter()
 
-  // Add sample data on first load
+  // Add sample data on first load and initialize notifications
   useEffect(() => {
-    const initializeSampleData = async () => {
+    const initializeApp = async () => {
       try {
+        // Initialize notification system
+        console.log('Initializing notifications...')
+        await initNotifications()
+        
+        // Send app open notification
+        console.log('Sending app open notification...')
+        await sendAppOpenNotification()
+        
+        // Initialize sample data
         const hasData = await hasSampleData()
         if (!hasData) {
           console.log('No existing data found, adding sample data...')
@@ -18,11 +28,11 @@ const home = () => {
           console.log('Existing data found, skipping sample data.')
         }
       } catch (error) {
-        console.error('Error initializing sample data:', error)
+        console.error('Error initializing app:', error)
       }
     }
     
-    initializeSampleData()
+    initializeApp()
   }, [])
 
   const navigateToFoodLog = () => {
@@ -56,7 +66,14 @@ const home = () => {
   const addTestData = async () => {
     console.log('Adding test data...')
     await addSampleData()
-    console.log('Test data added!')
+    
+    // Also send a test notification
+    await sendCustomNotification(
+      '🧪 Test Data Added!',
+      'Sample food and symptom entries have been added to your app'
+    )
+    
+    console.log('Test data added and notification sent!')
   }
 
   return (
