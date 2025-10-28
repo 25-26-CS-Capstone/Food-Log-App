@@ -12,6 +12,7 @@ CPlayer::CPlayer(eSprite t, const Vector2& p): CObject(t, p){
   m_pFrameEvent = new LEventTimer(0.12f);
   width = 140.0f;
   height = 264.0f;
+  type = 'p';
 } //constructor
 
 /// Destructor.
@@ -24,7 +25,9 @@ CPlayer::~CPlayer(){
 /// the frame time.
 
 void CPlayer::onCollision(CObject* obj) {
-    changeHealth(-1.0f);
+    if (obj->type == 'e') {
+        changeHealth(-1.0f);
+    }
 }
 
 
