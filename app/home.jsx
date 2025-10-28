@@ -45,6 +45,14 @@ const home = () => {
     router.push('/calendar')
   }
 
+  const navigateToSymptomAnalysis = () => {
+    router.push('/symptomAnalysis')
+  }
+
+  const navigateToSettings = () => {
+    router.push('/settings')
+  }
+
   const addTestData = async () => {
     console.log('Adding test data...')
     await addSampleData()
@@ -53,8 +61,15 @@ const home = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Food Log App</Text>
-      <Text style={styles.subtitle}>Track your food and symptoms</Text>
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <Text style={styles.title}>Food Log App</Text>
+          <Text style={styles.subtitle}>Track your food and symptoms</Text>
+        </View>
+        <TouchableOpacity style={styles.settingsButton} onPress={navigateToSettings}>
+          <Text style={styles.settingsIcon}>⚙️</Text>
+        </TouchableOpacity>
+      </View>
       
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.primaryButton} onPress={navigateToFoodLog}>
@@ -82,6 +97,11 @@ const home = () => {
           <Text style={styles.buttonDescription}>View entries by date</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity style={styles.analysisButton} onPress={navigateToSymptomAnalysis}>
+          <Text style={styles.analysisButtonText}>🔬 Symptom Analysis</Text>
+          <Text style={styles.buttonDescription}>Find potential food allergies</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.testButton} onPress={addTestData}>
           <Text style={styles.testButtonText}>🧪 Add Test Data</Text>
           <Text style={styles.buttonDescription}>Add sample entries for testing</Text>
@@ -104,6 +124,22 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
     backgroundColor: '#f8f9fa',
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 20,
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  settingsButton: {
+    padding: 8,
+    marginTop: 5,
+  },
+  settingsIcon: {
+    fontSize: 24,
   },
   title: {
     fontSize: 32,
@@ -255,6 +291,26 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   calendarButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  analysisButton: {
+    backgroundColor: '#FF3B30',
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  analysisButtonText: {
     color: '#fff',
     fontSize: 20,
     fontWeight: '600',
