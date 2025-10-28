@@ -10,8 +10,8 @@
 
 CPlayer::CPlayer(eSprite t, const Vector2& p): CObject(t, p){ 
   m_pFrameEvent = new LEventTimer(0.12f);
-  width = 140.0f;
-  height = 264.0f;
+  width = 150.0f;
+  height = 132.0f;
   type = 'p';
 } //constructor
 
