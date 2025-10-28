@@ -31,6 +31,7 @@ class CPlayer: public CObject{
     int counter = 0;
     char recentInput = 'D';
     unsigned int lastSprite;
+    float maxHealth = 3.0;
 
   public:
     CPlayer(eSprite t, const Vector2& p); ///< Constructor.
@@ -48,7 +49,11 @@ class CPlayer: public CObject{
     void RunDown();
     void Roll();
 
+    //void Stop(); ///< Stop walking.
     void changeHealth(float);
+    float getCurrentHealth();
+    float getMaxHealth();
+    void onCollision(CObject*);
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

@@ -6,7 +6,6 @@
 #include "GameDefines.h"
 #include "SpriteRenderer.h"
 #include "ComponentIncludes.h"
-
 #include "shellapi.h"
 
 
@@ -27,7 +26,7 @@ void CGame::Initialize(){
 
   m_pObjectManager = new CObjectManager;
   LoadSounds(); //load the sounds for this game
-
+  
   BeginGame();
 } //Initialize
 
@@ -44,7 +43,9 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::Background, "background"); 
   m_pRenderer->Load(eSprite::TextWheel,  "textwheel"); 
   m_pRenderer->Load(eSprite::PIGSPRITE, "pig");
-
+  m_pRenderer->Load(eSprite::healthBar, "healthBar");
+  m_pRenderer->Load(eSprite::healthBarBackground, "healthBarBackground");
+  m_pRenderer->Load(eSprite::testEnemy, "testEnemy");
   m_pRenderer->Load(eSprite::InuitIdleLeftSheet, "InuitIdleLeftSheet");
   m_pRenderer->Load(eSprite::InuitIdleLeft, "InuitIdleLeft");
   m_pRenderer->Load(eSprite::InuitIdleRightSheet, "InuitIdleRightSheet");
@@ -90,6 +91,7 @@ void CGame::Release(){
 void CGame::BeginGame(){  
     m_pObjectManager->clear();  //clear old objects
     CreateObjects(); //creat new objects
+    mHud = new HUD(m_pRenderer, m_pPlayer);
 } //BeginGame
 
 
@@ -98,6 +100,8 @@ void CGame::CreateObjects() {
     const float h = m_pRenderer->GetHeight(eSprite::InuitIdleRight);
     m_pPlayer = (CPlayer*)m_pObjectManager->create(eSprite::InuitIdleRight,
         Vector2(100.0f, h / 2.0f));
+    m_pObjectManager->create(eSprite::testEnemy, Vector2(500.0f, 100.0f));
+    m_pObjectManager->create(eSprite::testEnemy, Vector2(800.0f, 100.0f));
 }
 
 /// Poll the keyboard state and respond to the key presses that happened since
@@ -143,11 +147,10 @@ void CGame::DrawFrameRateText(){
 
 void CGame::RenderFrame(){
   m_pRenderer->BeginFrame(); //required before rendering
-  
-  m_pRenderer->Draw(eSprite::Background, m_vWinCenter); //draw background
   m_pObjectManager->draw(); //draw objects
+  mHud->Render();
   if(m_bDrawFrameRate)DrawFrameRateText(); //draw frame rate, if required
-
+  m_pObjectManager->update();
   m_pRenderer->EndFrame(); //required after rendering
 } //RenderFrame
 

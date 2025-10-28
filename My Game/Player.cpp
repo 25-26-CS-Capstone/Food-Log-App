@@ -10,6 +10,9 @@
 
 CPlayer::CPlayer(eSprite t, const Vector2& p): CObject(t, p){ 
   m_pFrameEvent = new LEventTimer(0.12f);
+  width = 140.0f;
+  height = 264.0f;
+  type = 'p';
 } //constructor
 
 /// Destructor.
@@ -20,6 +23,13 @@ CPlayer::~CPlayer(){
 
 /// Move in response to device input. The amount of motion is proportional to
 /// the frame time.
+
+void CPlayer::onCollision(CObject* obj) {
+    if (obj->type == 'e') {
+        changeHealth(-1.0f);
+    }
+}
+
 
 void CPlayer::move(){
   //keyboard handler block
@@ -217,4 +227,28 @@ void CPlayer::Roll() {
 
 void CPlayer::changeHealth(float f) {
     currentHealth += f;
+}
+
+
+/*
+/// Change the sprite to a standing sprite, depending on which direction the
+/// player is walking.
+
+void CPlayer::Stop(){
+  if(m_nSpriteIndex == (UINT)eSprite::PlayerWalkRight)
+    m_nSpriteIndex = (UINT)eSprite::PlayerStandRight;
+  
+  else if(m_nSpriteIndex == (UINT)eSprite::PlayerWalkLeft)
+    m_nSpriteIndex = (UINT)eSprite::PlayerStandLeft;
+
+  m_nCurrentFrame = 0;
+} //Stop
+*/
+
+float CPlayer::getCurrentHealth() {
+    return currentHealth;
+}
+
+float CPlayer::getMaxHealth() {
+    return maxHealth;
 }

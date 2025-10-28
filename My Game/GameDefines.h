@@ -7,14 +7,17 @@
 #include "Defines.h"
 #include "Sound.h"
 
+
+const float screenWidth = 1024.0f;
+const float screenHeight = 768.0f;
 /// \brief Sprite enumerated type.
 ///
 /// An enumerated type for the sprites, which will be cast to an unsigned
 /// integer and used for the index of the corresponding texture in graphics
 /// memory. `Size` must be last.
 
-enum class eSprite: UINT{
-  Background, TextWheel,  PIGSPRITE, InuitIdleRightSheet,
+enum class eSprite : UINT {
+	Background, TextWheel, PIGSPRITE, healthBar, healthBarBackground, testEnemy, InuitIdleRightSheet,
   InuitIdleRight, InuitIdleLeftSheet, InuitIdleLeft, InuitRunRightSheet,
   InuitRunRight, InuitRunLeftSheet, InuitRunLeft,InuitRunUpSheet,
   InuitRunUp, InuitRunDownSheet, InuitRunDown,InuitIdleUpSheet,
