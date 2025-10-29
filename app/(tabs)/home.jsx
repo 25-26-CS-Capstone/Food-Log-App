@@ -1,47 +1,53 @@
-import { StyleSheet, Text, View, Button, Platform } from 'react-native'
-import React from 'react'
-import { supabase } from '../../lib/supabase'
-import { useAuth } from '../AuthContext'
-import { navigate } from 'expo-router/build/global-state/routing'
+import { StyleSheet, Text, View, Button, Platform, Alert } from 'react-native';
+import React from 'react';
+import { supabase } from '../../lib/supabase';
+import { useAuth } from '../AuthContext';
+import { navigate } from 'expo-router/build/global-state/routing';
 
 const home = () => {
-  const { setAuth } = useAuth()
+  const { setAuth } = useAuth();
 
-  const onLogout = async ()=>{
-    setAuth(null)
-    const {error} = await supabase.auth.signOut()
+  const onLogout = async () => {
+    setAuth(null);
+    const { error } = await supabase.auth.signOut();
     if (Platform.OS === 'web') {
-        if (error) window.alert('Error signing out')
+      if (error) window.alert('Error signing out');
+    } else if (error) {
+      Alert.alert('Error signing out');
     }
-    if (error) Alert.alert('Error signing out')
-  }
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.buttonWrapper}>
-      <Button title="Enter New Food Log(s)" onPress={() => navigate('../food_log')}/>
+        <Button title="Enter New Food Log(s)" onPress={() => navigate('../food_log')} />
       </View>
 
       <View style={styles.buttonWrapper}>
-      <Button title="View Previous Food Log(s)" onPress={() => navigate('../previous_logs')}/>
+        <Button title="View Previous Food Log(s)" onPress={() => navigate('../previous_logs')} />
       </View>
 
       <View style={styles.buttonWrapper}>
-      <Button title="Logout" onPress={onLogout}/>
+        <Button title="View Food Calendar" onPress={() => navigate('../calendar')} />
+      </View>
+
+      <View style={styles.buttonWrapper}>
+        <Button title="Logout" onPress={onLogout} />
       </View>
     </View>
-  )
-}
+  );
+};
 
-export default home
+export default home;
 
 const styles = StyleSheet.create({
   container: {
     justifyContent: 'center',
     alignItems: 'center',
-    flex: 1
-  }, 
+    flex: 1,
+  },
   buttonWrapper: {
-    width: 250
-  }
-})
+    width: 250,
+    marginVertical: 6,
+  },
+});
