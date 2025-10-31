@@ -19,7 +19,7 @@ class CPlayer: public CObject{
     void UpdateFramenumber(); ///< Update frame number.
     
     int playerState = 0;    //states: 0 = normal, 1 = roll, 
-
+    bool isAttacking = false;
     float currentHealth = 3.0;
     float xspeed = 0.0;
     float yspeed = 0.0;
@@ -55,6 +55,8 @@ class CPlayer: public CObject{
     float getMaxHealth();
     int getDirection();
     void onCollision(CObject*);
+    void changeAttackState(bool);
+    bool getAttackState();
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

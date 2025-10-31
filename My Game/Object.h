@@ -34,6 +34,7 @@ public:
     float height;
     char type;
     virtual void onCollision(CObject*);
+    virtual void update(float);
     void move(); ///< Move object.
     void draw(); ///< Draw object.
 }; //CObject

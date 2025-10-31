@@ -16,6 +16,7 @@ public:
 	virtual ~Attack();
 	void onCollision(CObject*);
 	void move();
+	void update(float);
 };
 
 

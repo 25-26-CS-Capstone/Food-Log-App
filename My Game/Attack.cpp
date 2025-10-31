@@ -19,3 +19,10 @@ void Attack::move() {
 
 
 }
+
+void Attack::update(float deltaTime) {
+	mLifetime -= deltaTime;
+	if (mLifetime <= 0.0f) {
+		m_bDead = true;
+	}
+}

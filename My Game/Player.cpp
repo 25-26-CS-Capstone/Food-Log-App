@@ -264,3 +264,11 @@ float CPlayer::getMaxHealth() {
 int CPlayer::getDirection() {
     return direction;
 }
+
+void CPlayer::changeAttackState(bool t) {
+    isAttacking = t;
+}
+
+bool CPlayer::getAttackState() {
+    return isAttacking;
+}

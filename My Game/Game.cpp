@@ -112,9 +112,24 @@ void CGame::KeyboardHandler() {
     m_pKeyboard->GetState(); //get current keyboard state 
 
     if (m_pKeyboard->TriggerDown('L')) {
-        if (m_pPlayer->getDirection() == 1) {
-            m_pObjectManager->create(eSprite::playerAttack, Vector2(100.0f, 100.0f));
+        m_pPlayer->changeAttackState(true);
+        switch (m_pPlayer->getDirection()) {
+        case 0:
+            m_pObjectManager->create(eSprite::playerAttack, m_pPlayer->m_vPos + Vector2(0.0f, 100.0f));
+            break;
+        case 1:
+            m_pObjectManager->create(eSprite::playerAttack, m_pPlayer->m_vPos + Vector2(100.0f, 0.0f));
+            break;
+        case 2:
+            m_pObjectManager->create(eSprite::playerAttack, m_pPlayer->m_vPos + Vector2(0.0f, -100.0f));
+            break;
+        case 3:
+            m_pObjectManager->create(eSprite::playerAttack, m_pPlayer->m_vPos + Vector2(-100.0f, 0.0f));
+            break;
+        default:
+            break;
         }
+        
     }
 
 
@@ -156,7 +171,8 @@ void CGame::RenderFrame(){
   m_pObjectManager->draw(); //draw objects
   mHud->Render();
   if(m_bDrawFrameRate)DrawFrameRateText(); //draw frame rate, if required
-  m_pObjectManager->update();
+  float deltaTime = m_pTimer->GetFrameTime();
+  m_pObjectManager->update(deltaTime);
   m_pRenderer->EndFrame(); //required after rendering
 } //RenderFrame
 
