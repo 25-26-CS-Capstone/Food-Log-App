@@ -46,6 +46,7 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::healthBar, "healthBar");
   m_pRenderer->Load(eSprite::healthBarBackground, "healthBarBackground");
   m_pRenderer->Load(eSprite::testEnemy, "testEnemy");
+  m_pRenderer->Load(eSprite::playerAttack, "playerAttack");
   m_pRenderer->Load(eSprite::InuitIdleLeftSheet, "InuitIdleLeftSheet");
   m_pRenderer->Load(eSprite::InuitIdleLeft, "InuitIdleLeft");
   m_pRenderer->Load(eSprite::InuitIdleRightSheet, "InuitIdleRightSheet");
@@ -90,7 +91,7 @@ void CGame::Release(){
 
 void CGame::BeginGame(){  
     m_pObjectManager->clear();  //clear old objects
-    CreateObjects(); //creat new objects
+    CreateObjects(); //create new objects
     mHud = new HUD(m_pRenderer, m_pPlayer);
 } //BeginGame
 
@@ -110,6 +111,11 @@ void CGame::CreateObjects() {
 void CGame::KeyboardHandler() {
     m_pKeyboard->GetState(); //get current keyboard state 
 
+    if (m_pKeyboard->TriggerDown('L')) {
+        if (m_pPlayer->getDirection() == 1) {
+            m_pObjectManager->create(eSprite::playerAttack, Vector2(100.0f, 100.0f));
+        }
+    }
 
 
     if (m_pKeyboard->TriggerDown('O'))

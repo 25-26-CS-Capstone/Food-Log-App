@@ -27,7 +27,7 @@ class CPlayer: public CObject{
     float SPEEDINC = 0.5f;  //must be at least more than the 2x the decrement value
     float SPEEDDEC = 0.2f; //must be at least less than half the increment value
     float ROLLSPEED = 6.0f;
-
+    int direction = 0;
     int counter = 0;
     char recentInput = 'D';
     unsigned int lastSprite;
@@ -53,6 +53,7 @@ class CPlayer: public CObject{
     void changeHealth(float);
     float getCurrentHealth();
     float getMaxHealth();
+    int getDirection();
     void onCollision(CObject*);
 }; //CPlayer
 

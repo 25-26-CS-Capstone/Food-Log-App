@@ -11,6 +11,7 @@
 #include  "Player.h"
 #include "Windows.h"
 #include "HUD.h"
+#include "Attack.h"
 
 /// \brief The game class.
 ///

@@ -5,6 +5,7 @@
 #include "ComponentIncludes.h"
 #include "Player.h"
 #include "Enemy.h"
+#include "Attack.h"
 
 /// Create an object and put a pointer to it at the back of the object list
 /// `m_stdObjectList`, which it inherits from `LBaseObjectManager`.
@@ -52,6 +53,9 @@ CObject* CObjectManager::create(eSprite t, const Vector2& pos) {
         break;
     case eSprite::testEnemy:
         pObj = new CEnemy(eSprite::testEnemy, pos);
+        break;
+    case eSprite::playerAttack:
+        pObj = new Attack(eSprite::playerAttack, pos);
         break;
     default: pObj = new CObject(t, pos);
     } //switch

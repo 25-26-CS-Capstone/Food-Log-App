@@ -56,21 +56,29 @@ void CPlayer::move(){
         if (m_pKeyboard->Down('A')) {
             OutputDebugString("A\n");
             recentInput = 'A';
+            direction = 3;
+            OutputDebugString("3");
             m_pPlayer->RunLeft();
         }
         if (m_pKeyboard->Down('D')) {
             OutputDebugString("D\n");
             recentInput = 'D';
+            direction = 1;
+            OutputDebugString("1");
             m_pPlayer->RunRight();
         }
         if (m_pKeyboard->Down('W')) {
             OutputDebugString("W\n");
             recentInput = 'W';
+            direction = 0;
+            OutputDebugString("0");
             m_pPlayer->RunUp();
         }
         if (m_pKeyboard->Down('S')) {
             OutputDebugString("S\n");
             recentInput = 'S';
+            direction = 2;
+            OutputDebugString("2");
             m_pPlayer->RunDown();
         }
 
@@ -251,4 +259,8 @@ float CPlayer::getCurrentHealth() {
 
 float CPlayer::getMaxHealth() {
     return maxHealth;
+}
+
+int CPlayer::getDirection() {
+    return direction;
 }
