@@ -65,6 +65,8 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::InuitRunDown, "InuitRunDown");
   m_pRenderer->Load(eSprite::InuitRollSheet, "InuitRollSheet");
   m_pRenderer->Load(eSprite::InuitRoll, "InuitRoll");
+  m_pRenderer->Load(eSprite::TileSheet, "TileSheet");
+  m_pRenderer->Load(eSprite::Tiles, "Tiles");
 
   m_pRenderer->EndResourceUpload();
 } //LoadImages
@@ -91,6 +93,8 @@ void CGame::Release(){
 
 void CGame::BeginGame(){  
     m_pObjectManager->clear();  //clear old objects
+    m_pRoom = new CRoom(64, m_pRenderer);
+	m_pRoom->LoadMap("Media\\Maps\\Default.txt");
     CreateObjects(); //create new objects
     mHud = new HUD(m_pRenderer, m_pPlayer);
 } //BeginGame
@@ -168,6 +172,7 @@ void CGame::DrawFrameRateText(){
 
 void CGame::RenderFrame(){
   m_pRenderer->BeginFrame(); //required before rendering
+  m_pRoom->Draw(eSprite::Tiles); //draw the room tiles
   m_pObjectManager->draw(); //draw objects
   mHud->Render();
   if(m_bDrawFrameRate)DrawFrameRateText(); //draw frame rate, if required

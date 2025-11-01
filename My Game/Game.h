@@ -12,6 +12,7 @@
 #include "Windows.h"
 #include "HUD.h"
 #include "Attack.h"
+#include "Room.h"
 
 /// \brief The game class.
 ///
@@ -39,6 +40,8 @@ class CGame:
     void KeyboardHandler(); ///< The keyboard handler.
     void RenderFrame(); ///< Render an animation frame.
     void DrawFrameRateText(); ///< Draw frame rate text to screen.
+
+	CRoom* m_pRoom; ///< The room.
 
   public:
     ~CGame(); ///< Destructor.
