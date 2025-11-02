@@ -10,6 +10,11 @@
 
 CPlayer::CPlayer(eSprite t, const Vector2& p): CObject(t, p){ 
   m_pFrameEvent = new LEventTimer(0.12f);
+  currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitIdleRight;
+  m_nCurrentFrame = 0;
+  width = 150.0f;
+  height = 132.0f;
+  type = 'p';
 } //constructor
 
 /// Destructor.
@@ -20,6 +25,18 @@ CPlayer::~CPlayer(){
 
 /// Move in response to device input. The amount of motion is proportional to
 /// the frame time.
+
+void CPlayer::onCollision(CObject* obj) {
+    if (obj->type == 'e') {
+        if (playerState == 0) {
+            changeHealth(-1.0f);
+            playerState = 2;//damaged state
+            counter = 6;//number of frames
+            currentSprite.m_f4Tint = XMFLOAT4(1.0f, 0.2f, 0.2f, 1.0f);//tint the player red
+        }
+    }
+}
+
 
 void CPlayer::move(){
   //keyboard handler block
@@ -111,10 +128,27 @@ void CPlayer::move(){
             counter -= 1;
         }
         else {
-            m_nSpriteIndex = lastSprite;
+            currentSprite.m_nSpriteIndex = lastSprite;
             playerState = 0;
         }
     } //player state 1 - 'roll'
+    else if (playerState == 2) {//if player takes damage, tint red and apply knockback
+
+        //knockback
+        /////////[IMPLEMENT KNOCKBACK]///////////
+        //the following is temporary inverted movement
+        const float delta = 200.0f * m_pTimer->GetFrameTime(); //change in position
+        m_vPos += delta * Vector2::UnitX * -xspeed;    //change x position
+        m_vPos += delta * Vector2::UnitY * -yspeed;    //chang y position
+
+        if (counter > 0) {
+            counter -= 1;
+        }
+        else {
+            playerState = 0;
+            currentSprite.m_f4Tint = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+    }//playre state 2 - 'damaged'
 
   UpdateFramenumber(); //choose current frame
 } //move
@@ -122,7 +156,7 @@ void CPlayer::move(){
 /// Update the frame number in the animation sequence.
 
 void CPlayer::UpdateFramenumber(){
-  const UINT n = (UINT)m_pRenderer->GetNumFrames(m_nSpriteIndex); //number of frames
+  const UINT n = (UINT)m_pRenderer->GetNumFrames(currentSprite.m_nSpriteIndex); //number of frames
 
   if(n > 1 && m_pFrameEvent && m_pFrameEvent->Triggered())
     m_nCurrentFrame = (m_nCurrentFrame + 1)%n; 
@@ -131,62 +165,62 @@ void CPlayer::UpdateFramenumber(){
 
 // run left, change sprite and update speed
 void CPlayer::RunLeft(){
-  if(m_nSpriteIndex != (UINT)eSprite::InuitRunLeft)
-    m_nSpriteIndex = (UINT)eSprite::InuitRunLeft;
+  if(currentSprite.m_nSpriteIndex != (UINT)eSprite::InuitRunLeft)
+    currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitRunLeft;
   xspeed -= SPEEDINC;
 } //RunLeft
 // run right, change sprite and update speed
 void CPlayer::RunRight(){
-  if(m_nSpriteIndex != (UINT)eSprite::InuitRunRight)
-    m_nSpriteIndex = (UINT)eSprite::InuitRunRight;
+  if(currentSprite.m_nSpriteIndex != (UINT)eSprite::InuitRunRight)
+    currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitRunRight;
   xspeed += SPEEDINC;
 } //RunRight
 //   run up, change sprite and update speed
 void CPlayer::RunUp() {
-    if (m_nSpriteIndex != (UINT)eSprite::InuitRunUp)
-        m_nSpriteIndex = (UINT)eSprite::InuitRunUp;
+    if (currentSprite.m_nSpriteIndex != (UINT)eSprite::InuitRunUp)
+        currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitRunUp;
     yspeed += SPEEDINC;
 } //RunRight
 // run down, change sprite and update speed
 void CPlayer::RunDown() {
-    if (m_nSpriteIndex != (UINT)eSprite::InuitRunDown)
-        m_nSpriteIndex = (UINT)eSprite::InuitRunDown;
+    if (currentSprite.m_nSpriteIndex != (UINT)eSprite::InuitRunDown)
+        currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitRunDown;
     yspeed -= SPEEDINC;
 } //RunDown
 
 void CPlayer::IdleLeft() {
-    if (m_nSpriteIndex != (UINT)eSprite::InuitIdleLeft)
-        m_nSpriteIndex = (UINT)eSprite::InuitIdleLeft;
+    if (currentSprite.m_nSpriteIndex != (UINT)eSprite::InuitIdleLeft)
+        currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitIdleLeft;
 
     m_nCurrentFrame = 0;
 } //IdleLeft
 
 void CPlayer::IdleRight() {
-    if (m_nSpriteIndex != (UINT)eSprite::InuitIdleRight)
-        m_nSpriteIndex = (UINT)eSprite::InuitIdleRight;
+    if (currentSprite.m_nSpriteIndex != (UINT)eSprite::InuitIdleRight)
+        currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitIdleRight;
 
     m_nCurrentFrame = 0;
 } //IdleRight
 
 void CPlayer::IdleUp() {
-    if (m_nSpriteIndex != (UINT)eSprite::InuitIdleUp)
-        m_nSpriteIndex = (UINT)eSprite::InuitIdleUp;
+    if (currentSprite.m_nSpriteIndex != (UINT)eSprite::InuitIdleUp)
+        currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitIdleUp;
 
     m_nCurrentFrame = 0;
 } //IdleUp
 
 void CPlayer::IdleDown() {
-    if (m_nSpriteIndex != (UINT)eSprite::InuitIdleDown)
-        m_nSpriteIndex = (UINT)eSprite::InuitIdleDown;
+    if (currentSprite.m_nSpriteIndex != (UINT)eSprite::InuitIdleDown)
+        currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitIdleDown;
 
     m_nCurrentFrame = 0;
 } //IdleDown
 
 //roll -  sets sprite, movement direction/speed, and changes state to roll
 void CPlayer::Roll() {
-    lastSprite = m_nSpriteIndex;
-    if (m_nSpriteIndex != (UINT)eSprite::InuitRoll)
-        m_nSpriteIndex = (UINT)eSprite::InuitRoll;
+    lastSprite = currentSprite.m_nSpriteIndex;
+    if (currentSprite.m_nSpriteIndex != (UINT)eSprite::InuitRoll)
+        currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitRoll;
 
     switch (recentInput) {
     case 'W':
@@ -217,4 +251,18 @@ void CPlayer::Roll() {
 
 void CPlayer::changeHealth(float f) {
     currentHealth += f;
+}
+
+float CPlayer::getCurrentHealth() {
+    return currentHealth;
+}
+
+float CPlayer::getMaxHealth() {
+    return maxHealth;
+}
+
+void CPlayer::draw() {
+    currentSprite.m_vPos = m_vPos;
+    currentSprite.m_nCurrentFrame = m_nCurrentFrame;
+    m_pRenderer->Draw(&currentSprite);
 }

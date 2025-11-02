@@ -13,7 +13,9 @@
     <sprite name="background" file="StoneLevel.png"/>
     <sprite name="textwheel" file="textwheel.png"/>
     <sprite name="pig" file="pig.png"/>
-	
+    <sprite name="healthBar" file="HealthBar.png"/>
+    <sprite name="healthBarBackground" file="HealthBarBackground.png"/>
+    <sprite name="testEnemy" file="TestEnemy.png"/>
 	<sprite name="InuitIdleLeftSheet" file="InuitIdleLeft.png"/>
 	<sprite name="InuitIdleLeft" sheet="InuitIdleLeftSheet" frames="20">
 		<frame index="0" left="0"	top="0" right="70"	bottom="132"/>>

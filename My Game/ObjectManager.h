@@ -16,6 +16,7 @@ class CObjectManager :
     public LBaseObjectManager<CObject>,
     public CCommon {
 public:
+    void update();
     CObject* create(eSprite, const Vector2&); ///< Create new object.
 }; //CObjectManager
 

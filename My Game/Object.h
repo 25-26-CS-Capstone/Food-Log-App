@@ -11,6 +11,7 @@
 #include "SpriteDesc.h"
 #include "BaseObject.h"
 
+
 /// \brief The game object. 
 ///
 /// The abstract representation of an object. `CObjectManager` is a friend of
@@ -29,9 +30,12 @@ public:
     ~CObject();// destructor
 
     CObject(eSprite, const Vector2&); ///< Constructor.
-
-    void move(); ///< Move object.
-    void draw(); ///< Draw object.
+    float width;
+    float height;
+    char type;
+    virtual void onCollision(CObject*);
+    virtual void move(); ///< Move object.
+    virtual void draw(); ///< Draw object.
 }; //CObject
 
 #endif //__L4RC_GAME_OBJECT_H__
