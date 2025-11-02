@@ -36,11 +36,14 @@ public:
 
     void LoadMap(char* filename); ///< Load a map.
     void Draw(eSprite t); ///< Draw the map with a given Tile.
-    void DrawBoundingBoxes(eSprite t); ///< Draw the bounding boxes.
+    char GetTileAt(const Vector2& position) const;
 
-    bool Visible(const Vector2& v0, const Vector2& v1, float radius); ///< Check visibility.
+
+    //void DrawBoundingBoxes(eSprite t); ///< Draw the bounding boxes.
+
+    //bool Visible(const Vector2& v0, const Vector2& v1, float radius); ///< Check visibility.
 
     //template<class t> bool CollideWithWall(const t& s); ///< Check object collision with a wall.
 
-    void LoadMapFromImageFile(char* filename); ///< Load map.
+    //void LoadMapFromImageFile(char* filename); ///< Load map.
 }; //CRoom

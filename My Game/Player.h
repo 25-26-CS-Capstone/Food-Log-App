@@ -6,6 +6,7 @@
 
 #include "Object.h"
 #include "EventTimer.h"
+#include "Room.h"
 
 /// \brief The player object. 
 ///
@@ -33,6 +34,11 @@ class CPlayer: public CObject{
     unsigned int lastSprite;
     float maxHealth = 3.0;
 
+
+	//Room Stuff
+    CRoom* m_pRoom = nullptr;
+	char currentTileType = ' ';
+
   public:
     CPlayer(eSprite t, const Vector2& p); ///< Constructor.
     virtual ~CPlayer(); ///< Destructor.
@@ -57,6 +63,11 @@ class CPlayer: public CObject{
     void onCollision(CObject*);
     void changeAttackState(bool);
     bool getAttackState();
+
+    //Room Stuff
+    void SetRoom(CRoom* room);
+    char GetCurrentTileType();
+    void UpdateBasedOnTile();
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

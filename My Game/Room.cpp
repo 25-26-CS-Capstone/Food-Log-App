@@ -100,11 +100,21 @@ void CRoom::LoadMap(char* filename) {
 
     delete[] buffer; //clean up
 
-    OutputDebugStringA(("Width: " + std::to_string(m_nWidth) +
-        " Height: " + std::to_string(m_nHeight) + "\n").c_str());
 
 
 } //LoadMap
+
+char CRoom::GetTileAt(const Vector2& position) const {
+    int col = static_cast<int>(position.x / m_fTileSize);
+    int row = m_nHeight - 1 - static_cast<int>(position.y / m_fTileSize); // y-flip if needed
+
+    if (row >= 0 && row < m_nHeight && col >= 0 && col < m_nWidth) {
+        //OutputDebugStringA("m_chMap[row][col];");
+        return m_chMap[row][col];
+    }
+    else
+        return '\0'; // out of bounds
+}
 
 void CRoom::Draw(eSprite t) {
     if (!m_chMap || m_nWidth <= 0 || m_nHeight <= 0 || !m_pRenderer)
@@ -159,6 +169,8 @@ void CRoom::Draw(eSprite t) {
             switch (tile) { //select which frame of the tile sprite is to be drawn
             case 'F': desc.m_nCurrentFrame = 3; break; //floor
             case 'W': desc.m_nCurrentFrame = 0; break; //wall
+			case 'I': desc.m_nCurrentFrame = 4; break; //ice
+            case 'H': desc.m_nCurrentFrame = 5; break; //hazard
             default:  continue; //skip empty/unknown
             } //switch
 

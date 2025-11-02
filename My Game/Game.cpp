@@ -94,7 +94,7 @@ void CGame::Release(){
 void CGame::BeginGame(){  
     m_pObjectManager->clear();  //clear old objects
     m_pRoom = new CRoom(64, m_pRenderer);
-	m_pRoom->LoadMap("Media\\Maps\\Default.txt");
+	m_pRoom->LoadMap("Media\\Maps\\Room1.txt");
     CreateObjects(); //create new objects
     mHud = new HUD(m_pRenderer, m_pPlayer);
 } //BeginGame
@@ -105,6 +105,7 @@ void CGame::CreateObjects() {
     const float h = m_pRenderer->GetHeight(eSprite::InuitIdleRight);
     m_pPlayer = (CPlayer*)m_pObjectManager->create(eSprite::InuitIdleRight,
         Vector2(100.0f, h / 2.0f));
+    m_pPlayer->SetRoom(m_pRoom);
     m_pObjectManager->create(eSprite::testEnemy, Vector2(500.0f, 100.0f));
     m_pObjectManager->create(eSprite::testEnemy, Vector2(800.0f, 100.0f));
 }
