@@ -7,6 +7,7 @@
 #include "Object.h"
 #include "EventTimer.h"
 #include "Common.h"
+
 /// \brief The player object. 
 ///
 /// The abstract representation of the player object. The player differs from
@@ -18,9 +19,8 @@ class CPlayer: public CObject{
     LSpriteDesc2D currentSprite;
 
     void UpdateFramenumber(); ///< Update frame number.
-
+    
     int playerState = 0;    //states: 0 = normal, 1 = roll, 2 = damaged
-
     bool isAttacking = false;
     float currentHealth = 3.0;
     float xspeed = 0.0;
@@ -51,16 +51,14 @@ class CPlayer: public CObject{
     void RunDown();
     void Roll();
 
-    //void Stop(); ///< Stop walking.
     void changeHealth(float);
     float getCurrentHealth();
     float getMaxHealth();
-
-    void onCollision(CObject*);
-    void draw();    //draw player each frame
     int getDirection();
+    void onCollision(CObject*);
     void changeAttackState(bool);
     bool getAttackState();
+    void draw(); //draw player each frame
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

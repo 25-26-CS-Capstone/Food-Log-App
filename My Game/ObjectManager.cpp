@@ -7,7 +7,6 @@
 #include "Enemy.h"
 #include "Attack.h"
 
-
 /// Create an object and put a pointer to it at the back of the object list
 /// `m_stdObjectList`, which it inherits from `LBaseObjectManager`.
 /// \param t Sprite type.
@@ -66,7 +65,6 @@ CObject* CObjectManager::create(eSprite t, const Vector2& pos) {
     return pObj; //return pointer to created object
 } //create
 
-
 void CObjectManager::update(float deltaTime) {
     for (auto itA = m_stdObjectList.begin(); itA != m_stdObjectList.end(); ++itA) {
         auto itB = itA;
@@ -88,7 +86,6 @@ void CObjectManager::update(float deltaTime) {
             float ay = tempA.y;
             float aw = a->width;
             float ah = a->height;
-
             float bx = tempB.x;
             float by = tempB.y;
             float bw = b->width;

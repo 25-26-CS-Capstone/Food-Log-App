@@ -10,10 +10,8 @@
 
 CPlayer::CPlayer(eSprite t, const Vector2& p): CObject(t, p){ 
   m_pFrameEvent = new LEventTimer(0.12f);
-
   currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitIdleRight;
   m_nCurrentFrame = 0;
-
   width = 150.0f;
   height = 132.0f;
   type = 'p';
@@ -96,6 +94,7 @@ void CPlayer::move(){
             OutputDebugString("J\n");
             m_pPlayer->Roll();
         }
+
         //keyboard handler block
         if (playerState == 0) {
             //max speed check
@@ -176,13 +175,13 @@ void CPlayer::UpdateFramenumber(){
 // run left, change sprite and update speed
 void CPlayer::RunLeft(){
   if(currentSprite.m_nSpriteIndex != (UINT)eSprite::InuitRunLeft)
-    currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitRunLeft;
+      currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitRunLeft;
   xspeed -= SPEEDINC;
 } //RunLeft
 // run right, change sprite and update speed
 void CPlayer::RunRight(){
   if(currentSprite.m_nSpriteIndex != (UINT)eSprite::InuitRunRight)
-    currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitRunRight;
+      currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitRunRight;
   xspeed += SPEEDINC;
 } //RunRight
 //   run up, change sprite and update speed
@@ -263,18 +262,13 @@ void CPlayer::changeHealth(float f) {
     currentHealth += f;
 }
 
+
 float CPlayer::getCurrentHealth() {
     return currentHealth;
 }
 
 float CPlayer::getMaxHealth() {
     return maxHealth;
-}
-
-void CPlayer::draw() {
-    currentSprite.m_vPos = m_vPos;
-    currentSprite.m_nCurrentFrame = m_nCurrentFrame;
-    m_pRenderer->Draw(&currentSprite);
 }
 
 int CPlayer::getDirection() {
@@ -287,4 +281,10 @@ void CPlayer::changeAttackState(bool t) {
 
 bool CPlayer::getAttackState() {
     return isAttacking;
+}
+
+void CPlayer::draw() {
+    currentSprite.m_vPos = m_vPos;
+    currentSprite.m_nCurrentFrame = m_nCurrentFrame;
+    m_pRenderer->Draw(&currentSprite);
 }

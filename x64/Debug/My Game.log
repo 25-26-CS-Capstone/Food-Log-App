@@ -1,0 +1,9 @@
+﻿  Game.cpp
+  HUD.cpp
+C:\Users\shive\OneDrive\Documents\GitHub\Frozen Pursuit Nov III\My Game\HUD.cpp(16,38): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+  Main.cpp
+  Object.cpp
+  ObjectManager.cpp
+  Player.cpp
+  Generating Code...
+  My Game.vcxproj -> C:\Users\shive\OneDrive\Documents\GitHub\Frozen Pursuit Nov III\x64\Debug\Game.exe

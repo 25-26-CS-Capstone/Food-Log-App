@@ -46,7 +46,6 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::healthBar, "healthBar");
   m_pRenderer->Load(eSprite::healthBarBackground, "healthBarBackground");
   m_pRenderer->Load(eSprite::testEnemy, "testEnemy");
-
   m_pRenderer->Load(eSprite::playerAttack, "playerAttack");
   m_pRenderer->Load(eSprite::InuitIdleLeftSheet, "InuitIdleLeftSheet");
   m_pRenderer->Load(eSprite::InuitIdleLeft, "InuitIdleLeft");
@@ -92,7 +91,6 @@ void CGame::Release(){
 
 void CGame::BeginGame(){  
     m_pObjectManager->clear();  //clear old objects
-
     CreateObjects(); //create new objects
     mHud = new HUD(m_pRenderer, m_pPlayer);
 } //BeginGame
@@ -131,9 +129,8 @@ void CGame::KeyboardHandler() {
         default:
             break;
         }
-        
-    }
 
+    }
 
     if (m_pKeyboard->TriggerDown('O'))
         m_pPlayer->changeHealth(-1.0);
@@ -170,8 +167,8 @@ void CGame::DrawFrameRateText(){
 
 void CGame::RenderFrame(){
   m_pRenderer->BeginFrame(); //required before rendering
-  m_pObjectManager->draw(); //draw objects
   m_pRenderer->Draw(eSprite::Background, m_vWinCenter); //draw start level background [current: stone level]
+  m_pObjectManager->draw(); //draw objects
   mHud->Render();
   if(m_bDrawFrameRate)DrawFrameRateText(); //draw frame rate, if required
   float deltaTime = m_pTimer->GetFrameTime();
