@@ -22,7 +22,7 @@ enum class eSprite : UINT {
   InuitRunRight, InuitRunLeftSheet, InuitRunLeft,InuitRunUpSheet,
   InuitRunUp, InuitRunDownSheet, InuitRunDown,InuitIdleUpSheet,
   InuitIdleUp, InuitIdleDownSheet, InuitIdleDown,InuitRollSheet,
-  InuitRoll, TileSheet, Tiles,
+  InuitRoll, TileSheet, Tiles, MapSheet, MapRoom, Connection,
   Size  //MUST BE LAST
 }; //eSprite
 

@@ -4,6 +4,8 @@
 #include "Player.h"
 #include "ComponentIncludes.h"
 
+#include "Room.h"
+
 /// Create and initialize an player object given its initial position.
 /// \param t Sprite type.
 /// \param p Initial position of player.
@@ -276,6 +278,7 @@ bool CPlayer::getAttackState() {
     return isAttacking;
 }
 
+//Room Stuff
 void CPlayer::SetRoom(CRoom* room) {
 	m_pRoom = room;
 }
@@ -286,12 +289,12 @@ void CPlayer::UpdateBasedOnTile() {
 	char newTileType = GetCurrentTileType();
 
 
-    char buffer[64];
+    /*char buffer[64];
     snprintf(buffer, sizeof(buffer),
         "Player on tile '%c' at (%.1f, %.1f)\n",
         newTileType, m_vPos.x, m_vPos.y);
     OutputDebugString(buffer);
-
+    */
 
     if (currentTileType != newTileType) {
         switch (newTileType) {
@@ -305,3 +308,9 @@ void CPlayer::UpdateBasedOnTile() {
 
     currentTileType = newTileType;
 }//UpdateBasedOnTile
+Node* CPlayer::GetCurrentNode() {
+	return currentNode;
+}
+void CPlayer::SetCurrentNode(Node* node) {
+	currentNode = node;
+}

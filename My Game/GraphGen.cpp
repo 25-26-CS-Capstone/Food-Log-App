@@ -1,6 +1,12 @@
+/// \file GraphGen.h
+/// \brief Interface for the graph generator.
 
 #include "GraphGen.h"
 #include <ctime>
+
+#include <unordered_map>
+#include <queue>
+#include "ComponentIncludes.h"
 
 using namespace std;
 
@@ -11,7 +17,7 @@ extern int LOOP_NUM = 0;
 extern int LOOP_MAX_LEN = 0;
 extern int ROOM_TYPES = 6;
 
-
+extern int idsNum = 0;
 
 Node::Node(int id, int type) : id(id), type(type) {}
 /*void Node::addEdge(Node* to){
@@ -23,6 +29,9 @@ int Node::getNumEdges(){
 }
 int Node::getId(){
     return id;
+}
+int Node::getType(){
+    return type;
 }
 
 
@@ -63,7 +72,7 @@ void Graph::graphGen(Node* first, int length, int branchNum, int loopNum, bool b
     int branchesChecked = 0;
     //nodes.push_back(first);
     for(int i = 1; i < length; ++i){
-        current = this->addVertex(++idCounter, (int)rand()%10);
+        current = this->addVertex(++idCounter, (int)rand()% ROOM_TYPES);
         this->addEdge(prev, current);
         prev = current;
     }
@@ -115,6 +124,11 @@ void Graph::graphGen(Node* first, int length, int branchNum, int loopNum, bool b
     }
 
 void Graph::newGraph(){
+    for (Node* n : nodes) {
+        delete n;
+    }
+    nodes.clear();
+
     idsNum = 0;
     addVertex(idsNum++, 0);
     graphGen(nodes.at(0), MAP_LEN, BRANCH_NUM, LOOP_NUM, false, false, idsNum);
@@ -152,6 +166,111 @@ bool Graph::hasDirection(Node* node, int dir) {
         if (node->adj.at(i).direction == dir) return true;
     }
     return false;
+}
+
+
+void Graph::assignScreenPositions(const Vector2& origin, float spacing)
+{
+    std::unordered_map<Node*, bool> visited;
+    std::unordered_map<std::string, bool> occupied;
+
+    // Helper to encode Vector2 positions as strings
+    auto posKey = [](const Vector2& v) {
+        return std::to_string(static_cast<int>(v.x)) + "," + std::to_string(static_cast<int>(v.y));
+        };
+
+    std::queue<Node*> q;
+
+    // Start with the first node at the origin
+    nodes[0]->position = origin;
+    visited[nodes[0]] = true;
+    occupied[posKey(origin)] = true;
+    q.push(nodes[0]);
+
+    while (!q.empty()) {
+        Node* n = q.front(); q.pop();
+
+        for (auto& edge : n->adj) {
+            Node* neighbor = edge.to;
+            if (visited[neighbor]) continue;
+
+            // Calculate initial position based on edge direction
+            Vector2 tryPos = n->position;
+            switch (edge.direction) {
+            case 0: tryPos += Vector2(0, -spacing); break; // North
+            case 1: tryPos += Vector2(spacing, 0); break;  // East
+            case 2: tryPos += Vector2(0, spacing); break;  // South
+            case 3: tryPos += Vector2(-spacing, 0); break; // West
+            }
+
+            // If position is occupied, shift diagonally until free
+            int attempts = 0;
+            while (occupied[posKey(tryPos)] && attempts < 100) {
+                tryPos += Vector2(spacing, spacing); // simple offset
+                attempts++;
+            }
+
+            neighbor->position = tryPos;
+            visited[neighbor] = true;
+            occupied[posKey(tryPos)] = true;
+            q.push(neighbor);
+        }
+    }
+}
+
+
+
+void Graph::DrawGraph(LSpriteRenderer* m_pRenderer, Node* playerNode) {
+    LSpriteDesc2D desc;
+    desc.m_nSpriteIndex = static_cast<int>(eSprite::MapRoom);
+
+
+    // --- Draw Nodes (Rooms) ---
+    for (Node* n : nodes) {
+        LSpriteDesc2D desc = {};
+        desc.m_nSpriteIndex = static_cast<int>(eSprite::MapRoom);
+        desc.m_vPos = n->position;
+        switch (n->getType()) {
+            case 0: desc.m_nCurrentFrame = 4; break; // start
+            case 1: desc.m_nCurrentFrame = 1; break;
+            case 2: desc.m_nCurrentFrame = 2; break;
+            case 3: desc.m_nCurrentFrame = 3; break;
+            case 4: desc.m_nCurrentFrame = 0; break;
+            case 999: desc.m_nCurrentFrame = 6; break; // boss
+            default: desc.m_nCurrentFrame = 7; break; // fallback
+        }
+        m_pRenderer->Draw(&desc);
+    }
+
+   
+
+    // --- Draw Edges (Halls) ---
+
+    for (Node* n : nodes) {
+        for (auto& edge : n->adj) {
+            int aId = n->getId();
+            int bId = edge.to->getId();
+
+            // Skip if this edge already drawn (avoid double rendering)
+            if (aId > bId) continue;
+
+            Vector2 a = n->position;
+            Vector2 b = edge.to->position;
+            Vector2 mid = (a + b) * 0.5f;
+            float angle = atan2f(b.y - a.y, b.x - a.x);
+            float length = (b - a).Length();
+
+            m_pRenderer->Draw(eSprite::Connection, mid, angle);
+        }
+    }
+
+    if (playerNode) {
+        LSpriteDesc2D marker = {};
+        marker.m_nSpriteIndex = static_cast<int>(eSprite::MapRoom); // reuse MapRoom or define a new sprite
+        marker.m_nCurrentFrame = 5; // choose a unique frame index for player marker
+        marker.m_vPos = playerNode->position;
+        m_pRenderer->Draw(&marker);
+    }
 }
 
 

@@ -1,9 +1,13 @@
-#ifndef GRAPHGEN_H
-#define GRAPHGEN_H
+#ifndef __L4RC_GAME_GRAPHGEN_H__
+#define __L4RC_GAME_GRAPHGEN_H__
 
 #include <iostream>
 #include <vector>
 #include <random>
+
+#include "Sprite.h"
+#include "SpriteRenderer.h"
+#include "GameDefines.h"
 
 using namespace std;
 
@@ -14,9 +18,10 @@ extern int LOOP_NUM;
 extern int LOOP_MAX_LEN;
 extern int ROOM_TYPES;
 
+
 enum Direction { NORTH = 0, EAST = 1, SOUTH = 2, WEST = 3 };
 
-int idsNum = 0;
+extern int idsNum;
 
 class Node;
 
@@ -33,6 +38,7 @@ private:
     int edges = 0;
 public:
     vector<Edge> adj;
+	Vector2 position;
 
     Node(int id, int type);
 
@@ -55,6 +61,9 @@ public:
     void graphGen(Node* first, int length, int branchNum, int loopNum, bool branch, bool loop, int& idCounter);
     void printGraph();
     void newGraph();
+	void DrawGraph(LSpriteRenderer* m_pRenderer, Node* playerNode);
+    void Graph::assignScreenPositions(const Vector2& origin, float spacing);
+
 };
 
 #endif

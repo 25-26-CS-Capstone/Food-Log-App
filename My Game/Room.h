@@ -1,5 +1,8 @@
 /// \file Room.h
 /// \brief Interface for the Tile manager CRoom.
+#ifndef __L4RC_GAME_ROOM_H__
+#define __L4RC_GAME_ROOM_H__
+
 
 #pragma once
 
@@ -11,6 +14,8 @@ using namespace std;
 #include "Settings.h"
 #include "Sprite.h"
 #include "GameDefines.h"
+#include "GraphGen.h"
+#include "Player.h"
 
 class CRoom : public CCommon, public LSettings
 {
@@ -34,10 +39,16 @@ public:
     CRoom(size_t tilesize, LSpriteRenderer* pRenderer); ///< Constructor.
     ~CRoom(); ///< Destructor.
 
-    void LoadMap(char* filename); ///< Load a map.
-    void Draw(eSprite t); ///< Draw the map with a given Tile.
+    void LoadMap(const char* filename); ///< Load a map.
     char GetTileAt(const Vector2& position) const;
+    void LoadRoom(Node* node); ///< Load a room.
 
+    void Draw(eSprite t, CPlayer* m_pPlayer); ///< Draw the map with a given Tile.
+    void DrawDoors(eSprite t, Node* node);
+
+	int GetWidth() const { return m_nWidth; } ///< Get width in tiles.
+	int GetHeight() const { return m_nHeight; } ///< Get height in tiles.
+	int GetTileSize() const { return (int)m_fTileSize; } ///< Get tile size.
 
     //void DrawBoundingBoxes(eSprite t); ///< Draw the bounding boxes.
 
@@ -47,3 +58,5 @@ public:
 
     //void LoadMapFromImageFile(char* filename); ///< Load map.
 }; //CRoom
+
+#endif

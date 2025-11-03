@@ -168,6 +168,20 @@
 		<frame index="4" left="70" top="70" right="140" bottom="140"/>
 		<frame index="5" left="140" top="70" right="210" bottom="140"/>
 	</sprite>
+
+	<sprite name="MapSheet" file="MapSheet.png"/>
+	<sprite name="MapRoom" sheet="MapSheet" frames="8">
+		<frame index="0" left="0"	top="0" right="70"	bottom="70"/>
+		<frame index="1" left="70"	top="0"	right="140" bottom="70"/>
+		<frame index="2" left="140" top="0" right="210" bottom="70"/>
+		<frame index="3" left="210" top="0" right="280" bottom="70"/>
+		<frame index="4" left="0" top="70" right="70" bottom="140"/>
+		<frame index="5" left="70" top="70" right="140" bottom="140"/>
+		<frame index="6" left="140" top="70" right="210" bottom="140"/>
+		<frame index="7" left="210" top="70" right="280" bottom="140"/>
+	</sprite>
+
+	<sprite name="Connection" file="Connection.png"/>
 	
   </sprites>
 

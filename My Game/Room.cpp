@@ -1,5 +1,5 @@
-/// \file TileManager.cpp
-/// \brief Code for the tile manager CTileManager.
+/// \file Room.cpp
+/// \brief Code for the tile manager CRoom.
 
 #include "Room.h"
 #include "SpriteRenderer.h"
@@ -20,7 +20,15 @@ CRoom::~CRoom() {
 	delete[] m_chMap;
 } //destructor
 
-void CRoom::LoadMap(char* filename) {
+///< Load a room.
+void CRoom::LoadRoom(Node* node) {
+
+    string mapPath = "Media\\Maps\\Room" + std::to_string(node->getType()) + ".txt";
+	LoadMap(mapPath.data());
+
+} //LoadRoom
+
+void CRoom::LoadMap(const char* filename) {
     //m_vecTurrets.clear(); //clear turrets from previous level
 
     if (m_chMap != nullptr) { //unload any previous maps
@@ -116,7 +124,51 @@ char CRoom::GetTileAt(const Vector2& position) const {
         return '\0'; // out of bounds
 }
 
-void CRoom::Draw(eSprite t) {
+///Draw doors based on the node's edges.
+void CRoom::DrawDoors(eSprite t, Node* node) {
+    if (!node || !m_pRenderer) return;
+
+
+    LSpriteDesc2D desc;
+    desc.m_nSpriteIndex = static_cast<int>(t);
+    desc.m_nCurrentFrame = 1; // door frame
+
+    float offsetX = (m_nWinWidth - m_nWidth * m_fTileSize) / 2.0f;
+    float offsetY = (m_nWinHeight - m_nHeight * m_fTileSize) / 2.0f;
+
+    const float centerCol = m_nWidth / 2.0f;
+    const float centerRow = m_nHeight / 2.0f;
+
+    // Convert tile index to screen position
+    auto TileToWorld = [&](float col, float row) {
+        float x = offsetX + (col + 0.5f) * m_fTileSize;
+        float y = offsetY + (m_nHeight - 1 - row + 0.5f) * m_fTileSize;
+        return Vector2(x, y);
+        };
+
+    for (const Edge& edge : node->adj) {
+        switch (edge.direction) {
+        case NORTH:
+            desc.m_vPos = TileToWorld(centerCol, m_nHeight - 1);
+            break;
+        case EAST:
+            desc.m_vPos = TileToWorld(m_nWidth - 1, centerRow);
+            break;
+        case SOUTH:
+            desc.m_vPos = TileToWorld(centerCol, 0);
+            break;
+        case WEST:
+            desc.m_vPos = TileToWorld(0, centerRow);
+            break;
+        default:
+            continue;
+        }
+        m_pRenderer->Draw(&desc);
+    }
+}//DrawDoors
+
+
+void CRoom::Draw(eSprite t, CPlayer* m_pPlayer) {
     if (!m_chMap || m_nWidth <= 0 || m_nHeight <= 0 || !m_pRenderer)
         return;
 
@@ -186,4 +238,6 @@ void CRoom::Draw(eSprite t) {
             m_pRenderer->Draw(&desc); //finally we can draw a tile
         } //for
     } //for
+    //OutputDebugStringA("About to call DrawDoors\n");
+    DrawDoors(t, m_pPlayer->GetCurrentNode());
 } //Draw

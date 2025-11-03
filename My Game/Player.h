@@ -6,12 +6,14 @@
 
 #include "Object.h"
 #include "EventTimer.h"
-#include "Room.h"
+#include "GraphGen.h"
 
 /// \brief The player object. 
 ///
 /// The abstract representation of the player object. The player differs from
 /// the other objects in the game in that it moves in respond to device inputs.
+
+class CRoom;
 
 class CPlayer: public CObject{
   protected:  
@@ -38,6 +40,7 @@ class CPlayer: public CObject{
 	//Room Stuff
     CRoom* m_pRoom = nullptr;
 	char currentTileType = ' ';
+	Node* currentNode = nullptr;
 
   public:
     CPlayer(eSprite t, const Vector2& p); ///< Constructor.
@@ -66,6 +69,8 @@ class CPlayer: public CObject{
 
     //Room Stuff
     void SetRoom(CRoom* room);
+	Node* GetCurrentNode();
+	void SetCurrentNode(Node* node);
     char GetCurrentTileType();
     void UpdateBasedOnTile();
 }; //CPlayer
