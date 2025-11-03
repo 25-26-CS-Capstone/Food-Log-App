@@ -21,6 +21,10 @@ CObject::~CObject() {
 void CObject::onCollision(CObject* obj) {
 
 }
+
+void CObject::update(float deltaTime) {
+
+}
 /// The only object in this game is the text wheel, which slowly rotates at 1/8
 /// revolutions per second. This is achieved by adding a small amount to its
 /// roll angle, proportional to frame time.

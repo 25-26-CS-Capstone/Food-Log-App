@@ -10,8 +10,10 @@
 
 CPlayer::CPlayer(eSprite t, const Vector2& p): CObject(t, p){ 
   m_pFrameEvent = new LEventTimer(0.12f);
+
   currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitIdleRight;
   m_nCurrentFrame = 0;
+
   width = 150.0f;
   height = 132.0f;
   type = 'p';
@@ -63,21 +65,29 @@ void CPlayer::move(){
         if (m_pKeyboard->Down('A')) {
             OutputDebugString("A\n");
             recentInput = 'A';
+            direction = 3;
+            OutputDebugString("3");
             m_pPlayer->RunLeft();
         }
         if (m_pKeyboard->Down('D')) {
             OutputDebugString("D\n");
             recentInput = 'D';
+            direction = 1;
+            OutputDebugString("1");
             m_pPlayer->RunRight();
         }
         if (m_pKeyboard->Down('W')) {
             OutputDebugString("W\n");
             recentInput = 'W';
+            direction = 0;
+            OutputDebugString("0");
             m_pPlayer->RunUp();
         }
         if (m_pKeyboard->Down('S')) {
             OutputDebugString("S\n");
             recentInput = 'S';
+            direction = 2;
+            OutputDebugString("2");
             m_pPlayer->RunDown();
         }
 
@@ -265,4 +275,16 @@ void CPlayer::draw() {
     currentSprite.m_vPos = m_vPos;
     currentSprite.m_nCurrentFrame = m_nCurrentFrame;
     m_pRenderer->Draw(&currentSprite);
+}
+
+int CPlayer::getDirection() {
+    return direction;
+}
+
+void CPlayer::changeAttackState(bool t) {
+    isAttacking = t;
+}
+
+bool CPlayer::getAttackState() {
+    return isAttacking;
 }

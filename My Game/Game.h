@@ -12,6 +12,8 @@
 #include "Windows.h"
 #include "HUD.h"
 
+#include "Attack.h"
+
 /// \brief The game class.
 ///
 /// The game class is the object-oriented implementation of the game. This class

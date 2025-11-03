@@ -21,6 +21,7 @@ class CPlayer: public CObject{
 
     int playerState = 0;    //states: 0 = normal, 1 = roll, 2 = damaged
 
+    bool isAttacking = false;
     float currentHealth = 3.0;
     float xspeed = 0.0;
     float yspeed = 0.0;
@@ -28,7 +29,7 @@ class CPlayer: public CObject{
     float SPEEDINC = 0.5f;  //must be at least more than the 2x the decrement value
     float SPEEDDEC = 0.2f; //must be at least less than half the increment value
     float ROLLSPEED = 6.0f;
-
+    int direction = 0;
     int counter = 0;
     char recentInput = 'D';
     unsigned int lastSprite;
@@ -50,11 +51,16 @@ class CPlayer: public CObject{
     void RunDown();
     void Roll();
 
+    //void Stop(); ///< Stop walking.
     void changeHealth(float);
     float getCurrentHealth();
     float getMaxHealth();
+
     void onCollision(CObject*);
     void draw();    //draw player each frame
+    int getDirection();
+    void changeAttackState(bool);
+    bool getAttackState();
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

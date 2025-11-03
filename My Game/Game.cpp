@@ -46,6 +46,8 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::healthBar, "healthBar");
   m_pRenderer->Load(eSprite::healthBarBackground, "healthBarBackground");
   m_pRenderer->Load(eSprite::testEnemy, "testEnemy");
+
+  m_pRenderer->Load(eSprite::playerAttack, "playerAttack");
   m_pRenderer->Load(eSprite::InuitIdleLeftSheet, "InuitIdleLeftSheet");
   m_pRenderer->Load(eSprite::InuitIdleLeft, "InuitIdleLeft");
   m_pRenderer->Load(eSprite::InuitIdleRightSheet, "InuitIdleRightSheet");
@@ -90,7 +92,8 @@ void CGame::Release(){
 
 void CGame::BeginGame(){  
     m_pObjectManager->clear();  //clear old objects
-    CreateObjects(); //creat new objects
+
+    CreateObjects(); //create new objects
     mHud = new HUD(m_pRenderer, m_pPlayer);
 } //BeginGame
 
@@ -110,6 +113,26 @@ void CGame::CreateObjects() {
 void CGame::KeyboardHandler() {
     m_pKeyboard->GetState(); //get current keyboard state 
 
+    if (m_pKeyboard->TriggerDown('L')) {
+        m_pPlayer->changeAttackState(true);
+        switch (m_pPlayer->getDirection()) {
+        case 0:
+            m_pObjectManager->create(eSprite::playerAttack, m_pPlayer->m_vPos + Vector2(0.0f, 100.0f));
+            break;
+        case 1:
+            m_pObjectManager->create(eSprite::playerAttack, m_pPlayer->m_vPos + Vector2(100.0f, 0.0f));
+            break;
+        case 2:
+            m_pObjectManager->create(eSprite::playerAttack, m_pPlayer->m_vPos + Vector2(0.0f, -100.0f));
+            break;
+        case 3:
+            m_pObjectManager->create(eSprite::playerAttack, m_pPlayer->m_vPos + Vector2(-100.0f, 0.0f));
+            break;
+        default:
+            break;
+        }
+        
+    }
 
 
     if (m_pKeyboard->TriggerDown('O'))
@@ -151,7 +174,8 @@ void CGame::RenderFrame(){
   m_pRenderer->Draw(eSprite::Background, m_vWinCenter); //draw start level background [current: stone level]
   mHud->Render();
   if(m_bDrawFrameRate)DrawFrameRateText(); //draw frame rate, if required
-  m_pObjectManager->update();
+  float deltaTime = m_pTimer->GetFrameTime();
+  m_pObjectManager->update(deltaTime);
   m_pRenderer->EndFrame(); //required after rendering
 } //RenderFrame
 
