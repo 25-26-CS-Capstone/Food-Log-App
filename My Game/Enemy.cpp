@@ -15,8 +15,19 @@ void CEnemy::move() {
 
 }
 
+void CEnemy::update(float deltaTime) {
+	if (currentHealth <= 0) {
+		m_bDead = true;
+	}
+}
+
+
 void CEnemy::onCollision(CObject* obj) {
 	if (obj->type == 'p') {
 		m_vPos = Vector2(800.0f, 500.0f);
+	}
+
+	if (obj->type == 'a') {
+		currentHealth -= 1;
 	}
 }

@@ -15,6 +15,7 @@ public:
     virtual ~CEnemy(); ///< Destructor.
     void move();
     void onCollision(CObject*);
+    void update(float);
 
     
 }; //CEnemy
