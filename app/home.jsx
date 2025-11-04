@@ -1,11 +1,16 @@
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native'
-import React, { useEffect } from 'react'
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Animated } from 'react-native'
+import React, { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'expo-router'
 import { addSampleData, hasSampleData } from '../utils/sampleData'
 import { initNotifications, sendAppOpenNotification, sendCustomNotification } from '../utils/notifications'
+import { getUserData } from '../utils/storage'
 
 const home = () => {
   const router = useRouter()
+  const [welcomeMessage, setWelcomeMessage] = useState('')
+  const [showWelcome, setShowWelcome] = useState(false)
+  const fadeAnim = useRef(new Animated.Value(0)).current
+  const slideAnim = useRef(new Animated.Value(-50)).current
 
   // Add sample data on first load and initialize notifications
   useEffect(() => {
@@ -18,6 +23,43 @@ const home = () => {
         // Send app open notification
         console.log('Sending app open notification...')
         await sendAppOpenNotification()
+        
+        // Check for user data and show welcome message
+        const userData = await getUserData()
+        if (userData && userData.username) {
+          setWelcomeMessage(`Welcome back ${userData.username}!`)
+          setShowWelcome(true)
+          
+          // Animate in
+          Animated.parallel([
+            Animated.timing(fadeAnim, {
+              toValue: 1,
+              duration: 600,
+              useNativeDriver: true,
+            }),
+            Animated.timing(slideAnim, {
+              toValue: 0,
+              duration: 600,
+              useNativeDriver: true,
+            })
+          ]).start()
+          
+          // Hide after 4 seconds
+          setTimeout(() => {
+            Animated.parallel([
+              Animated.timing(fadeAnim, {
+                toValue: 0,
+                duration: 400,
+                useNativeDriver: true,
+              }),
+              Animated.timing(slideAnim, {
+                toValue: -50,
+                duration: 400,
+                useNativeDriver: true,
+              })
+            ]).start(() => setShowWelcome(false))
+          }, 4000)
+        }
         
         // Initialize sample data
         const hasData = await hasSampleData()
@@ -80,7 +122,23 @@ const home = () => {
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
-          <Text style={styles.title}>Food Log App</Text>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>Food Log App</Text>
+            {showWelcome && (
+              <Animated.View 
+                style={[
+                  styles.welcomePopup,
+                  {
+                    opacity: fadeAnim,
+                    transform: [{ translateY: slideAnim }]
+                  }
+                ]}
+              >
+                <Text style={styles.welcomeEmoji}>👋</Text>
+                <Text style={styles.welcomeText}>{welcomeMessage}</Text>
+              </Animated.View>
+            )}
+          </View>
           <Text style={styles.subtitle}>Track your food and symptoms</Text>
         </View>
         <TouchableOpacity style={styles.settingsButton} onPress={navigateToSettings}>
@@ -151,6 +209,10 @@ const styles = StyleSheet.create({
   headerLeft: {
     flex: 1,
   },
+  titleContainer: {
+    position: 'relative',
+    alignItems: 'center',
+  },
   settingsButton: {
     padding: 8,
     marginTop: 5,
@@ -165,6 +227,35 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 8,
     marginTop: 40,
+  },
+  welcomePopup: {
+    position: 'absolute',
+    top: 35,
+    right: -140,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4.65,
+    elevation: 8,
+    zIndex: 1000,
+  },
+  welcomeEmoji: {
+    fontSize: 20,
+    marginRight: 8,
+  },
+  welcomeText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '600',
   },
   subtitle: {
     fontSize: 16,

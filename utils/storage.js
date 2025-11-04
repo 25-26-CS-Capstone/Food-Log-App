@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const FOOD_LOG_KEY = '@food_log';
 const SYMPTOMS_LOG_KEY = '@symptoms_log';
+const USER_KEY = '@user_data';
 
 // Food Log Functions
 export const saveFoodEntry = async (foodEntry) => {
@@ -223,5 +224,36 @@ export const getCalendarMarkedDates = async () => {
   } catch (error) {
     console.error('Error getting calendar marked dates:', error);
     return {};
+  }
+};
+
+// User Data Functions
+export const saveUserData = async (userData) => {
+  try {
+    await AsyncStorage.setItem(USER_KEY, JSON.stringify(userData));
+    return true;
+  } catch (error) {
+    console.error('Error saving user data:', error);
+    return false;
+  }
+};
+
+export const getUserData = async () => {
+  try {
+    const userData = await AsyncStorage.getItem(USER_KEY);
+    return userData ? JSON.parse(userData) : null;
+  } catch (error) {
+    console.error('Error getting user data:', error);
+    return null;
+  }
+};
+
+export const clearUserData = async () => {
+  try {
+    await AsyncStorage.removeItem(USER_KEY);
+    return true;
+  } catch (error) {
+    console.error('Error clearing user data:', error);
+    return false;
   }
 };

@@ -117,6 +117,29 @@ class NotificationService {
     }
   }
 
+  // Send login welcome back notification
+  async sendLoginNotification(username) {
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: '👋 Welcome Back!',
+          body: `Welcome back ${username}!`,
+          sound: 'default',
+          data: {
+            type: 'login',
+            timestamp: new Date().toISOString(),
+            username: username,
+          },
+        },
+        trigger: null, // Send immediately
+      });
+
+      console.log('Login notification sent for user:', username);
+    } catch (error) {
+      console.error('Error sending login notification:', error);
+    }
+  }
+
   // Send daily reminder notification
   async sendDailyReminder() {
     try {
@@ -282,6 +305,7 @@ export const notificationService = new NotificationService();
 // Helper functions for easy access
 export const initNotifications = () => notificationService.init();
 export const sendAppOpenNotification = () => notificationService.sendAppOpenNotification();
+export const sendLoginNotification = (username) => notificationService.sendLoginNotification(username);
 export const sendDailyReminder = () => notificationService.sendDailyReminder();
 export const scheduleMealReminders = () => notificationService.scheduleMealReminders();
 export const sendSymptomReminder = () => notificationService.sendSymptomReminder();
