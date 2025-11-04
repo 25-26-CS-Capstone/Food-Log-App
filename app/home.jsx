@@ -136,6 +136,17 @@ const home = () => {
               >
                 <Text style={styles.welcomeEmoji}>👋</Text>
                 <Text style={styles.welcomeText}>{welcomeMessage}</Text>
+                <Text style={styles.welcomeDot}> · </Text>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  onPress={() => {
+                    // Navigate to View Logs and hide popup
+                    setShowWelcome(false)
+                    router.push('/viewLogs')
+                  }}
+                >
+                  <Text style={styles.welcomeLink}>View Logs</Text>
+                </TouchableOpacity>
               </Animated.View>
             )}
           </View>
@@ -256,6 +267,18 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 15,
     fontWeight: '600',
+    maxWidth: 180,
+  },
+  welcomeDot: {
+    color: 'rgba(255,255,255,0.85)',
+    paddingHorizontal: 6,
+    fontSize: 16,
+  },
+  welcomeLink: {
+    color: '#E6F0FF',
+    textDecorationLine: 'underline',
+    fontWeight: '700',
+    fontSize: 14,
   },
   subtitle: {
     fontSize: 16,
