@@ -46,7 +46,8 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::healthBar, "healthBar");
   m_pRenderer->Load(eSprite::healthBarBackground, "healthBarBackground");
   m_pRenderer->Load(eSprite::testEnemy, "testEnemy");
-  m_pRenderer->Load(eSprite::playerAttack, "playerAttack");
+  m_pRenderer->Load(eSprite::PlayerAttackSheet, "PlayerAttackSheet");
+  m_pRenderer->Load(eSprite::PlayerAttack, "PlayerAttack");
   m_pRenderer->Load(eSprite::InuitIdleLeftSheet, "InuitIdleLeftSheet");
   m_pRenderer->Load(eSprite::InuitIdleLeft, "InuitIdleLeft");
   m_pRenderer->Load(eSprite::InuitIdleRightSheet, "InuitIdleRightSheet");
@@ -115,16 +116,16 @@ void CGame::KeyboardHandler() {
         m_pPlayer->changeAttackState(true);
         switch (m_pPlayer->getDirection()) {
         case 0:
-            m_pObjectManager->create(eSprite::playerAttack, m_pPlayer->m_vPos + Vector2(0.0f, 100.0f));
+            m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(0.0f, 200.0f));
             break;
         case 1:
-            m_pObjectManager->create(eSprite::playerAttack, m_pPlayer->m_vPos + Vector2(100.0f, 0.0f));
+            m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(200.0f, 0.0f));
             break;
         case 2:
-            m_pObjectManager->create(eSprite::playerAttack, m_pPlayer->m_vPos + Vector2(0.0f, -100.0f));
+            m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(0.0f, -200.0f));
             break;
         case 3:
-            m_pObjectManager->create(eSprite::playerAttack, m_pPlayer->m_vPos + Vector2(-100.0f, 0.0f));
+            m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(-200.0f, 0.0f));
             break;
         default:
             break;

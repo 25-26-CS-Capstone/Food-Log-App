@@ -17,6 +17,7 @@ class CPlayer: public CObject{
   protected:  
     LEventTimer* m_pFrameEvent = nullptr; ///< Frame event timer.
     LSpriteDesc2D currentSprite;
+    CObjectManager* objectmanager;
 
     void UpdateFramenumber(); ///< Update frame number.
     

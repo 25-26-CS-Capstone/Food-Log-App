@@ -9,7 +9,7 @@
 
 class Attack : public CObject {
 private:
-	float mLifetime = 0.2f;
+	float mLifetime = 0.3f;
 
 public:
 	Attack(eSprite t, const Vector2& p);

@@ -54,8 +54,8 @@ CObject* CObjectManager::create(eSprite t, const Vector2& pos) {
     case eSprite::testEnemy:
         pObj = new CEnemy(eSprite::testEnemy, pos);
         break;
-    case eSprite::playerAttack:
-        pObj = new Attack(eSprite::playerAttack, pos);
+    case eSprite::PlayerAttack:
+        pObj = new Attack(eSprite::PlayerAttack, pos);
         break;
     default: pObj = new CObject(t, pos);
     } //switch

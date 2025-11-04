@@ -11,6 +11,7 @@
 CPlayer::CPlayer(eSprite t, const Vector2& p): CObject(t, p){ 
   m_pFrameEvent = new LEventTimer(0.12f);
   currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitIdleRight;
+  objectmanager = m_pObjectManager;
   m_nCurrentFrame = 0;
   width = 150.0f;
   height = 132.0f;
@@ -147,8 +148,8 @@ void CPlayer::move(){
         /////////[IMPLEMENT KNOCKBACK]///////////
         //the following is temporary inverted movement
         const float delta = 200.0f * m_pTimer->GetFrameTime(); //change in position
-        m_vPos += delta * Vector2::UnitX * -xspeed;    //change x position
-        m_vPos += delta * Vector2::UnitY * -yspeed;    //chang y position
+        m_vPos += delta * Vector2::UnitX * -xspeed * 2;    //change x position
+        m_vPos += delta * Vector2::UnitY * -yspeed * 2;    //chang y position
 
         if (counter > 0) {
             counter -= 1;
@@ -157,8 +158,8 @@ void CPlayer::move(){
             playerState = 0;
             currentSprite.m_f4Tint = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
         }
-    }//playre state 2 - 'damaged'
-
+        
+    }//player state 2 - 'damaged'
   UpdateFramenumber(); //choose current frame
 } //move
 
