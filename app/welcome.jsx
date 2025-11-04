@@ -10,10 +10,10 @@ const Welcome = () => {
       <Text style={styles.text}>Welcome to the Food Log App!</Text>
       <View style={styles.buttonWrapper}>
         <View style={{marginVertical:5}}>
-          <Button title="Login" onPress={() => router.navigate('/login')} />
+          <Button title="Login" onPress={() => router.push('/login')} />
         </View>
         <View style={{marginVertical:5}}>
-          <Button title="New account" onPress={() => router.navigate('/register')} />
+          <Button title="New account" onPress={() => router.push('/register')} />
         </View>   
       </View> 
     </View>
