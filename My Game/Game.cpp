@@ -66,6 +66,11 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::InuitRunDown, "InuitRunDown");
   m_pRenderer->Load(eSprite::InuitRollSheet, "InuitRollSheet");
   m_pRenderer->Load(eSprite::InuitRoll, "InuitRoll");
+  m_pRenderer->Load(eSprite::TileSheet, "TileSheet");
+  m_pRenderer->Load(eSprite::Tiles, "Tiles");
+  m_pRenderer->Load(eSprite::MapSheet, "MapSheet");
+  m_pRenderer->Load(eSprite::MapRoom, "MapRoom");
+  m_pRenderer->Load(eSprite::Connection, "Connection");
 
   m_pRenderer->EndResourceUpload();
 } //LoadImages
@@ -92,6 +97,14 @@ void CGame::Release(){
 
 void CGame::BeginGame(){  
     m_pObjectManager->clear();  //clear old objects
+
+    m_pRoom = new CRoom(64, m_pRenderer);
+
+    m_Graph.newGraph();
+	m_Graph.assignScreenPositions(m_vWinCenter, 96.f);
+	m_pRoom->LoadRoom(m_Graph.nodes.at(0));
+    
+
     CreateObjects(); //create new objects
     mHud = new HUD(m_pRenderer, m_pPlayer);
 } //BeginGame
@@ -102,8 +115,10 @@ void CGame::CreateObjects() {
     const float h = m_pRenderer->GetHeight(eSprite::InuitIdleRight);
     m_pPlayer = (CPlayer*)m_pObjectManager->create(eSprite::InuitIdleRight,
         Vector2(100.0f, h / 2.0f));
-    m_pObjectManager->create(eSprite::testEnemy, Vector2(500.0f, 100.0f));
-    m_pObjectManager->create(eSprite::testEnemy, Vector2(800.0f, 100.0f));
+    m_pPlayer->SetRoom(m_pRoom);
+	m_pPlayer->SetCurrentNode(m_Graph.nodes.at(0));
+    //m_pObjectManager->create(eSprite::testEnemy, Vector2(500.0f, 100.0f));
+    //m_pObjectManager->create(eSprite::testEnemy, Vector2(800.0f, 100.0f));
 }
 
 /// Poll the keyboard state and respond to the key presses that happened since
@@ -135,6 +150,9 @@ void CGame::KeyboardHandler() {
 
     if (m_pKeyboard->TriggerDown('O'))
         m_pPlayer->changeHealth(-1.0);
+
+    if (m_pKeyboard->TriggerDown('P'))
+        m_bDrawGraph = !m_bDrawGraph;//draw the graph for debugging
 
     if (m_pKeyboard->TriggerDown(VK_F1)) //help
         ShellExecute(0, 0, "https://larc.unt.edu/code/physics/blank/", 0, 0, SW_SHOW);
@@ -169,6 +187,9 @@ void CGame::DrawFrameRateText(){
 void CGame::RenderFrame(){
   m_pRenderer->BeginFrame(); //required before rendering
   m_pRenderer->Draw(eSprite::Background, m_vWinCenter); //draw start level background [current: stone level]
+  m_pRoom->Draw(eSprite::Tiles, m_pPlayer); //draw the room tiles
+  if (m_bDrawGraph)
+    m_Graph.DrawGraph(m_pRenderer, m_pPlayer->GetCurrentNode());
   m_pObjectManager->draw(); //draw objects
   mHud->Render();
   if(m_bDrawFrameRate)DrawFrameRateText(); //draw frame rate, if required
@@ -192,5 +213,41 @@ void CGame::ProcessFrame(){
       m_pObjectManager->move(); //move all objects
   });
 
+  ChangeRoom();
+
   RenderFrame(); //render a frame of animation
 } //ProcessFrame
+
+void CGame::ChangeRoom() {
+    if (!m_pPlayer || !m_pRoom) return;
+
+    Node* currentNode = m_pPlayer->GetCurrentNode();
+    if (!currentNode) return;
+
+    Vector2 pos = m_pPlayer->m_vPos;
+    int col = static_cast<int>(pos.x / m_pRoom->GetTileSize());
+    int row = static_cast<int>(pos.y / m_pRoom->GetTileSize());
+
+    for (Edge& edge : currentNode->adj) {
+        int doorCol = col, doorRow = row;
+        switch (edge.direction) {
+        case NORTH: doorRow = 0; break;
+        case SOUTH: doorRow = m_pRoom->GetHeight() - 1; break;
+        case WEST:  doorCol = 0; break;
+        case EAST:  doorCol = m_pRoom->GetWidth() - 1; break;
+        }
+
+        if (col == doorCol && row == doorRow) {
+            // Change room
+            m_pPlayer->SetCurrentNode(edge.to);
+            m_pRoom->LoadRoom(edge.to);
+            switch (edge.direction) {
+            case NORTH: m_pPlayer->m_vPos = (Vector2(pos.x, (m_pRoom->GetHeight() - 2) * m_pRoom->GetTileSize())); break;
+            case SOUTH: m_pPlayer->m_vPos = (Vector2(pos.x, m_pRoom->GetTileSize())); break;
+            case WEST:  m_pPlayer->m_vPos = (Vector2((m_pRoom->GetWidth() - 2) * m_pRoom->GetTileSize(), pos.y)); break;
+            case EAST:  m_pPlayer->m_vPos = (Vector2(m_pRoom->GetTileSize(), pos.y)); break;
+            }
+            return;
+        }
+    }
+}//ChangeRoom

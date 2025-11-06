@@ -12,6 +12,8 @@
 #include "Windows.h"
 #include "HUD.h"
 #include "Attack.h"
+#include "Room.h"
+#include "GraphGen.h"
 
 /// \brief The game class.
 ///
@@ -29,6 +31,7 @@ class CGame:
 
   private:
     bool m_bDrawFrameRate = false; ///< Draw the frame rate.
+	bool m_bDrawGraph = false; ///< Draw the graph.
 //    LSpriteDesc2D* m_pSpriteDesc = nullptr; ///< Sprite descriptor.
 //    LSpriteRenderer* m_pRenderer = nullptr; ///< Pointer to renderer.
     HUD* mHud;
@@ -39,6 +42,12 @@ class CGame:
     void KeyboardHandler(); ///< The keyboard handler.
     void RenderFrame(); ///< Render an animation frame.
     void DrawFrameRateText(); ///< Draw frame rate text to screen.
+    
+
+	
+
+    Graph m_Graph;
+	CRoom* m_pRoom; ///< The room.
 
   public:
     ~CGame(); ///< Destructor.
@@ -46,6 +55,7 @@ class CGame:
     void Initialize(); ///< Initialize the game.
     void ProcessFrame(); ///< Process an animation frame.
     void Release(); ///< Release the renderer.
+	void ChangeRoom();
 }; //CGame
 
 #endif //__L4RC_GAME_GAME_H__

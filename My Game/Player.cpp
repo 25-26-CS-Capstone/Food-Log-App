@@ -4,6 +4,8 @@
 #include "Player.h"
 #include "ComponentIncludes.h"
 
+#include "Room.h"
+
 /// Create and initialize an player object given its initial position.
 /// \param t Sprite type.
 /// \param p Initial position of player.
@@ -160,6 +162,9 @@ void CPlayer::move(){
         }
         
     }//player state 2 - 'damaged'
+	//Room stuff. Remove if it should go somewhere else.
+	UpdateBasedOnTile();
+
   UpdateFramenumber(); //choose current frame
 } //move
 
@@ -288,4 +293,40 @@ void CPlayer::draw() {
     currentSprite.m_vPos = m_vPos;
     currentSprite.m_nCurrentFrame = m_nCurrentFrame;
     m_pRenderer->Draw(&currentSprite);
+}
+//Room Stuff
+void CPlayer::SetRoom(CRoom* room) {
+	m_pRoom = room;
+}
+char CPlayer::GetCurrentTileType() {
+    return m_pRoom ? m_pRoom->GetTileAt(m_vPos) : '\0';
+}
+void CPlayer::UpdateBasedOnTile() {
+	char newTileType = GetCurrentTileType();
+
+
+    /*char buffer[64];
+    snprintf(buffer, sizeof(buffer),
+        "Player on tile '%c' at (%.1f, %.1f)\n",
+        newTileType, m_vPos.x, m_vPos.y);
+    OutputDebugString(buffer);
+    */
+
+    if (currentTileType != newTileType) {
+        switch (newTileType) {
+        case 'F': break; //floor
+        case 'W': break; //wall
+        case 'I': break; //ice
+        case 'H': break; //hazard
+        default: break;
+		}//switch
+	}//if
+
+    currentTileType = newTileType;
+}//UpdateBasedOnTile
+Node* CPlayer::GetCurrentNode() {
+	return currentNode;
+}
+void CPlayer::SetCurrentNode(Node* node) {
+	currentNode = node;
 }
