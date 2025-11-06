@@ -36,6 +36,9 @@ void CPlayer::onCollision(CObject* obj) {
             currentSprite.m_f4Tint = XMFLOAT4(1.0f, 0.2f, 0.2f, 1.0f);//tint the player red
         }
     }
+    if (obj->type == 'i') {
+        changeHealth(1.0f);
+    }
 }
 
 

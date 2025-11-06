@@ -46,6 +46,7 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::healthBar, "healthBar");
   m_pRenderer->Load(eSprite::healthBarBackground, "healthBarBackground");
   m_pRenderer->Load(eSprite::testEnemy, "testEnemy");
+  m_pRenderer->Load(eSprite::item, "item");
   m_pRenderer->Load(eSprite::PlayerAttackSheet, "PlayerAttackSheet");
   m_pRenderer->Load(eSprite::PlayerAttack, "PlayerAttack");
   m_pRenderer->Load(eSprite::InuitIdleLeftSheet, "InuitIdleLeftSheet");
@@ -104,6 +105,7 @@ void CGame::CreateObjects() {
         Vector2(100.0f, h / 2.0f));
     m_pObjectManager->create(eSprite::testEnemy, Vector2(500.0f, 100.0f));
     m_pObjectManager->create(eSprite::testEnemy, Vector2(800.0f, 100.0f));
+    m_pObjectManager->create(eSprite::item, Vector2(300.0f, 300.0f));
 }
 
 /// Poll the keyboard state and respond to the key presses that happened since

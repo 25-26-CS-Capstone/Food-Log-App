@@ -1,0 +1,25 @@
+#include "Item.h"
+#include "ComponentIncludes.h"
+
+Item::Item(eSprite t, const Vector2& p) : CObject(t, p) {
+	width = 50.0f;
+	height = 50.0f;
+	type = 'i';
+} //constructor
+
+
+void Item::onCollision(CObject* obj) {
+	if (obj->type == 'p') {
+		pickedUp = true;
+	}
+}
+
+void Item::move() {
+
+}
+
+void Item::update(float deltaTime) {
+	if (pickedUp == true) {
+		m_bDead = true;
+	}
+}

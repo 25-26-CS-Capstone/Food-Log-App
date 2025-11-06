@@ -16,6 +16,7 @@
     <sprite name="healthBar" file="HealthBar.png"/>
     <sprite name="healthBarBackground" file="HealthBarBackground.png"/>
     <sprite name="testEnemy" file="TestEnemy.png"/>
+    <sprite name="item" file="Item.png"/>
 	  
 	<sprite name="InuitIdleLeftSheet" file="InuitIdleLeft.png"/>
 	<sprite name="InuitIdleLeft" sheet="InuitIdleLeftSheet" frames="20">
