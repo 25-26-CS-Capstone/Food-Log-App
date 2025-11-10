@@ -59,7 +59,7 @@ CObject* CObjectManager::create(eSprite t, const Vector2& pos) {
         pObj = new Attack(eSprite::PlayerAttack, pos);
         break;
     case eSprite::item:
-        pObj = new Item(eSprite::item, pos);
+        pObj = new gold(eSprite::item, pos);
         break;
     default: pObj = new CObject(t, pos);
     } //switch

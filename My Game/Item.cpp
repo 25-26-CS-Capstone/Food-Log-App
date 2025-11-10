@@ -9,8 +9,11 @@ Item::Item(eSprite t, const Vector2& p) : CObject(t, p) {
 
 
 void Item::onCollision(CObject* obj) {
-	if (obj->type == 'p') {
-		pickedUp = true;
+	if (pickedUp == false) {
+		if (obj->type == 'p') {
+			pickup();
+			pickedUp = true;
+		}
 	}
 }
 
@@ -22,4 +25,8 @@ void Item::update(float deltaTime) {
 	if (pickedUp == true) {
 		m_bDead = true;
 	}
+}
+
+void Item::pickup() {
+
 }

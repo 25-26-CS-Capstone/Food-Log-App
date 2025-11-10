@@ -37,7 +37,7 @@ void CPlayer::onCollision(CObject* obj) {
         }
     }
     if (obj->type == 'i') {
-        changeHealth(1.0f);
+        
     }
 }
 
@@ -291,4 +291,9 @@ void CPlayer::draw() {
     currentSprite.m_vPos = m_vPos;
     currentSprite.m_nCurrentFrame = m_nCurrentFrame;
     m_pRenderer->Draw(&currentSprite);
+}
+
+void CPlayer::changeGoldCount(int x) {
+    goldCount += x;
+    OutputDebugString("Gold increased");
 }

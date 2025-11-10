@@ -35,6 +35,7 @@ class CPlayer: public CObject{
     char recentInput = 'D';
     unsigned int lastSprite;
     float maxHealth = 3.0;
+    int goldCount = 0;
 
   public:
     CPlayer(eSprite t, const Vector2& p); ///< Constructor.
@@ -55,6 +56,7 @@ class CPlayer: public CObject{
     void changeHealth(float);
     float getCurrentHealth();
     float getMaxHealth();
+    void changeGoldCount(int);
     int getDirection();
     void onCollision(CObject*);
     void changeAttackState(bool);
