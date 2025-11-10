@@ -16,7 +16,6 @@ public:
 	void update(float);
 	virtual void pickup();
 
-
 };
 #endif
 
