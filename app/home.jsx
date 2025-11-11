@@ -3,12 +3,13 @@ import React, { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'expo-router'
 import { addSampleData, hasSampleData } from '../utils/sampleData'
 import { initNotifications, sendAppOpenNotification, sendCustomNotification } from '../utils/notifications'
-import { getUserData } from '../utils/storage'
+import { getUserData, getAllLogs } from '../utils/storage'
 
 const home = () => {
   const router = useRouter()
   const [welcomeMessage, setWelcomeMessage] = useState('')
   const [showWelcome, setShowWelcome] = useState(false)
+  const [latestLogTimestamp, setLatestLogTimestamp] = useState(null)
   const fadeAnim = useRef(new Animated.Value(0)).current
   const slideAnim = useRef(new Animated.Value(-50)).current
 
@@ -23,6 +24,16 @@ const home = () => {
         // Send app open notification
         console.log('Sending app open notification...')
         await sendAppOpenNotification()
+        
+        // Load latest log timestamp for deep-linking
+        try {
+          const allLogs = await getAllLogs()
+          if (allLogs && allLogs.length > 0) {
+            setLatestLogTimestamp(new Date(allLogs[0].timestamp).toISOString())
+          }
+        } catch (e) {
+          console.warn('Unable to load latest logs for popup deep-link', e)
+        }
         
         // Check for user data and show welcome message
         const userData = await getUserData()
@@ -44,7 +55,7 @@ const home = () => {
             })
           ]).start()
           
-          // Hide after 4 seconds
+          // Hide after 8 seconds (extended duration)
           setTimeout(() => {
             Animated.parallel([
               Animated.timing(fadeAnim, {
@@ -58,7 +69,7 @@ const home = () => {
                 useNativeDriver: true,
               })
             ]).start(() => setShowWelcome(false))
-          }, 4000)
+          }, 8000)
         }
         
         // Initialize sample data
@@ -125,29 +136,45 @@ const home = () => {
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Food Log App</Text>
             {showWelcome && (
-              <Animated.View 
-                style={[
-                  styles.welcomePopup,
-                  {
-                    opacity: fadeAnim,
-                    transform: [{ translateY: slideAnim }]
-                  }
-                ]}
-              >
-                <Text style={styles.welcomeEmoji}>👋</Text>
-                <Text style={styles.welcomeText}>{welcomeMessage}</Text>
-                <Text style={styles.welcomeDot}> · </Text>
-                <TouchableOpacity
-                  accessibilityRole="button"
-                  onPress={() => {
-                    // Navigate to View Logs and hide popup
-                    setShowWelcome(false)
+              <TouchableOpacity
+                activeOpacity={0.9}
+                onPress={() => {
+                  setShowWelcome(false)
+                  if (latestLogTimestamp) {
+                    router.push({ pathname: '/viewLogs', params: { latest: latestLogTimestamp } })
+                  } else {
                     router.push('/viewLogs')
-                  }}
+                  }
+                }}
+                style={{ position: 'absolute' }}
+              >
+                <Animated.View 
+                  style={[
+                    styles.welcomePopup,
+                    {
+                      opacity: fadeAnim,
+                      transform: [{ translateY: slideAnim }]
+                    }
+                  ]}
                 >
-                  <Text style={styles.welcomeLink}>View Logs</Text>
-                </TouchableOpacity>
-              </Animated.View>
+                  <Text style={styles.welcomeEmoji}>👋</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1 }}>
+                    <Text style={styles.welcomeText} numberOfLines={1}>{welcomeMessage}</Text>
+                    <Text style={styles.welcomeDot}> · </Text>
+                    <Text style={styles.welcomeLink}>Continue where you left off</Text>
+                  </View>
+                  <TouchableOpacity
+                    accessibilityLabel="Dismiss welcome"
+                    onPress={(e) => {
+                      e.stopPropagation()
+                      setShowWelcome(false)
+                    }}
+                    style={styles.dismissButton}
+                  >
+                    <Text style={styles.dismissButtonText}>✕</Text>
+                  </TouchableOpacity>
+                </Animated.View>
+              </TouchableOpacity>
             )}
           </View>
           <Text style={styles.subtitle}>Track your food and symptoms</Text>
@@ -279,6 +306,21 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
     fontWeight: '700',
     fontSize: 14,
+  },
+  dismissButton: {
+    marginLeft: 8,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dismissButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+    lineHeight: 12,
   },
   subtitle: {
     fontSize: 16,

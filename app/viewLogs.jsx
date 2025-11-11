@@ -9,18 +9,29 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { getAllLogs, deleteFoodEntry, deleteSymptomEntry, clearAllLogs } from '../utils/storage';
 
 const ViewLogs = () => {
   const router = useRouter();
+  const params = useLocalSearchParams();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [highlightLatest, setHighlightLatest] = useState(false);
 
   useEffect(() => {
     loadLogs();
   }, []);
+
+  useEffect(() => {
+    // If navigated with a `latest` param, briefly highlight the first entry
+    if (params && params.latest) {
+      setHighlightLatest(true);
+      const t = setTimeout(() => setHighlightLatest(false), 3000);
+      return () => clearTimeout(t);
+    }
+  }, [params]);
 
   const loadLogs = async () => {
     try {
@@ -113,9 +124,10 @@ const ViewLogs = () => {
 
   const renderLogEntry = (entry, index) => {
     const isFood = entry.type === 'food';
+    const highlight = highlightLatest && index === 0;
     
     return (
-      <View key={entry.id} style={[styles.logEntry, isFood ? styles.foodEntry : styles.symptomEntry]}>
+      <View key={entry.id} style={[styles.logEntry, isFood ? styles.foodEntry : styles.symptomEntry, highlight && styles.latestHighlight]}>
         <View style={styles.entryHeader}>
           <View style={styles.entryTypeContainer}>
             <Text style={styles.entryType}>
@@ -342,6 +354,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+  },
+  latestHighlight: {
+    borderWidth: 2,
+    borderColor: '#FFD166',
   },
   foodEntry: {
     borderLeftWidth: 4,
