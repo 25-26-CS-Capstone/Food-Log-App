@@ -12,6 +12,7 @@ const home = () => {
   const [showWelcome, setShowWelcome] = useState(false)
   const [latestLogTimestamp, setLatestLogTimestamp] = useState(null)
   const [latestLogDate, setLatestLogDate] = useState(null)
+  const [hasAnyLogs, setHasAnyLogs] = useState(false)
   const [loginDayCount, setLoginDayCount] = useState(0)
   const fadeAnim = useRef(new Animated.Value(0)).current
   const slideAnim = useRef(new Animated.Value(-50)).current
@@ -33,7 +34,9 @@ const home = () => {
         // Load latest log timestamp for deep-linking
         try {
           const allLogs = await getAllLogs()
-          if (allLogs && allLogs.length > 0) {
+          const hasLogs = allLogs && allLogs.length > 0
+          setHasAnyLogs(!!hasLogs)
+          if (hasLogs) {
             setLatestLogTimestamp(new Date(allLogs[0].timestamp).toISOString())
             // Also compute the latest date (YYYY-MM-DD)
             const d = new Date(allLogs[0].timestamp)
@@ -46,12 +49,14 @@ const home = () => {
         
         // Check for user data and show welcome message
         const userData = await getUserData()
-        if (userData && userData.username) {
-          // Fetch login day count
+        if (userData && userData.username && hasAnyLogs) {
+          // Fetch login day count and prepare last login string
           try {
             const count = await getLoginDayCount()
             setLoginDayCount(count)
-            setWelcomeMessage(`Welcome back ${userData.username}! · ${count} days logged`)
+            const last = userData.lastLogin ? new Date(userData.lastLogin) : null
+            const lastText = last ? `${last.toLocaleDateString()} ${last.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '—'
+            setWelcomeMessage(`Welcome back ${userData.username}! · ${count} days logged · Last login: ${lastText}`)
           } catch (e) {
             console.warn('Could not load login day count')
             setWelcomeMessage(`Welcome back ${userData.username}!`)
@@ -138,7 +143,7 @@ const home = () => {
         <View style={styles.headerLeft}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Food Log App</Text>
-            {showWelcome && (
+            {showWelcome && hasAnyLogs && (
               <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => {
@@ -165,7 +170,11 @@ const home = () => {
                   <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1 }}>
                     <Text style={styles.welcomeText} numberOfLines={1}>{welcomeMessage}</Text>
                     <Text style={styles.welcomeDot}> · </Text>
-                    <Text style={styles.welcomeLink}>Continue where you left off</Text>
+                    {latestLogDate && latestLogDate === new Date().toISOString().split('T')[0] ? (
+                      <Text style={styles.todayPill}>See today's logs</Text>
+                    ) : (
+                      <Text style={styles.welcomeLink}>Continue where you left off</Text>
+                    )}
                   </View>
                   <TouchableOpacity
                     accessibilityLabel="Dismiss welcome"
@@ -316,6 +325,16 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
     fontWeight: '700',
     fontSize: 14,
+  },
+  todayPill: {
+    backgroundColor: '#E6F0FF',
+    color: '#0A3069',
+    overflow: 'hidden',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    fontWeight: '700',
+    fontSize: 12,
   },
   dismissButton: {
     marginLeft: 8,
