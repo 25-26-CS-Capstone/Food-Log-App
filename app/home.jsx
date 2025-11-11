@@ -1,17 +1,22 @@
 import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Animated } from 'react-native'
 import React, { useEffect, useState, useRef } from 'react'
+import { useWindowDimensions } from 'react-native'
 import { useRouter } from 'expo-router'
 import { addSampleData, hasSampleData } from '../utils/sampleData'
 import { initNotifications, sendAppOpenNotification, sendCustomNotification } from '../utils/notifications'
-import { getUserData, getAllLogs } from '../utils/storage'
+import { getUserData, getAllLogs, getLoginDayCount } from '../utils/storage'
 
 const home = () => {
   const router = useRouter()
   const [welcomeMessage, setWelcomeMessage] = useState('')
   const [showWelcome, setShowWelcome] = useState(false)
   const [latestLogTimestamp, setLatestLogTimestamp] = useState(null)
+  const [latestLogDate, setLatestLogDate] = useState(null)
+  const [loginDayCount, setLoginDayCount] = useState(0)
   const fadeAnim = useRef(new Animated.Value(0)).current
   const slideAnim = useRef(new Animated.Value(-50)).current
+  const { width } = useWindowDimensions()
+  const isNarrow = width < 380
 
   // Add sample data on first load and initialize notifications
   useEffect(() => {
@@ -30,6 +35,10 @@ const home = () => {
           const allLogs = await getAllLogs()
           if (allLogs && allLogs.length > 0) {
             setLatestLogTimestamp(new Date(allLogs[0].timestamp).toISOString())
+            // Also compute the latest date (YYYY-MM-DD)
+            const d = new Date(allLogs[0].timestamp)
+            const dateStr = d.toISOString().split('T')[0]
+            setLatestLogDate(dateStr)
           }
         } catch (e) {
           console.warn('Unable to load latest logs for popup deep-link', e)
@@ -38,7 +47,15 @@ const home = () => {
         // Check for user data and show welcome message
         const userData = await getUserData()
         if (userData && userData.username) {
-          setWelcomeMessage(`Welcome back ${userData.username}!`)
+          // Fetch login day count
+          try {
+            const count = await getLoginDayCount()
+            setLoginDayCount(count)
+            setWelcomeMessage(`Welcome back ${userData.username}! · ${count} days logged`)
+          } catch (e) {
+            console.warn('Could not load login day count')
+            setWelcomeMessage(`Welcome back ${userData.username}!`)
+          }
           setShowWelcome(true)
           
           // Animate in
@@ -55,21 +72,7 @@ const home = () => {
             })
           ]).start()
           
-          // Hide after 8 seconds (extended duration)
-          setTimeout(() => {
-            Animated.parallel([
-              Animated.timing(fadeAnim, {
-                toValue: 0,
-                duration: 400,
-                useNativeDriver: true,
-              }),
-              Animated.timing(slideAnim, {
-                toValue: -50,
-                duration: 400,
-                useNativeDriver: true,
-              })
-            ]).start(() => setShowWelcome(false))
-          }, 8000)
+          // Persist until dismissed: no auto-hide
         }
         
         // Initialize sample data
@@ -140,8 +143,8 @@ const home = () => {
                 activeOpacity={0.9}
                 onPress={() => {
                   setShowWelcome(false)
-                  if (latestLogTimestamp) {
-                    router.push({ pathname: '/viewLogs', params: { latest: latestLogTimestamp } })
+                  if (latestLogDate) {
+                    router.push({ pathname: '/viewLogs', params: { latestDate: latestLogDate } })
                   } else {
                     router.push('/viewLogs')
                   }
@@ -151,6 +154,7 @@ const home = () => {
                 <Animated.View 
                   style={[
                     styles.welcomePopup,
+                    isNarrow ? styles.welcomePopupCentered : styles.welcomePopupRight,
                     {
                       opacity: fadeAnim,
                       transform: [{ translateY: slideAnim }]
@@ -268,8 +272,6 @@ const styles = StyleSheet.create({
   },
   welcomePopup: {
     position: 'absolute',
-    top: 35,
-    right: -140,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#007AFF',
@@ -285,6 +287,14 @@ const styles = StyleSheet.create({
     shadowRadius: 4.65,
     elevation: 8,
     zIndex: 1000,
+  },
+  welcomePopupRight: {
+    top: 35,
+    right: -140,
+  },
+  welcomePopupCentered: {
+    top: 35,
+    alignSelf: 'center',
   },
   welcomeEmoji: {
     fontSize: 20,

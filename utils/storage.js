@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const FOOD_LOG_KEY = '@food_log';
 const SYMPTOMS_LOG_KEY = '@symptoms_log';
 const USER_KEY = '@user_data';
+const USER_LOGIN_DATES_KEY = '@user_login_dates';
 
 // Food Log Functions
 export const saveFoodEntry = async (foodEntry) => {
@@ -255,5 +256,43 @@ export const clearUserData = async () => {
   } catch (error) {
     console.error('Error clearing user data:', error);
     return false;
+  }
+};
+
+// Login day tracking (unique calendar days)
+export const recordTodayLoginDay = async () => {
+  try {
+    const today = new Date();
+    const dayString = today.toISOString().split('T')[0]; // YYYY-MM-DD
+    const existing = await AsyncStorage.getItem(USER_LOGIN_DATES_KEY);
+    const set = new Set(existing ? JSON.parse(existing) : []);
+    set.add(dayString);
+    const updated = Array.from(set);
+    await AsyncStorage.setItem(USER_LOGIN_DATES_KEY, JSON.stringify(updated));
+    return updated.length;
+  } catch (error) {
+    console.error('Error recording login day:', error);
+    return null;
+  }
+};
+
+export const getLoginDayCount = async () => {
+  try {
+    const dates = await AsyncStorage.getItem(USER_LOGIN_DATES_KEY);
+    if (!dates) return 0;
+    return JSON.parse(dates).length;
+  } catch (error) {
+    console.error('Error getting login day count:', error);
+    return 0;
+  }
+};
+
+export const getLoginDates = async () => {
+  try {
+    const dates = await AsyncStorage.getItem(USER_LOGIN_DATES_KEY);
+    return dates ? JSON.parse(dates) : [];
+  } catch (error) {
+    console.error('Error getting login dates:', error);
+    return [];
   }
 };

@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { getAllLogs, deleteFoodEntry, deleteSymptomEntry, clearAllLogs } from '../utils/storage';
+import { getAllLogs, getEntriesByDate, deleteFoodEntry, deleteSymptomEntry, clearAllLogs } from '../utils/storage';
 
 const ViewLogs = () => {
   const router = useRouter();
@@ -19,10 +19,11 @@ const ViewLogs = () => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [highlightLatest, setHighlightLatest] = useState(false);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     loadLogs();
-  }, []);
+  }, [params]);
 
   useEffect(() => {
     // If navigated with a `latest` param, briefly highlight the first entry
@@ -35,8 +36,18 @@ const ViewLogs = () => {
 
   const loadLogs = async () => {
     try {
-      const allLogs = await getAllLogs();
-      setLogs(allLogs);
+      if (params && params.latestDate) {
+        const date = Array.isArray(params.latestDate) ? params.latestDate[0] : params.latestDate;
+        const dayLogs = await getEntriesByDate(date);
+        setLogs(dayLogs);
+        setToast({ text: `Showing entries for ${new Date(date).toLocaleDateString()}`, ts: Date.now() });
+        setHighlightLatest(true);
+        setTimeout(() => setHighlightLatest(false), 3000);
+        setTimeout(() => setToast(null), 2500);
+      } else {
+        const allLogs = await getAllLogs();
+        setLogs(allLogs);
+      }
     } catch (error) {
       console.error('Error loading logs:', error);
       Alert.alert('Error', 'Failed to load logs');
@@ -194,6 +205,11 @@ const ViewLogs = () => {
 
   return (
     <View style={styles.container}>
+      {toast && (
+        <View style={styles.toastBanner}>
+          <Text style={styles.toastText}>{toast.text}</Text>
+        </View>
+      )}
       <View style={styles.header}>
         <Text style={styles.title}>Your Logs</Text>
         <View style={styles.headerButtons}>
@@ -253,10 +269,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#666',
+  toastBanner: {
+    position: 'absolute',
+    top: 20,
+    alignSelf: 'center',
+    backgroundColor: '#333',
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 16,
+    zIndex: 1000,
+    opacity: 0.95,
+  },
+  toastText: {
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: '600',
   },
   header: {
     flexDirection: 'row',

@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router'
-import { saveUserData } from '../utils/storage'
+import { saveUserData, recordTodayLoginDay } from '../utils/storage'
 import { sendLoginNotification } from '../utils/notifications'
 
 const login = () => {
@@ -34,6 +34,9 @@ const login = () => {
 
       // Send welcome back notification
       await sendLoginNotification(username)
+
+  // Record unique login day
+  await recordTodayLoginDay()
 
       // Navigate to home
       router.push('/home')
