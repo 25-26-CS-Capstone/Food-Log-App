@@ -4,20 +4,22 @@ import { useWindowDimensions } from 'react-native'
 import { useRouter } from 'expo-router'
 import { addSampleData, hasSampleData } from '../utils/sampleData'
 import { initNotifications, sendAppOpenNotification, sendCustomNotification } from '../utils/notifications'
-import { getUserData, getAllLogs, getLoginDayCount } from '../utils/storage'
+import { getUserData, getAllLogs, getLoginDayCount, isWelcomeBannerDismissedToday, setWelcomeBannerDismissedToday } from '../utils/storage'
 
 const home = () => {
   const router = useRouter()
   const [welcomeMessage, setWelcomeMessage] = useState('')
+  const [lastLoginText, setLastLoginText] = useState('')
   const [showWelcome, setShowWelcome] = useState(false)
   const [latestLogTimestamp, setLatestLogTimestamp] = useState(null)
   const [latestLogDate, setLatestLogDate] = useState(null)
   const [hasAnyLogs, setHasAnyLogs] = useState(false)
   const [loginDayCount, setLoginDayCount] = useState(0)
   const fadeAnim = useRef(new Animated.Value(0)).current
-  const slideAnim = useRef(new Animated.Value(-50)).current
+  const slideAnim = useRef(new Animated.Value(0)).current
   const { width } = useWindowDimensions()
   const isNarrow = width < 380
+  const isTiny = width < 330
 
   // Add sample data on first load and initialize notifications
   useEffect(() => {
@@ -49,7 +51,8 @@ const home = () => {
         
         // Check for user data and show welcome message
         const userData = await getUserData()
-        if (userData && userData.username && hasAnyLogs) {
+        const dismissedToday = await isWelcomeBannerDismissedToday()
+        if (userData && userData.username && hasAnyLogs && !dismissedToday) {
           // Fetch login day count and prepare last login string
           try {
             const count = await getLoginDayCount()
@@ -57,6 +60,7 @@ const home = () => {
             const last = userData.lastLogin ? new Date(userData.lastLogin) : null
             const lastText = last ? `${last.toLocaleDateString()} ${last.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : '—'
             setWelcomeMessage(`Welcome back ${userData.username}! · ${count} days logged · Last login: ${lastText}`)
+            setLastLoginText(lastText)
           } catch (e) {
             console.warn('Could not load login day count')
             setWelcomeMessage(`Welcome back ${userData.username}!`)
@@ -64,6 +68,8 @@ const home = () => {
           setShowWelcome(true)
           
           // Animate in
+          // set initial slide based on banner position (top vs bottom)
+          slideAnim.setValue(isTiny ? 50 : -50)
           Animated.parallel([
             Animated.timing(fadeAnim, {
               toValue: 1,
@@ -159,7 +165,7 @@ const home = () => {
                 <Animated.View 
                   style={[
                     styles.welcomePopup,
-                    isNarrow ? styles.welcomePopupCentered : styles.welcomePopupRight,
+                    isTiny ? styles.welcomePopupBottom : (isNarrow ? styles.welcomePopupCentered : styles.welcomePopupRight),
                     {
                       opacity: fadeAnim,
                       transform: [{ translateY: slideAnim }]
@@ -167,20 +173,31 @@ const home = () => {
                   ]}
                 >
                   <Text style={styles.welcomeEmoji}>👋</Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1 }}>
-                    <Text style={styles.welcomeText} numberOfLines={1}>{welcomeMessage}</Text>
-                    <Text style={styles.welcomeDot}> · </Text>
-                    {latestLogDate && latestLogDate === new Date().toISOString().split('T')[0] ? (
-                      <Text style={styles.todayPill}>See today's logs</Text>
-                    ) : (
-                      <Text style={styles.welcomeLink}>Continue where you left off</Text>
-                    )}
+                  <View style={{ flexDirection: 'column', flexShrink: 1 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1 }}>
+                      <Text style={styles.welcomeText} numberOfLines={1}>{welcomeMessage}</Text>
+                    </View>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+                      <Text style={styles.clockIcon}>🕒</Text>
+                      <Text style={styles.lastLoginText}>Last login: {lastLoginText}</Text>
+                      <Text style={styles.welcomeDot}> · </Text>
+                      {latestLogDate && latestLogDate === new Date().toISOString().split('T')[0] ? (
+                        <Text style={styles.welcomeLink}>See today's logs</Text>
+                      ) : (
+                        <TouchableOpacity
+                          onPress={(e) => { e.stopPropagation(); setShowWelcome(false); router.push('/foodLog') }}
+                        >
+                          <Text style={styles.todayPill}>Log today's food</Text>
+                        </TouchableOpacity>
+                      )}
+                    </View>
                   </View>
                   <TouchableOpacity
                     accessibilityLabel="Dismiss welcome"
                     onPress={(e) => {
                       e.stopPropagation()
                       setShowWelcome(false)
+                      setWelcomeBannerDismissedToday()
                     }}
                     style={styles.dismissButton}
                   >
@@ -305,6 +322,10 @@ const styles = StyleSheet.create({
     top: 35,
     alignSelf: 'center',
   },
+  welcomePopupBottom: {
+    bottom: 20,
+    alignSelf: 'center',
+  },
   welcomeEmoji: {
     fontSize: 20,
     marginRight: 8,
@@ -314,6 +335,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: '600',
     maxWidth: 180,
+  },
+  clockIcon: {
+    fontSize: 14,
+    marginRight: 6,
+  },
+  lastLoginText: {
+    color: '#E6F0FF',
+    fontSize: 12,
+    fontWeight: '600',
   },
   welcomeDot: {
     color: 'rgba(255,255,255,0.85)',

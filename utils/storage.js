@@ -4,6 +4,7 @@ const FOOD_LOG_KEY = '@food_log';
 const SYMPTOMS_LOG_KEY = '@symptoms_log';
 const USER_KEY = '@user_data';
 const USER_LOGIN_DATES_KEY = '@user_login_dates';
+const UI_WELCOME_BANNER_DISMISSED_DATE = '@ui_welcome_banner_dismissed_date';
 
 // Food Log Functions
 export const saveFoodEntry = async (foodEntry) => {
@@ -294,5 +295,28 @@ export const getLoginDates = async () => {
   } catch (error) {
     console.error('Error getting login dates:', error);
     return [];
+  }
+};
+
+// Welcome banner dismissal persistence
+export const isWelcomeBannerDismissedToday = async () => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const dismissedDate = await AsyncStorage.getItem(UI_WELCOME_BANNER_DISMISSED_DATE);
+    return dismissedDate === today;
+  } catch (error) {
+    console.error('Error checking banner dismissed date:', error);
+    return false;
+  }
+};
+
+export const setWelcomeBannerDismissedToday = async () => {
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    await AsyncStorage.setItem(UI_WELCOME_BANNER_DISMISSED_DATE, today);
+    return true;
+  } catch (error) {
+    console.error('Error setting banner dismissed date:', error);
+    return false;
   }
 };
