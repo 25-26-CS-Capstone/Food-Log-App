@@ -81,19 +81,19 @@ void CObjectManager::update(float deltaTime) {
             itA = m_stdObjectList.erase(itA);
             continue;
         }
-
         a->update(deltaTime);
         for (; itB != m_stdObjectList.end(); ++itB) {
             CObject* b = *itB;
             Vector2 tempB = b->m_vPos;
             float ax = tempA.x;
             float ay = tempA.y;
-            float aw = a->width;
             float ah = a->height;
+            float aw = a->width;
             float bx = tempB.x;
             float by = tempB.y;
-            float bw = b->width;
             float bh = b->height;
+            float bw = b->width;
+            
             
             bool overlap = !(ax + aw < bx || bx + bw < ax ||
                 ay + ah < by || by + bh < ay);

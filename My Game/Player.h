@@ -36,6 +36,8 @@ class CPlayer: public CObject{
     unsigned int lastSprite;
     float maxHealth = 3.0;
     int goldCount = 0;
+    float attackDamage = 1.0;
+    float attackCooldown = 0.0;
 
   public:
     CPlayer(eSprite t, const Vector2& p); ///< Constructor.
@@ -62,6 +64,10 @@ class CPlayer: public CObject{
     void changeAttackState(bool);
     bool getAttackState();
     void draw(); //draw player each frame
+    void changeAttackDamage(float x) { attackDamage += x; }
+    void update(float);
+    void setAttackCooldown(float x) { attackCooldown = x; }
+    float getAttackCooldown() { return attackCooldown; }
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

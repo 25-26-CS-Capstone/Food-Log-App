@@ -103,9 +103,9 @@ void CGame::CreateObjects() {
     const float h = m_pRenderer->GetHeight(eSprite::InuitIdleRight);
     m_pPlayer = (CPlayer*)m_pObjectManager->create(eSprite::InuitIdleRight,
         Vector2(100.0f, h / 2.0f));
-    m_pObjectManager->create(eSprite::testEnemy, Vector2(500.0f, 100.0f));
-    m_pObjectManager->create(eSprite::testEnemy, Vector2(800.0f, 100.0f));
-    m_pObjectManager->create(eSprite::item, Vector2(300.0f, 300.0f));
+    m_pObjectManager->create(eSprite::testEnemy, Vector2(500.0f, 300.0f));
+    m_pObjectManager->create(eSprite::testEnemy, Vector2(800.0f, 300.0f));
+    m_pObjectManager->create(eSprite::item, Vector2(100.0f, 100.0f));
 }
 
 /// Poll the keyboard state and respond to the key presses that happened since
@@ -114,7 +114,7 @@ void CGame::CreateObjects() {
 void CGame::KeyboardHandler() {
     m_pKeyboard->GetState(); //get current keyboard state 
 
-    if (m_pKeyboard->TriggerDown('L')) {
+    if (m_pKeyboard->TriggerDown('L') && m_pPlayer->getAttackCooldown() <= 0.0f) {
         m_pPlayer->changeAttackState(true);
         switch (m_pPlayer->getDirection()) {
         case 0:

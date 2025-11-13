@@ -5,7 +5,7 @@
 
 #include "Object.h"
 #include "EventTimer.h"
-
+#include "Player.h"
 
 class Attack : public CObject {
 private:

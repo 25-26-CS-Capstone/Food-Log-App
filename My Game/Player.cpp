@@ -297,3 +297,7 @@ void CPlayer::changeGoldCount(int x) {
     goldCount += x;
     OutputDebugString("Gold increased");
 }
+
+void CPlayer::update(float deltaTime) {
+    attackCooldown -= deltaTime;
+}

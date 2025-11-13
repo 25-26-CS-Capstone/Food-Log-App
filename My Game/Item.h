@@ -40,3 +40,13 @@ public:
 		m_pPlayer->changeGoldCount(1);
 	}
 };
+
+class attackUp : public Item {
+public:
+	attackUp(eSprite t, const Vector2& p) : Item(t, p) {
+	}
+
+	void pickup() {
+		m_pPlayer->changeAttackDamage(1.0);
+	}
+};
