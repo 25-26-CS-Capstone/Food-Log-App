@@ -58,8 +58,11 @@ CObject* CObjectManager::create(eSprite t, const Vector2& pos) {
     case eSprite::PlayerAttack:
         pObj = new Attack(eSprite::PlayerAttack, pos);
         break;
-    case eSprite::item:
-        pObj = new gold(eSprite::item, pos);
+    case eSprite::healthPickup:
+        pObj = new healthPickup(eSprite::healthPickup, pos);
+        break;
+    case eSprite::maxHealthPickup:
+        pObj = new maxHealthPickup(eSprite::maxHealthPickup, pos);
         break;
     default: pObj = new CObject(t, pos);
     } //switch

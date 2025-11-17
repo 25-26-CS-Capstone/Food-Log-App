@@ -17,8 +17,8 @@ const float screenHeight = 768.0f;
 /// memory. `Size` must be last.
 
 enum class eSprite : UINT {
-	Background, TextWheel, PIGSPRITE, healthBar, healthBarBackground, testEnemy, playerAttack, item, 
-	InuitIdleRightSheet, InuitIdleRight, InuitIdleLeftSheet, InuitIdleLeft, InuitRunRightSheet,
+	Background, TextWheel, PIGSPRITE, healthBar, healthBarBackground, testEnemy, playerAttack, healthPickup, 
+	maxHealthPickup, InuitIdleRightSheet, InuitIdleRight, InuitIdleLeftSheet, InuitIdleLeft, InuitRunRightSheet,
   InuitRunRight, InuitRunLeftSheet, InuitRunLeft,InuitRunUpSheet,
   InuitRunUp, InuitRunDownSheet, InuitRunDown,InuitIdleUpSheet,
   InuitIdleUp, InuitIdleDownSheet, InuitIdleDown,InuitRollSheet,

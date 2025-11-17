@@ -27,7 +27,20 @@ public:
 	}
 
 	void pickup() {
-		m_pPlayer->changeHealth(1.0f);
+		if (m_pPlayer->getCurrentHealth() != m_pPlayer->getMaxHealth()) {
+			m_pPlayer->changeHealth(1.0f);
+		}
+	}
+};
+
+class maxHealthPickup : public Item {
+public:
+	maxHealthPickup(eSprite t, const Vector2& p) : Item(t, p) {
+	}
+
+	void pickup() {
+		if(m_pPlayer->getMaxHealth() != 10.0f)
+		m_pPlayer->changeMaxHealth(1.0f);
 	}
 };
 

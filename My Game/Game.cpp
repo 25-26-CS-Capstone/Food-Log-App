@@ -46,7 +46,8 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::healthBar, "healthBar");
   m_pRenderer->Load(eSprite::healthBarBackground, "healthBarBackground");
   m_pRenderer->Load(eSprite::testEnemy, "testEnemy");
-  m_pRenderer->Load(eSprite::item, "item");
+  m_pRenderer->Load(eSprite::healthPickup, "healthPickup");
+  m_pRenderer->Load(eSprite::maxHealthPickup, "maxHealthPickup");
   m_pRenderer->Load(eSprite::PlayerAttackSheet, "PlayerAttackSheet");
   m_pRenderer->Load(eSprite::PlayerAttack, "PlayerAttack");
   m_pRenderer->Load(eSprite::InuitIdleLeftSheet, "InuitIdleLeftSheet");
@@ -103,9 +104,11 @@ void CGame::CreateObjects() {
     const float h = m_pRenderer->GetHeight(eSprite::InuitIdleRight);
     m_pPlayer = (CPlayer*)m_pObjectManager->create(eSprite::InuitIdleRight,
         Vector2(100.0f, h / 2.0f));
-    m_pObjectManager->create(eSprite::testEnemy, Vector2(500.0f, 300.0f));
-    m_pObjectManager->create(eSprite::testEnemy, Vector2(800.0f, 300.0f));
-    m_pObjectManager->create(eSprite::item, Vector2(100.0f, 100.0f));
+    m_pObjectManager->create(eSprite::testEnemy, Vector2(700.0f, 700.0f));
+    m_pObjectManager->create(eSprite::testEnemy, Vector2(700.0f, 700.0f));
+    m_pObjectManager->create(eSprite::healthPickup, Vector2(200.0f, 300.0f));
+    m_pObjectManager->create(eSprite::maxHealthPickup, Vector2(400.0f, 300.0f));
+
 }
 
 /// Poll the keyboard state and respond to the key presses that happened since

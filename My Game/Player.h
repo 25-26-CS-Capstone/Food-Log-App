@@ -68,6 +68,7 @@ class CPlayer: public CObject{
     void update(float);
     void setAttackCooldown(float x) { attackCooldown = x; }
     float getAttackCooldown() { return attackCooldown; }
+    void changeMaxHealth(float x) { maxHealth += x; }
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__
