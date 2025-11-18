@@ -37,6 +37,8 @@ const home = () => {
         try {
           const allLogs = await getAllLogs()
           const hasLogs = allLogs && allLogs.length > 0
+          console.log('🔍 DEBUG: Total logs found:', allLogs?.length || 0)
+          console.log('🔍 DEBUG: Has logs:', hasLogs)
           setHasAnyLogs(!!hasLogs)
           if (hasLogs) {
             setLatestLogTimestamp(new Date(allLogs[0].timestamp).toISOString())
@@ -44,6 +46,8 @@ const home = () => {
             const d = new Date(allLogs[0].timestamp)
             const dateStr = d.toISOString().split('T')[0]
             setLatestLogDate(dateStr)
+            console.log('🔍 DEBUG: Latest log date:', dateStr)
+            console.log('🔍 DEBUG: Today date:', new Date().toISOString().split('T')[0])
           }
         } catch (e) {
           console.warn('Unable to load latest logs for popup deep-link', e)
@@ -52,6 +56,12 @@ const home = () => {
         // Check for user data and show welcome message
         const userData = await getUserData()
         const dismissedToday = await isWelcomeBannerDismissedToday()
+        console.log('🔍 DEBUG: User data exists:', !!userData)
+        console.log('🔍 DEBUG: Username:', userData?.username)
+        console.log('🔍 DEBUG: Has any logs:', hasAnyLogs)
+        console.log('🔍 DEBUG: Banner dismissed today:', dismissedToday)
+        console.log('🔍 DEBUG: Will show banner:', !!(userData && userData.username && hasAnyLogs && !dismissedToday))
+        
         if (userData && userData.username && hasAnyLogs && !dismissedToday) {
           // Fetch login day count and prepare last login string
           try {
@@ -65,7 +75,10 @@ const home = () => {
             console.warn('Could not load login day count')
             setWelcomeMessage(`Welcome back ${userData.username}!`)
           }
+          console.log('🔍 DEBUG: Welcome message set:', welcomeMessage)
+          console.log('🔍 DEBUG: Last login text:', lastLoginText)
           setShowWelcome(true)
+          console.log('🔍 DEBUG: setShowWelcome(true) called')
           
           // Animate in
           // set initial slide based on banner position (top vs bottom)
@@ -143,12 +156,26 @@ const home = () => {
     console.log('Test data added and notification sent!')
   }
 
+  const resetBannerForTesting = async () => {
+    try {
+      // Clear the dismissed date so banner shows again
+      const AsyncStorage = (await import('@react-native-async-storage/async-storage')).default
+      await AsyncStorage.removeItem('@ui_welcome_banner_dismissed_date')
+      setShowWelcome(false)
+      // Reload the page
+      window.location.reload()
+    } catch (error) {
+      console.error('Error resetting banner:', error)
+    }
+  }
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Food Log App</Text>
+            {console.log('🔍 DEBUG: Rendering banner check - showWelcome:', showWelcome, 'hasAnyLogs:', hasAnyLogs)}
             {showWelcome && hasAnyLogs && (
               <TouchableOpacity
                 activeOpacity={0.9}
@@ -248,6 +275,11 @@ const home = () => {
         <TouchableOpacity style={styles.testButton} onPress={addTestData}>
           <Text style={styles.testButtonText}>🧪 Add Test Data</Text>
           <Text style={styles.buttonDescription}>Add sample entries for testing</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.testButton} onPress={resetBannerForTesting}>
+          <Text style={styles.testButtonText}>🔄 Reset Welcome Banner</Text>
+          <Text style={styles.buttonDescription}>Clear dismissal and reload</Text>
         </TouchableOpacity>
       </View>
 
