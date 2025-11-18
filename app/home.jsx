@@ -215,7 +215,11 @@ const home = () => {
                       <Text style={styles.lastLoginText}>Last login: {lastLoginText}</Text>
                       <Text style={styles.welcomeDot}> · </Text>
                       {latestLogDate && latestLogDate === new Date().toISOString().split('T')[0] ? (
-                        <Text style={styles.welcomeLink}>See today's logs</Text>
+                        <TouchableOpacity
+                          onPress={(e) => { e.stopPropagation(); setShowWelcome(false); router.push({ pathname: '/viewLogs', params: { latestDate: latestLogDate } }) }}
+                        >
+                          <Text style={styles.welcomeLink}>See today's logs</Text>
+                        </TouchableOpacity>
                       ) : (
                         <TouchableOpacity
                           onPress={(e) => { e.stopPropagation(); setShowWelcome(false); router.push('/foodLog') }}
@@ -223,6 +227,12 @@ const home = () => {
                           <Text style={styles.todayPill}>Log today's food</Text>
                         </TouchableOpacity>
                       )}
+                      <TouchableOpacity
+                        onPress={(e) => { e.stopPropagation(); setShowWelcome(false); router.push('/calendar') }}
+                        style={{ marginLeft: 6 }}
+                      >
+                        <Text style={styles.calendarPill}>Calendar</Text>
+                      </TouchableOpacity>
                     </View>
                   </View>
                   <TouchableOpacity
@@ -397,6 +407,16 @@ const styles = StyleSheet.create({
   todayPill: {
     backgroundColor: '#E6F0FF',
     color: '#0A3069',
+    overflow: 'hidden',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  calendarPill: {
+    backgroundColor: '#FFE8CC',
+    color: '#8A4D00',
     overflow: 'hidden',
     paddingHorizontal: 10,
     paddingVertical: 4,
