@@ -25,6 +25,9 @@ const home = () => {
   useEffect(() => {
     const initializeApp = async () => {
       try {
+        // Local flags to avoid state timing issues
+        let hasLogsLocal = false
+        let latestDateLocal = null
         // Initialize notification system
         console.log('Initializing notifications...')
         await initNotifications()
@@ -37,15 +40,17 @@ const home = () => {
         try {
           const allLogs = await getAllLogs()
           const hasLogs = allLogs && allLogs.length > 0
+          hasLogsLocal = !!hasLogs
           console.log('🔍 DEBUG: Total logs found:', allLogs?.length || 0)
-          console.log('🔍 DEBUG: Has logs:', hasLogs)
-          setHasAnyLogs(!!hasLogs)
-          if (hasLogs) {
+          console.log('🔍 DEBUG: Has logs (local):', hasLogsLocal)
+          setHasAnyLogs(hasLogsLocal)
+          if (hasLogsLocal) {
             setLatestLogTimestamp(new Date(allLogs[0].timestamp).toISOString())
             // Also compute the latest date (YYYY-MM-DD)
             const d = new Date(allLogs[0].timestamp)
             const dateStr = d.toISOString().split('T')[0]
             setLatestLogDate(dateStr)
+            latestDateLocal = dateStr
             console.log('🔍 DEBUG: Latest log date:', dateStr)
             console.log('🔍 DEBUG: Today date:', new Date().toISOString().split('T')[0])
           }
@@ -58,11 +63,12 @@ const home = () => {
         const dismissedToday = await isWelcomeBannerDismissedToday()
         console.log('🔍 DEBUG: User data exists:', !!userData)
         console.log('🔍 DEBUG: Username:', userData?.username)
-        console.log('🔍 DEBUG: Has any logs:', hasAnyLogs)
+        console.log('🔍 DEBUG: Has any logs (state):', hasAnyLogs)
+        console.log('🔍 DEBUG: Has logs (local):', hasLogsLocal)
         console.log('🔍 DEBUG: Banner dismissed today:', dismissedToday)
-        console.log('🔍 DEBUG: Will show banner:', !!(userData && userData.username && hasAnyLogs && !dismissedToday))
+        console.log('🔍 DEBUG: Will show banner (using local):', !!(userData && userData.username && hasLogsLocal && !dismissedToday))
         
-        if (userData && userData.username && hasAnyLogs && !dismissedToday) {
+        if (userData && userData.username && hasLogsLocal && !dismissedToday) {
           // Fetch login day count and prepare last login string
           try {
             const count = await getLoginDayCount()
@@ -175,8 +181,8 @@ const home = () => {
         <View style={styles.headerLeft}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Food Log App</Text>
-            {console.log('🔍 DEBUG: Rendering banner check - showWelcome:', showWelcome, 'hasAnyLogs:', hasAnyLogs)}
-            {showWelcome && hasAnyLogs && (
+            {console.log('🔍 DEBUG: Rendering banner check - showWelcome:', showWelcome, 'hasAnyLogs (state):', hasAnyLogs)}
+            {showWelcome && (
               <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => {
