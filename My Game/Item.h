@@ -63,3 +63,13 @@ public:
 		m_pPlayer->changeAttackDamage(1.0);
 	}
 };
+
+class thornRoll : public Item {
+public:
+	thornRoll(eSprite t, const Vector2& p) : Item(t, p) {
+	}
+
+	void pickup() {
+		m_pPlayer->changeRollAttack(true);
+	}
+};

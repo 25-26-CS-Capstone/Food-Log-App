@@ -38,7 +38,7 @@ class CPlayer: public CObject{
     int goldCount = 0;
     float attackDamage = 1.0;
     float attackCooldown = 0.0;
-
+    bool rollAttack = false;
   public:
     CPlayer(eSprite t, const Vector2& p); ///< Constructor.
     virtual ~CPlayer(); ///< Destructor.
@@ -69,6 +69,9 @@ class CPlayer: public CObject{
     void setAttackCooldown(float x) { attackCooldown = x; }
     float getAttackCooldown() { return attackCooldown; }
     void changeMaxHealth(float x) { maxHealth += x; }
+    void changeRollAttack(bool x) { rollAttack = x; }
+    bool getRollAttack() { return rollAttack; }
+    int getPlayerState() { return playerState; }
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

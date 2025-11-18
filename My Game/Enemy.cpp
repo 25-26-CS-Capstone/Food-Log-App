@@ -19,15 +19,30 @@ void CEnemy::update(float deltaTime) {
 	if (currentHealth <= 0) {
 		m_bDead = true;
 	}
+	if (damaged = true) {
+		invulnTime -= deltaTime;
+		if (invulnTime <= 0) {
+			damaged = false;
+			invulnTime = 0.3f;
+		}
+	}
 }
 
 
 void CEnemy::onCollision(CObject* obj) {
 	if (obj->type == 'p') {
-		m_vPos = Vector2(800.0f, 500.0f);
+		if (m_pPlayer->getRollAttack() == true && m_pPlayer->getPlayerState() == 1) {
+			if (damaged == false) {
+				currentHealth -= 1;
+				damaged = true;
+			}
+		}
 	}
 
 	if (obj->type == 'a') {
-		currentHealth -= 1;
+		if (damaged == false) {
+			currentHealth -= 1;
+			damaged = true;
+		}
 	}
 }

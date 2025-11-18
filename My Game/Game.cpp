@@ -104,8 +104,7 @@ void CGame::CreateObjects() {
     const float h = m_pRenderer->GetHeight(eSprite::InuitIdleRight);
     m_pPlayer = (CPlayer*)m_pObjectManager->create(eSprite::InuitIdleRight,
         Vector2(100.0f, h / 2.0f));
-    m_pObjectManager->create(eSprite::testEnemy, Vector2(700.0f, 700.0f));
-    m_pObjectManager->create(eSprite::testEnemy, Vector2(700.0f, 700.0f));
+    m_pObjectManager->create(eSprite::testEnemy, Vector2(1000.0f, 300.0f));
     m_pObjectManager->create(eSprite::healthPickup, Vector2(200.0f, 300.0f));
     m_pObjectManager->create(eSprite::maxHealthPickup, Vector2(400.0f, 300.0f));
 
