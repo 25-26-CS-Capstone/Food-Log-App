@@ -1,10 +1,12 @@
 #include "Item.h"
 #include "ComponentIncludes.h"
 
-Item::Item(eSprite t, const Vector2& p) : CObject(t, p) {
+Item::Item(eSprite t, const Vector2& p, bool s, int x) : CObject(t, p) {
 	width = 50.0f;
 	height = 50.0f;
 	type = 'i';
+	shopItem = s;
+	price = x;
 } //constructor
 
 

@@ -9,8 +9,10 @@
 class Item : public CObject {
 protected:
 	bool pickedUp = false;
+	bool shopItem;
+	int price;
 public:
-	Item(eSprite t, const Vector2& p);
+	Item(eSprite t, const Vector2& p, bool s, int x);
 	void onCollision(CObject*);
 	void move();
 	void update(float);
@@ -23,7 +25,7 @@ public:
 
 class healthPickup : public Item {
 public:
-	healthPickup(eSprite t, const Vector2& p) : Item(t, p) {
+	healthPickup(eSprite t, const Vector2& p, bool s, int x) : Item(t, p, s, x) {
 	}
 
 	void pickup() {
@@ -35,7 +37,7 @@ public:
 
 class maxHealthPickup : public Item {
 public:
-	maxHealthPickup(eSprite t, const Vector2& p) : Item(t, p) {
+	maxHealthPickup(eSprite t, const Vector2& p, bool s, int x) : Item(t, p, s, x) {
 	}
 
 	void pickup() {
@@ -46,7 +48,7 @@ public:
 
 class gold : public Item {
 public:
-	gold(eSprite t, const Vector2& p) : Item(t, p) {
+	gold(eSprite t, const Vector2& p, bool s, int x) : Item(t, p, s, x) {
 	}
 
 	void pickup() {
@@ -56,9 +58,8 @@ public:
 
 class attackUp : public Item {
 public:
-	attackUp(eSprite t, const Vector2& p) : Item(t, p) {
+	attackUp(eSprite t, const Vector2& p, bool s, int x) : Item(t, p, s, x) {
 	}
-
 	void pickup() {
 		m_pPlayer->changeAttackDamage(1.0);
 	}
@@ -66,7 +67,7 @@ public:
 
 class thornRoll : public Item {
 public:
-	thornRoll(eSprite t, const Vector2& p) : Item(t, p) {
+	thornRoll(eSprite t, const Vector2& p, bool s, int x) : Item(t, p, s, x) {
 	}
 
 	void pickup() {

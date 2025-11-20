@@ -8,9 +8,12 @@ class HUD {
 public:
 	HUD(LSpriteRenderer* renderer, CPlayer* player);
 	void Render();
-private:
+	void updateGoldDigits(int);
+protected:
 	LSpriteRenderer* mRenderer;
 	CPlayer* mPlayer;
 	eSprite mHealthBarFill;
 	eSprite mHealthBarBackground;
+	int goldOnesDigit = 0;
+	int goldTensDigit = 0;
 };

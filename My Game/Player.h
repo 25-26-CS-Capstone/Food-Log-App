@@ -7,6 +7,7 @@
 #include "Object.h"
 #include "EventTimer.h"
 #include "Common.h"
+#include "HUD.h"
 
 /// \brief The player object. 
 ///

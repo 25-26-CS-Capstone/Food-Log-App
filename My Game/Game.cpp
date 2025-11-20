@@ -50,6 +50,17 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::maxHealthPickup, "maxHealthPickup");
   m_pRenderer->Load(eSprite::PlayerAttackSheet, "PlayerAttackSheet");
   m_pRenderer->Load(eSprite::PlayerAttack, "PlayerAttack");
+  m_pRenderer->Load(eSprite::gold, "gold");
+  m_pRenderer->Load(eSprite::digit0, "digit0");
+  m_pRenderer->Load(eSprite::digit1, "digit1");
+  m_pRenderer->Load(eSprite::digit2, "digit2");
+  m_pRenderer->Load(eSprite::digit3, "digit3");
+  m_pRenderer->Load(eSprite::digit4, "digit4");
+  m_pRenderer->Load(eSprite::digit5, "digit5");
+  m_pRenderer->Load(eSprite::digit6, "digit6");
+  m_pRenderer->Load(eSprite::digit7, "digit7");
+  m_pRenderer->Load(eSprite::digit8, "digit8");
+  m_pRenderer->Load(eSprite::digit9, "digit9");
   m_pRenderer->Load(eSprite::InuitIdleLeftSheet, "InuitIdleLeftSheet");
   m_pRenderer->Load(eSprite::InuitIdleLeft, "InuitIdleLeft");
   m_pRenderer->Load(eSprite::InuitIdleRightSheet, "InuitIdleRightSheet");
@@ -107,6 +118,7 @@ void CGame::CreateObjects() {
     m_pObjectManager->create(eSprite::testEnemy, Vector2(1000.0f, 300.0f));
     m_pObjectManager->create(eSprite::healthPickup, Vector2(200.0f, 300.0f));
     m_pObjectManager->create(eSprite::maxHealthPickup, Vector2(400.0f, 300.0f));
+    m_pObjectManager->create(eSprite::gold, Vector2(600.0f, 300.0f));
 
 }
 
