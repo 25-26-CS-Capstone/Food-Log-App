@@ -37,30 +37,10 @@ void HUD::Render() {
 
 	mRenderer->Draw(&fillDesc2);
 	mRenderer->Draw(&fillDesc);
+	renderGoldNums(goldOnesDigit, goldTensDigit, Vector2(100.0f, screenHeight - 100.0f));
+
+
 	
-
-
-	if (goldTensDigit > 0) {
-		LSpriteDesc2D tensDigit = {};
-
-		tensDigit.m_nSpriteIndex = (UINT)eSprite::digit0 + (UINT)goldTensDigit;
-		tensDigit.m_vPos = Vector2(100.0f, screenHeight - 100.0f);
-		tensDigit.m_fXScale = 1.0f; // shrink horizontally with health
-		tensDigit.m_fYScale = 1.0f;
-		tensDigit.m_fRoll = 0.0f;              // no rotation
-		tensDigit.m_fAlpha = 1.0f;
-		mRenderer->Draw(&tensDigit);
-	}
-
-
-	LSpriteDesc2D onesDigit = {};
-	onesDigit.m_nSpriteIndex = (UINT)eSprite::digit0 + (UINT)goldOnesDigit;
-	onesDigit.m_vPos = Vector2(130.0f, screenHeight - 100.0f);
-	onesDigit.m_fXScale = 1.0f; // shrink horizontally with health
-	onesDigit.m_fYScale = 1.0f;
-	onesDigit.m_fRoll = 0.0f;              // no rotation
-	onesDigit.m_fAlpha = 1.0f;
-	mRenderer->Draw(&onesDigit);
 
 }
 
@@ -73,4 +53,28 @@ void HUD::updateGoldDigits(int goldChange) {
 		goldTensDigit = temp / 10;
 		goldOnesDigit = temp - (10*(temp/10));
 	}
+}
+
+void HUD::renderGoldNums(int onesValue, int tensValue, Vector2 pos) {
+	if (tensValue > 0) {
+		LSpriteDesc2D tensDigit = {};
+
+		tensDigit.m_nSpriteIndex = (UINT)eSprite::digit0 + (UINT)tensValue;
+		tensDigit.m_vPos = pos;
+		tensDigit.m_fXScale = 1.0f; // shrink horizontally with health
+		tensDigit.m_fYScale = 1.0f;
+		tensDigit.m_fRoll = 0.0f;              // no rotation
+		tensDigit.m_fAlpha = 1.0f;
+		mRenderer->Draw(&tensDigit);
+	}
+
+
+	LSpriteDesc2D onesDigit = {};
+	onesDigit.m_nSpriteIndex = (UINT)eSprite::digit0 + (UINT)onesValue;
+	onesDigit.m_vPos = pos + Vector2(30.0f, 0.0f);
+	onesDigit.m_fXScale = 1.0f; // shrink horizontally with health
+	onesDigit.m_fYScale = 1.0f;
+	onesDigit.m_fRoll = 0.0f;              // no rotation
+	onesDigit.m_fAlpha = 1.0f;
+	mRenderer->Draw(&onesDigit);
 }

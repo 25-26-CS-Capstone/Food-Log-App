@@ -40,6 +40,8 @@ class CPlayer: public CObject{
     float attackDamage = 1.0;
     float attackCooldown = 0.0;
     bool rollAttack = false;
+    bool lifeDrop = true;
+    bool goldDrop = true;
   public:
     CPlayer(eSprite t, const Vector2& p); ///< Constructor.
     virtual ~CPlayer(); ///< Destructor.
@@ -73,6 +75,11 @@ class CPlayer: public CObject{
     void changeRollAttack(bool x) { rollAttack = x; }
     bool getRollAttack() { return rollAttack; }
     int getPlayerState() { return playerState; }
+    int getGoldCount() { return goldCount; }
+    bool getLifeDrop() { return lifeDrop; }
+    void changeLifeDrop(bool x) { lifeDrop = x; }
+    bool getGoldDrop() { return goldDrop; }
+    void changeGoldDrop(bool x) { goldDrop = x; }
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

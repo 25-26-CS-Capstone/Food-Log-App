@@ -5,6 +5,7 @@
 
 #include "Object.h"
 #include "Player.h"
+#include "Hud.h"
 
 class Item : public CObject {
 protected:
@@ -72,5 +73,25 @@ public:
 
 	void pickup() {
 		m_pPlayer->changeRollAttack(true);
+	}
+};
+
+class lifeDrop : public Item {
+public:
+	lifeDrop(eSprite t, const Vector2& p, bool s, int x) : Item(t, p, s, x) {
+	}
+
+	void pickup() {
+		m_pPlayer->changeLifeDrop(true);
+	}
+};
+
+class goldDrop : public Item {
+public:
+	goldDrop(eSprite t, const Vector2& p, bool s, int x) : Item(t, p, s, x) {
+	}
+
+	void pickup() {
+		m_pPlayer->changeGoldDrop(true);
 	}
 };

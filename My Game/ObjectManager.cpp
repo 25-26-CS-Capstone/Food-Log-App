@@ -62,7 +62,7 @@ CObject* CObjectManager::create(eSprite t, const Vector2& pos) {
         pObj = new healthPickup(eSprite::healthPickup, pos, false, 0);
         break;
     case eSprite::maxHealthPickup:
-        pObj = new maxHealthPickup(eSprite::maxHealthPickup, pos, false, 0);
+        pObj = new maxHealthPickup(eSprite::maxHealthPickup, pos, true, 1);
         break;
     case eSprite::gold:
         pObj = new gold(eSprite::gold, pos, false, 0);

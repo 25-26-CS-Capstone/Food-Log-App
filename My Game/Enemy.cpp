@@ -1,5 +1,6 @@
 #include "Enemy.h"
 #include "ComponentIncludes.h"
+#include "ObjectManager.h"
 
 CEnemy::CEnemy(eSprite t, const Vector2& p) : CObject(t, p) {
 	width = 200.0f;
@@ -18,6 +19,12 @@ void CEnemy::move() {
 void CEnemy::update(float deltaTime) {
 	if (currentHealth <= 0) {
 		m_bDead = true;
+		if (m_pPlayer->getLifeDrop() == true) {
+			m_pObjectManager->create(eSprite::healthPickup, this->m_vPos);
+		}
+		if (m_pPlayer->getGoldDrop() == true) {
+			m_pObjectManager->create(eSprite::gold, this->m_vPos);
+		}
 	}
 	if (damaged = true) {
 		invulnTime -= deltaTime;

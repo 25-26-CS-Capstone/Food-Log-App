@@ -295,7 +295,7 @@ void CPlayer::draw() {
 
 void CPlayer::changeGoldCount(int x) {
     goldCount += x;
-    mHud->updateGoldDigits(1);
+    mHud->updateGoldDigits(x);
 }
 
 void CPlayer::update(float deltaTime) {

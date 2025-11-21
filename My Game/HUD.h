@@ -9,6 +9,7 @@ public:
 	HUD(LSpriteRenderer* renderer, CPlayer* player);
 	void Render();
 	void updateGoldDigits(int);
+	void renderGoldNums(int, int, Vector2);
 protected:
 	LSpriteRenderer* mRenderer;
 	CPlayer* mPlayer;
