@@ -13,7 +13,7 @@ void HUD::Render() {
 	float height = 20.0f;
 	Vector2 pos(530.0f,screenHeight - 30.0f);
 
-	Vector2 centeredPos = pos - Vector2((fullWidth * ((1.0-ratio)/2)), 0.0f);
+	Vector2 centeredPos = pos - Vector2((fullWidth * ((1.0f-ratio)/2)), 0.0f);
 
 	LSpriteDesc2D fillDesc = {};
 	fillDesc.m_nSpriteIndex = (UINT)mHealthBarFill;
@@ -25,7 +25,7 @@ void HUD::Render() {
 	fillDesc.m_fAlpha = 1.0f;              // full opacity
 
 	ratio = mPlayer->getMaxHealth() / 10.0f;
-	centeredPos = pos - Vector2((fullWidth * ((1.0 - ratio) / 2)), 0.0f);
+	centeredPos = pos - Vector2((fullWidth * ((1.0f - ratio) / 2)), 0.0f);
 	LSpriteDesc2D fillDesc2 = {};
 	fillDesc2.m_nSpriteIndex = (UINT)mHealthBarBackground;
 	fillDesc2.m_vPos = centeredPos;               // position on screen

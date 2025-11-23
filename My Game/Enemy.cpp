@@ -48,7 +48,7 @@ void CEnemy::onCollision(CObject* obj) {
 
 	if (obj->type == 'a') {
 		if (damaged == false) {
-			currentHealth -= 1;
+			currentHealth -= 1 * m_pPlayer->getAttackDamage();
 			damaged = true;
 		}
 	}

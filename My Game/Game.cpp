@@ -130,21 +130,57 @@ void CGame::KeyboardHandler() {
 
     if (m_pKeyboard->TriggerDown('L') && m_pPlayer->getAttackCooldown() <= 0.0f) {
         m_pPlayer->changeAttackState(true);
-        switch (m_pPlayer->getDirection()) {
-        case 0:
-            m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(0.0f, 200.0f));
-            break;
-        case 1:
-            m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(200.0f, 0.0f));
-            break;
-        case 2:
-            m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(0.0f, -200.0f));
-            break;
-        case 3:
-            m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(-200.0f, 0.0f));
-            break;
-        default:
-            break;
+        if(m_pPlayer->getBackAttack() == true){
+            switch (m_pPlayer->getDirection()) {
+            case 0:
+                m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(0.0f, 200.0f));
+                break;
+            case 1:
+                m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(200.0f, 0.0f));
+                break;
+            case 2:
+                m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(0.0f, -200.0f));
+                break;
+            case 3:
+                m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(-200.0f, 0.0f));
+                break;
+            default:
+                break;
+            }
+            switch (m_pPlayer->getDirection()) {
+            case 0:
+                m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(0.0f, -200.0f));
+                break;
+            case 1:
+                m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(-200.0f, 0.0f));
+                break;
+            case 2:
+                m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(0.0f, 200.0f));
+                break;
+            case 3:
+                m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(200.0f, 0.0f));
+                break;
+            default:
+                break;
+            }
+        }
+        else {
+            switch (m_pPlayer->getDirection()) {
+            case 0:
+                m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(0.0f, 200.0f));
+                break;
+            case 1:
+                m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(200.0f, 0.0f));
+                break;
+            case 2:
+                m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(0.0f, -200.0f));
+                break;
+            case 3:
+                m_pObjectManager->create(eSprite::PlayerAttack, m_pPlayer->m_vPos + Vector2(-200.0f, 0.0f));
+                break;
+            default:
+                break;
+            }
         }
 
     }

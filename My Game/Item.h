@@ -66,6 +66,15 @@ public:
 	}
 };
 
+class attackSpeedUp : public Item {
+public:
+	attackSpeedUp(eSprite t, const Vector2& p, bool s, int x) : Item(t, p, s, x) {
+	}
+	void pickup() {
+		m_pPlayer->changeAttackCooldownValue(0.2f);
+	}
+};
+
 class thornRoll : public Item {
 public:
 	thornRoll(eSprite t, const Vector2& p, bool s, int x) : Item(t, p, s, x) {
@@ -93,5 +102,15 @@ public:
 
 	void pickup() {
 		m_pPlayer->changeGoldDrop(true);
+	}
+};
+
+class backAttack : public Item {
+public:
+	backAttack(eSprite t, const Vector2& p, bool s, int x) : Item(t, p, s, x) {
+	}
+
+	void pickup() {
+		m_pPlayer->changeBackAttack(true);
 	}
 };
