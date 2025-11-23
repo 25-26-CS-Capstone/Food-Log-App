@@ -48,6 +48,7 @@ const RootLayout = () => {
         <Stack.Screen name="register" options={{title: 'Register'}} />
         <Stack.Screen name="help_modal" options={{ presentation: 'modal', title: 'Help' }} />
         <Stack.Screen name="(tabs)" options={{title: 'Home', headerShown: false}}/>
+        <Stack.Screen name="calendar" options={{title: 'Calendar'}} />
         <Stack.Screen name="food_log" options={{title: 'Food Log'}} />
         <Stack.Screen name="symptom_log" options={{title: 'Symptom Log'}} />
         <Stack.Screen name="previous_logs" options={{title: 'Previous Logs'}} />

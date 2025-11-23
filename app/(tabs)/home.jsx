@@ -1,26 +1,15 @@
 import { StyleSheet, Text, View, Button, Platform, Alert } from 'react-native';
 import React from 'react';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../AuthContext';
 import { navigate } from 'expo-router/build/global-state/routing';
 
 const home = () => {
-  const { setAuth } = useAuth();
 
-  const onLogout = async () => {
-    setAuth(null);
-    const { error } = await supabase.auth.signOut();
-    if (Platform.OS === 'web') {
-      if (error) window.alert('Error signing out');
-    } else if (error) {
-      Alert.alert('Error signing out');
-    }
-  };
 
   return (
     <View style={styles.container}>
-      <View style={styles.buttonWrapper}>
-        <Button title="Enter New Food Log(s)" onPress={() => navigate('../food_log')} />
+
+    <View style={styles.buttonWrapper}>
+        <Button title="Add New Food Log(s)" onPress={() => navigate('../food_log')} />
       </View>
 
       <View style={styles.buttonWrapper}>
@@ -31,9 +20,6 @@ const home = () => {
         <Button title="View Food Calendar" onPress={() => navigate('../calendar')} />
       </View>
 
-      <View style={styles.buttonWrapper}>
-        <Button title="Logout" onPress={onLogout} />
-      </View>
     </View>
   );
 };

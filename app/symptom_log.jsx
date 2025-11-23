@@ -1,34 +1,41 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TextInput, Button, StyleSheet } from 'react-native';
 import moment from 'moment';
-import { useLocalSearchParams, useRouter } from 'expo-router'; 
-import AsyncStorage from '@react-native-async-storage/async-storage'; // Import AsyncStorage
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SymptomLog = () => {
-  const { foodLogData } = useLocalSearchParams();
   const router = useRouter();
+  const params = useLocalSearchParams();
 
-  // Deserialize the food data safely
-  const parsedFoodLog = useMemo(() => {
-    try {
-      return foodLogData ? JSON.parse(foodLogData) : [];
-    } catch {
-      return [];
-    }
-  }, [foodLogData]);
-
-  const [symptom, setSymptom] = useState('');
   const [selectedFood, setSelectedFood] = useState(null);
+  const [symptom, setSymptom] = useState('');
   const [symptomLog, setSymptomLog] = useState([]);
 
-  // Load the symptom log from AsyncStorage on component mount
+  // Load selected food from route params
+  useEffect(() => {
+    if (params.selectedFood && params.selectedDate && params.selectedTime) {
+      try {
+        const food = JSON.parse(params.selectedFood);
+        const date = new Date(params.selectedDate); // Parse the date string back to a Date object
+        const time = new Date(params.selectedTime); // Parse the time string back to a Date object
+
+        setSelectedFood(food);
+        setSelectedDate(date);
+        setSelectedTime(time);
+      } catch (err) {
+        console.log("Failed to parse selected data:", err);
+      }
+    }
+  }, [params.selectedFood, params.selectedDate, params.selectedTime]);
+
+
+  // Load saved symptom logs
   useEffect(() => {
     const loadSymptomLog = async () => {
       try {
-        const storedSymptomLog = await AsyncStorage.getItem('symptomLog');
-        if (storedSymptomLog) {
-          setSymptomLog(JSON.parse(storedSymptomLog));
-        }
+        const stored = await AsyncStorage.getItem('symptomLog');
+        if (stored) setSymptomLog(JSON.parse(stored));
       } catch (error) {
         console.error('Error loading symptom log:', error);
       }
@@ -38,7 +45,7 @@ const SymptomLog = () => {
   }, []);
 
   const handleSymptomSubmit = async () => {
-    if (!symptom || !selectedFood) {
+    if (!symptom || !selectedFood || !selectedDate || !selectedTime) {
       alert('Please select a food and enter a symptom.');
       return;
     }
@@ -47,41 +54,38 @@ const SymptomLog = () => {
       id: Date.now().toString(),
       food: selectedFood.foodName,
       symptom,
-      time: moment().format('MMMM Do YYYY, h:mm a'),
+      time: moment(selectedTime).format('MMMM Do YYYY, h:mm a'), // format time for the symptom log
+      date: moment(selectedDate).format('MMMM Do YYYY'), // format date for display
     };
 
     const updatedLog = [...symptomLog, newLog];
     setSymptomLog(updatedLog);
 
-    // Save to AsyncStorage
     try {
       await AsyncStorage.setItem('symptomLog', JSON.stringify(updatedLog));
     } catch (error) {
       console.error('Error saving symptom log:', error);
     }
 
-    setSymptom('');
-    setSelectedFood(null);
+    setSymptom(''); // Clear symptom input
   };
+
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Foods You Logged</Text>
-      <FlatList
-        data={parsedFoodLog}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <Button
-            title={`${item.foodName} (${moment(item.date).format('MMMM Do YYYY, h:mm a')})`}
-            onPress={() => setSelectedFood(item)}
-            color={selectedFood?.id === item.id ? '#4caf50' : undefined}
-          />
-        )}
-      />
+      <Text style={styles.header}>Selected Food</Text>
+
+      <Text style={styles.selectedFoodText}>
+        {selectedFood
+          ? `${selectedFood.foodName} — ${moment(selectedFood.date).format(
+              'MMMM Do YYYY, h:mm a'
+            )}`
+          : 'No food selected'}
+      </Text>
 
       <TextInput
         style={styles.input}
-        placeholder="Enter symptom (e.g., headache, nausea)"
+        placeholder="Enter symptom"
         value={symptom}
         onChangeText={setSymptom}
       />
@@ -94,33 +98,22 @@ const SymptomLog = () => {
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.logItem}>
-            <Text>{`Food: ${item.food}`}</Text>
-            <Text>{`Symptom: ${item.symptom}`}</Text>
-            <Text>{`Time: ${item.time}`}</Text>
+            <Text>{item.food}</Text>
+            <Text>{item.symptom}</Text>
+            <Text>{item.time}</Text>
           </View>
         )}
       />
-
-      <Button title="Back to Home" onPress={() => router.push('/home')} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
-  header: { fontSize: 18, fontWeight: 'bold', marginVertical: 10 },
-  input: {
-    height: 40,
-    borderColor: 'gray',
-    borderWidth: 1,
-    marginVertical: 10,
-    paddingLeft: 10,
-  },
-  logItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-  },
+  container: { flex: 1, padding: 20 },
+  header: { fontSize: 20, fontWeight: 'bold', marginVertical: 10 },
+  selectedFoodText: { fontSize: 16, marginBottom: 10, color: 'gray' },
+  input: { borderWidth: 1, padding: 10, marginVertical: 10 },
+  logItem: { borderBottomWidth: 1, paddingVertical: 10 },
 });
 
 export default SymptomLog;

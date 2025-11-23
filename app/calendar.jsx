@@ -1,19 +1,9 @@
-import React, { useMemo, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
+import React, { useMemo, useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import { useRouter, useFocusEffect } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const DEMO_LOGS = {
-  "2025-10-28": [
-    { name: "Oatmeal + Banana", meal: "breakfast", calories: 320, protein: 9, carbs: 58, fat: 7, allergens: [] },
-    { name: "Grilled Chicken Salad", meal: "lunch", calories: 480, protein: 35, carbs: 24, fat: 22, allergens: [] },
-    { name: "Yogurt (Peanut topping)", meal: "snack", calories: 210, protein: 11, carbs: 18, fat: 9, allergens: ["peanut"] }
-  ],
-  "2025-10-29": [
-    { name: "Avocado Toast", meal: "breakfast", calories: 360, protein: 10, carbs: 42, fat: 16, allergens: ["gluten"] },
-    { name: "Veggie Pasta", meal: "dinner", calories: 620, protein: 19, carbs: 92, fat: 17, allergens: ["gluten"] }
-  ]
-};
-
+// Meal dot colors (still used for display; logs won't contain meal type yet)
 const MEAL_COLORS = {
   breakfast: "#fbc02d",
   lunch: "#ff8f00",
@@ -27,6 +17,8 @@ const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
 function ymd(d) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
+
+// Build 6x7 matrix for calendar
 function monthMatrix(year, monthIndex) {
   const first = new Date(year, monthIndex, 1);
   const startIdx = (first.getDay() + 6) % 7;
@@ -40,6 +32,7 @@ function monthMatrix(year, monthIndex) {
   return days;
 }
 
+// Sum nutrient totals for the day
 function aggregateDay(entries = []) {
   return entries.reduce(
     (acc, e) => {
@@ -47,11 +40,14 @@ function aggregateDay(entries = []) {
       acc.protein += e.protein || 0;
       acc.carbs += e.carbs || 0;
       acc.fat += e.fat || 0;
-      if (e.allergens && e.allergens.length) acc.hasAllergen = true;
-      acc.meals.add(e.meal);
+
+      if (e.mealType && e.color) {
+        acc.meals.add(JSON.stringify({ type: e.mealType, color: e.color }));
+      }
+
       return acc;
     },
-    { calories: 0, protein: 0, carbs: 0, fat: 0, hasAllergen: false, meals: new Set() }
+    { calories: 0, protein: 0, carbs: 0, fat: 0, meals: new Set() }
   );
 }
 
@@ -61,22 +57,59 @@ export default function CalendarPage() {
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selected, setSelected] = useState(ymd(today));
 
+  const [logsByDate, setLogsByDate] = useState({}); // <-- REPLACES DEMO_LOGS
+
   const year = cursor.getFullYear();
   const monthIndex = cursor.getMonth();
   const monthName = cursor.toLocaleString(undefined, { month: "long", year: "numeric" });
 
   const cells = useMemo(() => monthMatrix(year, monthIndex), [year, monthIndex]);
 
-  const selectedEntries = DEMO_LOGS[selected] || [];
+  // Load logs from AsyncStorage
+  const loadLogs = async () => {
+    try {
+      const stored = await AsyncStorage.getItem("foodLog");
+      if (!stored) {
+        setLogsByDate({});
+        return;
+      }
+
+      const list = JSON.parse(stored);
+
+      // Group by YYYY-MM-DD
+      const grouped = {};
+      list.forEach((item) => {
+        const key = ymd(new Date(item.date));
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(item);
+      });
+
+      setLogsByDate(grouped);
+    } catch (err) {
+      console.error("Error loading logs:", err);
+    }
+  };
+
+  // Reload when returning from FoodLog page
+  useFocusEffect(
+    React.useCallback(() => {
+      loadLogs();
+    }, [])
+  );
+
+  const selectedEntries = logsByDate[selected] || [];
   const totals = aggregateDay(selectedEntries);
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
+      {/* Header navigation */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => setCursor(new Date(year, monthIndex - 1, 1))} style={styles.navBtn}>
           <Text style={styles.navBtnText}>‹</Text>
         </TouchableOpacity>
+
         <Text style={styles.headerTitle}>{monthName}</Text>
+
         <TouchableOpacity onPress={() => setCursor(new Date(year, monthIndex + 1, 1))} style={styles.navBtn}>
           <Text style={styles.navBtnText}>›</Text>
         </TouchableOpacity>
@@ -84,27 +117,34 @@ export default function CalendarPage() {
 
       <View style={styles.headerRow}>
         <TouchableOpacity
-          onPress={() => { const t = new Date(); setCursor(new Date(t.getFullYear(), t.getMonth(), 1)); setSelected(ymd(t)); }}
+          onPress={() => {
+            const t = new Date();
+            setCursor(new Date(t.getFullYear(), t.getMonth(), 1));
+            setSelected(ymd(t));
+          }}
           style={styles.todayBtn}
         >
           <Text style={styles.todayText}>Today</Text>
         </TouchableOpacity>
       </View>
 
+      {/* Weekdays */}
       <View style={styles.weekRow}>
-        {["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d) => (
+        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
           <Text key={d} style={styles.weekCell}>{d}</Text>
         ))}
       </View>
 
+      {/* Calendar Grid */}
       <View style={styles.grid}>
         {cells.map((d, i) => {
           const key = ymd(d);
           const inMonth = d.getMonth() === monthIndex;
           const isToday = key === ymd(today);
           const isSelected = key === selected;
-          const data = aggregateDay(DEMO_LOGS[key] || []);
-          const pct = Math.max(0, Math.min(1, data.calories / DAILY_GOAL_CAL));
+
+          const dayData = aggregateDay(logsByDate[key] || []);
+          const pct = Math.min(1, dayData.calories / DAILY_GOAL_CAL);
 
           return (
             <TouchableOpacity
@@ -118,36 +158,32 @@ export default function CalendarPage() {
               onPress={() => setSelected(key)}
             >
               <Text style={[styles.dateNum, !inMonth && styles.fadedText]}>{d.getDate()}</Text>
+
+              {/* Meal dots (won’t show unless meals exist in logs) */}
               <View style={styles.dotRow}>
-                {Array.from(data.meals).map((m) => (
-                  <View key={key + m} style={[styles.dot, { backgroundColor: MEAL_COLORS[m] || "#bbb" }]} />
-                ))}
+                {Array.from(dayData.meals).map((m, idx) => {
+                  const meal = JSON.parse(m);
+                  return <View key={idx} style={[styles.dot, { backgroundColor: meal.color }]} />;
+                })}
               </View>
+
+              {/* Progress bar */}
               <View style={styles.progressTrack}>
                 <View style={[styles.progressFill, { width: `${pct * 100}%` }]} />
               </View>
-              {data.hasAllergen && <Text style={styles.allergen}>⚠</Text>}
+
+              {/* Allergy icon */}
+              {dayData.hasAllergen && <Text style={styles.allergen}>⚠</Text>}
             </TouchableOpacity>
           );
         })}
       </View>
 
-      <View style={styles.legend}>
-        {Object.entries(MEAL_COLORS).map(([meal, color]) => (
-          <View key={meal} style={styles.legendItem}>
-            <View style={[styles.dot, { backgroundColor: color }]} />
-            <Text style={styles.legendText}>{meal}</Text>
-          </View>
-        ))}
-        <View style={styles.legendItem}>
-          <Text style={styles.allergen}>⚠</Text>
-          <Text style={styles.legendText}>allergen present</Text>
-        </View>
-      </View>
-
+      {/* Daily Details Panel */}
       <View style={styles.detailCard}>
         <View style={styles.detailHeader}>
           <Text style={styles.detailDate}>{new Date(selected).toDateString()}</Text>
+
           <TouchableOpacity
             style={styles.addBtn}
             onPress={() => router.push({ pathname: "/food_log", params: { date: selected } })}
@@ -156,6 +192,7 @@ export default function CalendarPage() {
           </TouchableOpacity>
         </View>
 
+        {/* Totals */}
         <View style={styles.totalsRow}>
           <TotalBox label="Calories" value={totals.calories} />
           <TotalBox label="Protein" value={`${totals.protein} g`} />
@@ -163,17 +200,15 @@ export default function CalendarPage() {
           <TotalBox label="Fat" value={`${totals.fat} g`} />
         </View>
 
+        {/* Entries List */}
         {selectedEntries.length ? (
           <View style={{ marginTop: 10 }}>
-            {selectedEntries.map((e, idx) => (
-              <View key={idx} style={styles.entryRow}>
-                <View style={[styles.entryDot, { backgroundColor: MEAL_COLORS[e.meal] || "#888" }]} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.entryName}>{e.name}</Text>
-                  <Text style={styles.entryMeta}>
-                    {e.meal} • {e.calories} kcal{e.allergens && e.allergens.length ? ` • ⚠ ${e.allergens.join(", ")}` : ""}
-                  </Text>
-                </View>
+            {selectedEntries.map((entry) => (
+              <View key={entry.id} style={styles.entryRow}>
+                <Text style={styles.entryName}>{entry.foodName}</Text>
+                <Text style={styles.entryMeta}>
+                  {new Date(entry.date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                </Text>
               </View>
             ))}
           </View>
@@ -194,6 +229,7 @@ function TotalBox({ label, value }) {
   );
 }
 
+/* Styles (unchanged except simplified legend removed) */
 const styles = StyleSheet.create({
   page: { padding: 16, backgroundColor: "#f8fbff" },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 8 },
@@ -217,9 +253,6 @@ const styles = StyleSheet.create({
   progressTrack: { marginTop: 6, height: 5, backgroundColor: "#e5e7eb", borderRadius: 3, overflow: "hidden" },
   progressFill: { height: 5, backgroundColor: "#22c55e" },
   allergen: { position: "absolute", top: 6, right: 6, color: "#e11d48", fontWeight: "900" },
-  legend: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: 12, marginVertical: 10 },
-  legendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
-  legendText: { color: "#475569" },
   detailCard: { backgroundColor: "white", borderRadius: 12, padding: 16, marginTop: 6, marginBottom: 40, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 6, elevation: 2 },
   detailHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   detailDate: { fontSize: 18, fontWeight: "800", color: "#0f172a" },
@@ -229,8 +262,7 @@ const styles = StyleSheet.create({
   totalBox: { flex: 1, backgroundColor: "#f1f5f9", padding: 10, borderRadius: 10, alignItems: "center" },
   totalLabel: { color: "#475569", fontWeight: "700" },
   totalValue: { color: "#0f172a", fontSize: 16, fontWeight: "800", marginTop: 2 },
-  entryRow: { flexDirection: "row", alignItems: "center", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#f1f5f9" },
-  entryDot: { width: 10, height: 10, borderRadius: 5, marginRight: 10 },
+  entryRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#f1f5f9" },
   entryName: { fontWeight: "700", color: "#0f172a" },
   entryMeta: { color: "#475569", marginTop: 2 },
   noLogs: { color: "#6b7280", fontStyle: "italic", marginTop: 10 }
