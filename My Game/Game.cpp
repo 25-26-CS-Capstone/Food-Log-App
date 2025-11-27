@@ -51,6 +51,7 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::PlayerAttackSheet, "PlayerAttackSheet");
   m_pRenderer->Load(eSprite::PlayerAttack, "PlayerAttack");
   m_pRenderer->Load(eSprite::gold, "gold");
+  m_pRenderer->Load(eSprite::explosion, "explosion");
   m_pRenderer->Load(eSprite::digit0, "digit0");
   m_pRenderer->Load(eSprite::digit1, "digit1");
   m_pRenderer->Load(eSprite::digit2, "digit2");

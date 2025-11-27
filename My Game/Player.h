@@ -43,7 +43,11 @@ class CPlayer: public CObject{
     bool rollAttack = false;
     bool lifeDrop = false;
     bool goldDrop = false;
-    bool backAttack = true;
+    bool backAttack = false;
+    bool deathExplosion = false;
+    bool damageShield = false;
+    bool activeShield = false;
+    float shieldCooldown = 10.0f;
   public:
     CPlayer(eSprite t, const Vector2& p); ///< Constructor.
     virtual ~CPlayer(); ///< Destructor.
@@ -87,6 +91,12 @@ class CPlayer: public CObject{
     float getAttackCooldownValue() { return attackCooldownValue; }
     void changeBackAttack(bool x) { backAttack = x; }
     bool getBackAttack() { return backAttack; }
+    void changeDeathExplosion(bool x) { deathExplosion = x; }
+    bool getDeathExplosion() { return deathExplosion; }
+    void setDamageShield(bool x) { damageShield = x; }
+    bool getDamageShield() { return damageShield; }
+    void setActiveShield(bool x) { activeShield = x; }
+    bool getActiveShield() { return activeShield; }
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

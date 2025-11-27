@@ -18,7 +18,8 @@
     <sprite name="testEnemy" file="TestEnemy.png"/>
     <sprite name="healthPickup" file="HealthPickup.png"/>
     <sprite name="maxHealthPickup" file="MaxHealthPickup.png"/>
-    <sprite name="gold" file="Gold.png"/>
+    <sprite name="gold" file="Gold.png"/> 
+    <sprite name="explosion" file="Explosion.png"/>
     <sprite name="digit0" file="Digit0.png"/>
     <sprite name="digit1" file="Digit1.png"/>
     <sprite name="digit2" file="Digit2.png"/>

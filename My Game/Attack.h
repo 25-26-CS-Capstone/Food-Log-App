@@ -19,6 +19,14 @@ public:
 	void update(float);
 };
 
+class explosion : public Attack {
+public:
+	explosion(eSprite t, const Vector2& p) : Attack(t, p) {
+		width = 400.0f;
+		height = 400.0f;
+	}
+};
+
 
 
 #endif //__L4RC_GAME_ATTACK_H__

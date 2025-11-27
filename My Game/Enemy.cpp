@@ -25,6 +25,9 @@ void CEnemy::update(float deltaTime) {
 		if (m_pPlayer->getGoldDrop() == true) {
 			m_pObjectManager->create(eSprite::gold, this->m_vPos);
 		}
+		if (m_pPlayer->getDeathExplosion() == true) {
+			m_pObjectManager->create(eSprite::explosion, this->m_vPos);
+		}
 	}
 	if (damaged = true) {
 		invulnTime -= deltaTime;

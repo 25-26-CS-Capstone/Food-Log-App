@@ -67,6 +67,9 @@ CObject* CObjectManager::create(eSprite t, const Vector2& pos) {
     case eSprite::gold:
         pObj = new gold(eSprite::gold, pos, false, 0);
         break;
+    case eSprite::explosion:
+        pObj = new explosion(eSprite::explosion, pos);
+        break;
     default: pObj = new CObject(t, pos);
     } //switch
 

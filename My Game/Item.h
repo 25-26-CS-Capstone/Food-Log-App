@@ -114,3 +114,25 @@ public:
 		m_pPlayer->changeBackAttack(true);
 	}
 };
+
+class deathExplosion : public Item {
+public:
+	deathExplosion(eSprite t, const Vector2& p, bool s, int x) : Item(t, p, s, x) {
+	}
+
+	void pickup() {
+		m_pPlayer->changeBackAttack(true);
+	}
+};
+
+class damageShield : public Item {
+public:
+	damageShield(eSprite t, const Vector2& p, bool s, int x) : Item(t, p, s, x) {
+	}
+
+	void pickup() {
+		m_pPlayer->setDamageShield(true);
+		m_pPlayer->setActiveShield(true);
+	}
+};
+
