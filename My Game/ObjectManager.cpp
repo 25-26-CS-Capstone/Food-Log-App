@@ -62,13 +62,37 @@ CObject* CObjectManager::create(eSprite t, const Vector2& pos) {
         pObj = new healthPickup(eSprite::healthPickup, pos, false, 0);
         break;
     case eSprite::maxHealthPickup:
-        pObj = new maxHealthPickup(eSprite::maxHealthPickup, pos, true, 1);
+        pObj = new maxHealthPickup(eSprite::maxHealthPickup, pos, false, 0);
         break;
     case eSprite::gold:
         pObj = new gold(eSprite::gold, pos, false, 0);
         break;
     case eSprite::explosion:
         pObj = new explosion(eSprite::explosion, pos);
+        break;
+    case eSprite::attackUp:
+        pObj = new attackUp(eSprite::attackUp, pos, false, 0);
+        break;
+    case eSprite::attackSpeedUp:
+        pObj = new attackSpeedUp(eSprite::attackSpeedUp, pos, false, 0);
+        break;
+    case eSprite::thornRoll:
+        pObj = new thornRoll(eSprite::thornRoll, pos, false, 0);
+        break;
+    case eSprite::lifeDrop:
+        pObj = new lifeDrop(eSprite::lifeDrop, pos, false, 0);
+        break;
+    case eSprite::goldDrop:
+        pObj = new goldDrop(eSprite::goldDrop, pos, false, 0);
+        break;
+    case eSprite::backAttack:
+        pObj = new backAttack(eSprite::backAttack, pos, false, 0);
+        break;
+    case eSprite::deathExplosion:
+        pObj = new deathExplosion(eSprite::deathExplosion, pos, false, 0);
+        break;
+    case eSprite::damageShield:
+        pObj = new damageShield(eSprite::damageShield, pos, false, 0);
         break;
     default: pObj = new CObject(t, pos);
     } //switch

@@ -52,6 +52,14 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::PlayerAttack, "PlayerAttack");
   m_pRenderer->Load(eSprite::gold, "gold");
   m_pRenderer->Load(eSprite::explosion, "explosion");
+  m_pRenderer->Load(eSprite::attackUp, "attackUp");
+  m_pRenderer->Load(eSprite::attackSpeedUp, "attackSpeedUp");
+  m_pRenderer->Load(eSprite::thornRoll, "thornRoll");
+  m_pRenderer->Load(eSprite::lifeDrop, "lifeDrop");
+  m_pRenderer->Load(eSprite::goldDrop, "goldDrop");
+  m_pRenderer->Load(eSprite::backAttack, "backAttack");
+  m_pRenderer->Load(eSprite::deathExplosion, "deathExplosion");
+  m_pRenderer->Load(eSprite::damageShield, "damageShield");
   m_pRenderer->Load(eSprite::digit0, "digit0");
   m_pRenderer->Load(eSprite::digit1, "digit1");
   m_pRenderer->Load(eSprite::digit2, "digit2");
@@ -117,9 +125,9 @@ void CGame::CreateObjects() {
     m_pPlayer = (CPlayer*)m_pObjectManager->create(eSprite::InuitIdleRight,
         Vector2(100.0f, h / 2.0f));
     m_pObjectManager->create(eSprite::testEnemy, Vector2(1000.0f, 300.0f));
-    m_pObjectManager->create(eSprite::healthPickup, Vector2(200.0f, 300.0f));
-    m_pObjectManager->create(eSprite::maxHealthPickup, Vector2(400.0f, 300.0f));
-    m_pObjectManager->create(eSprite::gold, Vector2(600.0f, 300.0f));
+    m_pObjectManager->create(eSprite::maxHealthPickup, Vector2(200.0f, 300.0f));
+    m_pObjectManager->create(eSprite::lifeDrop, Vector2(400.0f, 300.0f));
+    m_pObjectManager->create(eSprite::goldDrop, Vector2(600.0f, 300.0f));
 
 }
 

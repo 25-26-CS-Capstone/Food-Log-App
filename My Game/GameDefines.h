@@ -18,7 +18,8 @@ const float screenHeight = 768.0f;
 
 enum class eSprite : UINT {
 	Background, TextWheel, PIGSPRITE, healthBar, healthBarBackground, testEnemy, playerAttack, healthPickup, 
-	maxHealthPickup, gold, explosion, digit0, digit1, digit2, digit3, digit4, digit5, digit6, digit7, digit8, digit9, 
+	maxHealthPickup, gold, explosion, attackUp, attackSpeedUp, thornRoll, lifeDrop, goldDrop,
+	backAttack, deathExplosion, damageShield, digit0, digit1, digit2, digit3, digit4, digit5, digit6, digit7, digit8, digit9, 
 	InuitIdleRightSheet, InuitIdleRight, InuitIdleLeftSheet, InuitIdleLeft, InuitRunRightSheet,
   InuitRunRight, InuitRunLeftSheet, InuitRunLeft,InuitRunUpSheet,
   InuitRunUp, InuitRunDownSheet, InuitRunDown,InuitIdleUpSheet,

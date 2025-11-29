@@ -38,16 +38,16 @@ class CPlayer: public CObject{
     float maxHealth = 3.0;
     int goldCount = 0;
     float attackDamage = 1.0;
-    float attackCooldown = 0.0;
-    float attackCooldownValue = 1.0f;
-    bool rollAttack = false;
-    bool lifeDrop = false;
-    bool goldDrop = false;
-    bool backAttack = false;
-    bool deathExplosion = false;
-    bool damageShield = false;
-    bool activeShield = false;
-    float shieldCooldown = 10.0f;
+    float attackCooldown = 0.0; //used to track player attack cooldown
+    float attackCooldownValue = 1.0f; //how long attack cooldown is
+    bool rollAttack = false; //check for rollattack item
+    bool lifeDrop = false; //check for lifedrop item
+    bool goldDrop = false; //check for golddrop item
+    bool backAttack = false; //check for backattack item
+    bool deathExplosion = false; //check for deathexplosion item
+    bool damageShield = false; //check for damageshield item
+    bool activeShield = false; //tracks whether player has an active shield
+    float shieldCooldown = 10.0f; //used to track cooldown of damage shield item
   public:
     CPlayer(eSprite t, const Vector2& p); ///< Constructor.
     virtual ~CPlayer(); ///< Destructor.
@@ -73,8 +73,9 @@ class CPlayer: public CObject{
     void changeAttackState(bool);
     bool getAttackState();
     void draw(); //draw player each frame
-    void changeAttackDamage(float x) { attackDamage += x; }
     void update(float);
+    //Below are access/modify functions for player stats and items
+    void changeAttackDamage(float x) { attackDamage += x; }
     void setAttackCooldown(float x) { attackCooldown = x; }
     float getAttackCooldown() { return attackCooldown; }
     void changeMaxHealth(float x) { maxHealth += x; }

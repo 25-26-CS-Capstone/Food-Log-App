@@ -1,7 +1,7 @@
 #include "Attack.h"
 
 Attack::Attack(eSprite t, const Vector2& p):CObject(t,p) {
-	width = 60.0f;
+	width = 100.0f;
 	height = 20.0f;
 	type = 'a';
 	m_pPlayer->setAttackCooldown(m_pPlayer->getAttackCooldownValue());
