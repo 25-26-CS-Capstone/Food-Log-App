@@ -8,6 +8,7 @@
 #include "EventTimer.h"
 #include "Common.h"
 #include "GraphGen.h"
+#include "HUD.h"
 
 /// \brief The player object. 
 ///
@@ -45,6 +46,18 @@ class CPlayer: public CObject{
 	char currentTileType = ' ';
 	Node* currentNode = nullptr;
 
+    int goldCount = 0;
+    float attackDamage = 1.0;
+    float attackCooldown = 0.0; //used to track player attack cooldown
+    float attackCooldownValue = 1.0f; //how long attack cooldown is
+    bool rollAttack = false; //check for rollattack item
+    bool lifeDrop = false; //check for lifedrop item
+    bool goldDrop = false; //check for golddrop item
+    bool backAttack = false; //check for backattack item
+    bool deathExplosion = false; //check for deathexplosion item
+    bool damageShield = false; //check for damageshield item
+    bool activeShield = false; //tracks whether player has an active shield
+    float shieldCooldown = 10.0f; //used to track cooldown of damage shield item
   public:
     CPlayer(eSprite t, const Vector2& p); ///< Constructor.
     virtual ~CPlayer(); ///< Destructor.
@@ -64,6 +77,7 @@ class CPlayer: public CObject{
     void changeHealth(float);
     float getCurrentHealth();
     float getMaxHealth();
+    void changeGoldCount(int);
     int getDirection();
     void onCollision(CObject*);
     void changeAttackState(bool);
@@ -76,6 +90,31 @@ class CPlayer: public CObject{
 	void SetCurrentNode(Node* node);
     char GetCurrentTileType();
     void UpdateBasedOnTile();
+    void update(float);
+    //Below are access/modify functions for player stats and items
+    void changeAttackDamage(float x) { attackDamage += x; }
+    void setAttackCooldown(float x) { attackCooldown = x; }
+    float getAttackCooldown() { return attackCooldown; }
+    void changeMaxHealth(float x) { maxHealth += x; }
+    void changeRollAttack(bool x) { rollAttack = x; }
+    bool getRollAttack() { return rollAttack; }
+    int getPlayerState() { return playerState; }
+    int getGoldCount() { return goldCount; }
+    bool getLifeDrop() { return lifeDrop; }
+    void changeLifeDrop(bool x) { lifeDrop = x; }
+    bool getGoldDrop() { return goldDrop; }
+    void changeGoldDrop(bool x) { goldDrop = x; }
+    float getAttackDamage() { return attackDamage; }
+    void changeAttackCooldownValue(float x) { attackCooldownValue += x; }
+    float getAttackCooldownValue() { return attackCooldownValue; }
+    void changeBackAttack(bool x) { backAttack = x; }
+    bool getBackAttack() { return backAttack; }
+    void changeDeathExplosion(bool x) { deathExplosion = x; }
+    bool getDeathExplosion() { return deathExplosion; }
+    void setDamageShield(bool x) { damageShield = x; }
+    bool getDamageShield() { return damageShield; }
+    void setActiveShield(bool x) { activeShield = x; }
+    bool getActiveShield() { return activeShield; }
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

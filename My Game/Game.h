@@ -34,7 +34,6 @@ class CGame:
 	bool m_bDrawGraph = false; ///< Draw the graph.
 //    LSpriteDesc2D* m_pSpriteDesc = nullptr; ///< Sprite descriptor.
 //    LSpriteRenderer* m_pRenderer = nullptr; ///< Pointer to renderer.
-    HUD* mHud;
     void LoadImages(); ///< Load images.
     void LoadSounds(); ///< Load sounds.
     void BeginGame(); ///< Begin playing the game.

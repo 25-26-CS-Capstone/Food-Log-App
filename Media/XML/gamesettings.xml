@@ -16,6 +16,29 @@
     <sprite name="healthBar" file="HealthBar.png"/>
     <sprite name="healthBarBackground" file="HealthBarBackground.png"/>
     <sprite name="testEnemy" file="TestEnemy.png"/>
+    <sprite name="healthPickup" file="HealthPickup.png"/>
+    <sprite name="maxHealthPickup" file="MaxHealthPickup.png"/>
+    <sprite name="gold" file="Gold.png"/> 
+    <sprite name="explosion" file="Explosion.png"/>
+    <sprite name="attackUp" file="AttackUp.png"/> 
+    <sprite name="attackSpeedUp" file="AttackSpeedUp.png"/> 
+    <sprite name="thornRoll" file="ThornRoll.png"/>
+    <sprite name="lifeDrop" file="LifeDrop.png"/>
+    <sprite name="goldDrop" file="GoldDrop.png"/>
+    <sprite name="backAttack" file="BackAttack.png"/> 
+    <sprite name="deathExplosion" file="DeathExplosion.png"/> 
+    <sprite name="damageShield" file="DamageShield.png"/>       
+    <sprite name="digit0" file="Digit0.png"/>
+    <sprite name="digit1" file="Digit1.png"/>
+    <sprite name="digit2" file="Digit2.png"/>
+    <sprite name="digit3" file="Digit3.png"/>
+    <sprite name="digit4" file="Digit4.png"/>
+    <sprite name="digit5" file="Digit5.png"/>
+    <sprite name="digit6" file="Digit6.png"/>
+    <sprite name="digit7" file="Digit7.png"/>
+    <sprite name="digit8" file="Digit8.png"/>
+    <sprite name="digit9" file="Digit9.png"/>
+
 	  
 	<sprite name="InuitIdleLeftSheet" file="InuitIdleLeft.png"/>
 	<sprite name="InuitIdleLeft" sheet="InuitIdleLeftSheet" frames="20">

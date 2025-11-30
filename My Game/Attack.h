@@ -5,7 +5,7 @@
 
 #include "Object.h"
 #include "EventTimer.h"
-
+#include "Player.h"
 
 class Attack : public CObject {
 private:
@@ -17,6 +17,14 @@ public:
 	void onCollision(CObject*);
 	void move();
 	void update(float);
+};
+
+class explosion : public Attack {
+public:
+	explosion(eSprite t, const Vector2& p) : Attack(t, p) {
+		width = 400.0f;
+		height = 400.0f;
+	}
 };
 
 

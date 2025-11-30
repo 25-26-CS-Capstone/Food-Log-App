@@ -31,12 +31,20 @@ CPlayer::~CPlayer(){
 
 void CPlayer::onCollision(CObject* obj) {
     if (obj->type == 'e') {
-        if (playerState == 0) {
+        if (playerState == 0 && activeShield == false) {
             changeHealth(-1.0f);
             playerState = 2;//damaged state
             counter = 6;//number of frames
             currentSprite.m_f4Tint = XMFLOAT4(1.0f, 0.2f, 0.2f, 1.0f);//tint the player red
         }
+        else if (activeShield == true) {
+            activeShield = false;
+            playerState = 2;//damaged state
+            counter = 6;//number of frames
+        }
+    }
+    if (obj->type == 'i') {
+        
     }
 }
 
@@ -329,4 +337,19 @@ Node* CPlayer::GetCurrentNode() {
 }
 void CPlayer::SetCurrentNode(Node* node) {
 	currentNode = node;
+}
+void CPlayer::changeGoldCount(int x) {
+    goldCount += x;
+    mHud->updateGoldDigits(x);
+}
+
+void CPlayer::update(float deltaTime) {
+    attackCooldown -= deltaTime;
+    if (activeShield == false && damageShield == true) {
+        shieldCooldown -= deltaTime;
+        if (shieldCooldown <= 0.0f) {
+            activeShield = true;
+            shieldCooldown = 10.0f;
+        }
+    }
 }

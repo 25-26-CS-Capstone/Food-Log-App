@@ -168,6 +168,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GraphGen.cpp" />
     <ClCompile Include="HUD.cpp" />
+    <ClCompile Include="Item.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
@@ -182,6 +183,7 @@
     <ClInclude Include="GameDefines.h" />
     <ClInclude Include="GraphGen.h" />
     <ClInclude Include="HUD.h" />
+    <ClInclude Include="Item.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="Player.h" />
