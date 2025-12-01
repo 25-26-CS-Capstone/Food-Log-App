@@ -1,0 +1,224 @@
+<?xml version="1.0"?>
+<!-- Game settings -->
+
+<settings>
+  <game name="Blank 2D Game" />
+  <renderer width="1400" height="760"/>
+   
+  <font file="Media\Fonts\AverageSans_24.spritefont"/>
+
+  <!-- sprites -->
+   
+  <sprites path="Media\Images">
+    <sprite name="background" file="StoneLevel.png"/>
+    <sprite name="textwheel" file="textwheel.png"/>
+    <sprite name="pig" file="pig.png"/>
+    <sprite name="healthBar" file="HealthBar.png"/>
+    <sprite name="healthBarBackground" file="HealthBarBackground.png"/>
+    <sprite name="testEnemy" file="TestEnemy.png"/>
+    <sprite name="healthPickup" file="HealthPickup.png"/>
+    <sprite name="maxHealthPickup" file="MaxHealthPickup.png"/>
+    <sprite name="gold" file="Gold.png"/> 
+    <sprite name="explosion" file="Explosion.png"/>
+    <sprite name="attackUp" file="AttackUp.png"/> 
+    <sprite name="attackSpeedUp" file="AttackSpeedUp.png"/> 
+    <sprite name="thornRoll" file="ThornRoll.png"/>
+    <sprite name="lifeDrop" file="LifeDrop.png"/>
+    <sprite name="goldDrop" file="GoldDrop.png"/>
+    <sprite name="backAttack" file="BackAttack.png"/> 
+    <sprite name="deathExplosion" file="DeathExplosion.png"/> 
+    <sprite name="damageShield" file="DamageShield.png"/>       
+    <sprite name="digit0" file="Digit0.png"/>
+    <sprite name="digit1" file="Digit1.png"/>
+    <sprite name="digit2" file="Digit2.png"/>
+    <sprite name="digit3" file="Digit3.png"/>
+    <sprite name="digit4" file="Digit4.png"/>
+    <sprite name="digit5" file="Digit5.png"/>
+    <sprite name="digit6" file="Digit6.png"/>
+    <sprite name="digit7" file="Digit7.png"/>
+    <sprite name="digit8" file="Digit8.png"/>
+    <sprite name="digit9" file="Digit9.png"/>
+
+	  
+	<sprite name="InuitIdleLeftSheet" file="InuitIdleLeft.png"/>
+	<sprite name="InuitIdleLeft" sheet="InuitIdleLeftSheet" frames="20">
+		<frame index="0" left="0"	top="0" right="70"	bottom="132"/>
+		<frame index="1" left="70"	top="0"	right="140" bottom="132"/>
+		<frame index="2" left="140" top="0" right="210" bottom="132"/>
+		<frame index="3" left="210" top="0" right="280" bottom="132"/>
+		<frame index="4" left="280" top="0" right="350" bottom="132"/>
+		<frame index="5" left="350" top="0" right="420" bottom="132"/>
+		<frame index="6" left="0" top="132" right="70" bottom="264"/>
+		<frame index="7" left="70" top="132" right="140" bottom="264"/>
+		<frame index="8" left="140" top="132" right="210" bottom="264"/>
+		<frame index="9" left="210" top="132" right="280" bottom="264"/>
+		<frame index="10" left="280" top="132" right="350" bottom="264"/>
+		<frame index="11" left="350" top="132" right="420" bottom="264"/>
+		<frame index="12" left="0" top="264" right="70" bottom="396"/>
+		<frame index="13" left="70" top="264" right="140" bottom="396"/>
+		<frame index="14" left="140" top="264" right="210" bottom="396"/>
+		<frame index="15" left="210" top="264" right="280" bottom="396"/>
+		<frame index="16" left="280" top="264" right="350" bottom="396"/>
+		<frame index="17" left="350" top="264" right="420" bottom="396"/>
+		<frame index="18" left="0" top="396" right="70" bottom="528"/>
+		<frame index="19" left="70" top="396" right="140" bottom="528"/>
+	</sprite>
+	
+	<sprite name="InuitIdleRightSheet" file="InuitIdleRight.png"/>
+	<sprite name="InuitIdleRight" sheet="InuitIdleRightSheet" frames="20">
+		<frame index="0" left="0"	top="0" right="70"	bottom="132"/>
+		<frame index="1" left="70"	top="0"	right="140" bottom="132"/>
+		<frame index="2" left="140" top="0" right="210" bottom="132"/>
+		<frame index="3" left="210" top="0" right="280" bottom="132"/>
+		<frame index="4" left="280" top="0" right="350" bottom="132"/>
+		<frame index="5" left="350" top="0" right="420" bottom="132"/>
+		<frame index="6" left="0" top="132" right="70" bottom="264"/>
+		<frame index="7" left="70" top="132" right="140" bottom="264"/>
+		<frame index="8" left="140" top="132" right="210" bottom="264"/>
+		<frame index="9" left="210" top="132" right="280" bottom="264"/>
+		<frame index="10" left="280" top="132" right="350" bottom="264"/>
+		<frame index="11" left="350" top="132" right="420" bottom="264"/>
+		<frame index="12" left="0" top="264" right="70" bottom="396"/>
+		<frame index="13" left="70" top="264" right="140" bottom="396"/>
+		<frame index="14" left="140" top="264" right="210" bottom="396"/>
+		<frame index="15" left="210" top="264" right="280" bottom="396"/>
+		<frame index="16" left="280" top="264" right="350" bottom="396"/>
+		<frame index="17" left="350" top="264" right="420" bottom="396"/>
+		<frame index="18" left="0" top="396" right="70" bottom="528"/>
+		<frame index="19" left="70" top="396" right="140" bottom="528"/>
+	</sprite>
+
+	  <sprite name="InuitIdleUpSheet" file="InuitIdleUp.png"/>
+	  <sprite name="InuitIdleUp" sheet="InuitIdleUpSheet" frames="15">
+		  <frame index="0" left="0"	top="0" right="70"	bottom="130"/>
+		  <frame index="1" left="70" top="0" right="140" bottom="130"/>
+		  <frame index="2" left="140" top="0" right="210" bottom="130"/>
+		  <frame index="3" left="210" top="0" right="280" bottom="130"/>
+		  <frame index="4" left="280" top="0" right="350" bottom="130"/>
+		  <frame index="5" left="0" top="130" right="70" bottom="260"/>
+		  <frame index="6" left="70" top="130" right="140" bottom="260"/>
+		  <frame index="7" left="140" top="130" right="210" bottom="260"/>
+		  <frame index="8" left="210" top="130" right="280" bottom="260"/>
+		  <frame index="9" left="280" top="130" right="350" bottom="260"/>
+		  <frame index="10" left="0" top="260" right="70" bottom="390"/>
+		  <frame index="11" left="70" top="260" right="140" bottom="390"/>
+		  <frame index="12" left="140" top="260" right="210" bottom="390"/>
+		  <frame index="13" left="210" top="260" right="280" bottom="390"/>
+		  <frame index="14" left="280" top="260" right="350" bottom="390"/>
+	  </sprite>
+
+	  <sprite name="InuitIdleDownSheet" file="InuitIdleDown.png"/>
+	  <sprite name="InuitIdleDown" sheet="InuitIdleDownSheet" frames="15">
+		  <frame index="0" left="0"	top="0" right="70"	bottom="130"/>
+		  <frame index="1" left="70"	top="0"	right="140" bottom="130"/>
+		  <frame index="2" left="140" top="0" right="210" bottom="130"/>
+		  <frame index="3" left="210" top="0" right="280" bottom="130"/>
+		  <frame index="4" left="280" top="0" right="350" bottom="130"/>
+		  <frame index="5" left="0" top="130" right="70" bottom="260"/>
+		  <frame index="6" left="70" top="130" right="140" bottom="260"/>
+		  <frame index="7" left="140" top="130" right="210" bottom="260"/>
+		  <frame index="8" left="210" top="130" right="280" bottom="260"/>
+		  <frame index="9" left="280" top="130" right="350" bottom="260"/>
+		  <frame index="10" left="0" top="260" right="70" bottom="390"/>
+		  <frame index="11" left="70" top="260" right="140" bottom="390"/>
+		  <frame index="12" left="140" top="260" right="210" bottom="390"/>
+		  <frame index="13" left="210" top="260" right="280" bottom="390"/>
+		  <frame index="14" left="280" top="260" right="350" bottom="390"/>
+	  </sprite>
+	  
+		  <sprite name="InuitRunLeftSheet" file="InuitRunLeft.png"/>
+	<sprite name="InuitRunLeft" sheet="InuitRunLeftSheet" frames="8">
+		<frame index="0" left="0"	top="0" right="78"	bottom="136"/>
+		<frame index="1" left="78"	top="0"	right="156" bottom="136"/>
+		<frame index="2" left="156" top="0" right="234" bottom="136"/>
+		<frame index="3" left="234" top="0" right="312" bottom="136"/>
+		<frame index="4" left="0" top="136" right="78" bottom="272"/>
+		<frame index="5" left="78" top="136" right="156" bottom="272"/>
+		<frame index="6" left="256" top="136" right="234" bottom="272"/>
+		<frame index="7" left="234" top="136" right="312" bottom="272"/>
+	</sprite>
+	
+	<sprite name="InuitRunRightSheet" file="InuitRunRight.png"/>
+	<sprite name="InuitRunRight" sheet="InuitRunRightSheet" frames="8">
+		<frame index="0" left="0"	top="0" right="78"	bottom="136"/>
+		<frame index="1" left="78"	top="0"	right="156" bottom="136"/>
+		<frame index="2" left="156" top="0" right="234" bottom="136"/>
+		<frame index="3" left="234" top="0" right="312" bottom="136"/>
+		<frame index="4" left="0" top="136" right="78" bottom="272"/>
+		<frame index="5" left="78" top="136" right="156" bottom="272"/>
+		<frame index="6" left="256" top="136" right="234" bottom="272"/>
+		<frame index="7" left="234" top="136" right="312" bottom="272"/>
+	</sprite>
+	
+	<sprite name="InuitRunUpSheet" file="InuitRunUp.png"/>
+	<sprite name="InuitRunUp" sheet="InuitRunUpSheet" frames="6">
+		<frame index="0" left="0"	top="0" right="70"	bottom="130"/>
+		<frame index="1" left="70"	top="0"	right="140" bottom="130"/>
+		<frame index="2" left="140" top="0" right="210" bottom="130"/>
+		<frame index="3" left="0" top="130" right="70" bottom="260"/>
+		<frame index="4" left="70" top="130" right="140" bottom="260"/>
+		<frame index="5" left="140" top="130" right="210" bottom="260"/>
+	</sprite>
+	
+		<sprite name="InuitRunDownSheet" file="InuitRunDown.png"/>
+	<sprite name="InuitRunDown" sheet="InuitRunDownSheet" frames="6">
+		<frame index="0" left="0"	top="0" right="70"	bottom="130"/>
+		<frame index="1" left="70"	top="0"	right="140" bottom="130"/>
+		<frame index="2" left="140" top="0" right="210" bottom="130"/>
+		<frame index="3" left="0" top="130" right="70" bottom="260"/>
+		<frame index="4" left="70" top="130" right="140" bottom="260"/>
+		<frame index="5" left="140" top="130" right="210" bottom="260"/>
+	</sprite>
+	
+		<sprite name="InuitRollSheet" file="InuitRoll.png"/>
+	<sprite name="InuitRoll" sheet="InuitRollSheet" frames="8">
+		<frame index="0" left="0"	top="0" right="70"	bottom="130"/>
+		<frame index="1" left="70"	top="0"	right="140" bottom="130"/>
+		<frame index="2" left="140" top="0" right="210" bottom="130"/>
+		<frame index="3" left="210" top="0" right="280" bottom="130"/>
+		<frame index="4" left="0" top="130" right="70" bottom="260"/>
+		<frame index="5" left="70" top="130" right="140" bottom="260"/>
+		<frame index="6" left="140" top="130" right="210" bottom="260"/>
+		<frame index="7" left="210" top="130" right="280" bottom="260"/>
+	</sprite>
+
+	  <sprite name="PlayerAttackSheet" file="PlayerAttack.png"/>
+	  <sprite name="PlayerAttack" sheet="PlayerAttackSheet" frames="3">
+		  <frame index="0" left="0"	top="0" right="80"	bottom="20"/>
+		  <frame index="1" left="0"	top="0"	right="80" bottom="40"/>
+		  <frame index="2" left="0" top="0" right="80" bottom="60"/>
+	  </sprite>
+	<sprite name="TileSheet" file="TileSheet.png"/>
+	<sprite name="Tiles" sheet="TileSheet" frames="6">
+		<frame index="0" left="0"	top="0" right="70"	bottom="70"/>
+		<frame index="1" left="70"	top="0"	right="140" bottom="70"/>
+		<frame index="2" left="140" top="0" right="210" bottom="70"/>
+		<frame index="3" left="0" top="70" right="70" bottom="140"/>
+		<frame index="4" left="70" top="70" right="140" bottom="140"/>
+		<frame index="5" left="140" top="70" right="210" bottom="140"/>
+	</sprite>
+
+	<sprite name="MapSheet" file="MapSheet.png"/>
+	<sprite name="MapRoom" sheet="MapSheet" frames="8">
+		<frame index="0" left="0"	top="0" right="70"	bottom="70"/>
+		<frame index="1" left="70"	top="0"	right="140" bottom="70"/>
+		<frame index="2" left="140" top="0" right="210" bottom="70"/>
+		<frame index="3" left="210" top="0" right="280" bottom="70"/>
+		<frame index="4" left="0" top="70" right="70" bottom="140"/>
+		<frame index="5" left="70" top="70" right="140" bottom="140"/>
+		<frame index="6" left="140" top="70" right="210" bottom="140"/>
+		<frame index="7" left="210" top="70" right="280" bottom="140"/>
+	</sprite>
+
+	<sprite name="Connection" file="Connection.png"/>
+	
+  </sprites>
+
+  <!-- sound -->
+  
+  <sounds path="Media\Sounds">
+    <sound name="clang" file="clang.wav" instances="8"/>
+    <sound name="grunt" file="umph.wav" instances="8"/>
+    <sound name="oink" file="oink.wav" instances="8"/>
+  </sounds>
+</settings>
