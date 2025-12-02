@@ -14,6 +14,10 @@
 #include "Attack.h"
 #include "Room.h"
 #include "GraphGen.h"
+#include <vector>
+#include <algorithm>
+#include <random>
+#include <chrono>
 
 /// \brief The game class.
 ///
@@ -47,6 +51,7 @@ class CGame:
 
     Graph m_Graph;
 	CRoom* m_pRoom; ///< The room.
+    vector<int> rareItemList = { 1,2,3,4,5,6 };
 
   public:
     ~CGame(); ///< Destructor.
@@ -55,6 +60,7 @@ class CGame:
     void ProcessFrame(); ///< Process an animation frame.
     void Release(); ///< Release the renderer.
 	void ChangeRoom();
+    void createItemList();
 }; //CGame
 
 #endif //__L4RC_GAME_GAME_H__

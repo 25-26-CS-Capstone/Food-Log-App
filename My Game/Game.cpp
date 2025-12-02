@@ -312,3 +312,8 @@ void CGame::ChangeRoom() {
         }
     }
 }//ChangeRoom
+
+void CGame::createItemList() {
+    default_random_engine rng(chrono::system_clock::now().time_since_epoch().count());
+    shuffle(rareItemList.begin(), rareItemList.end(), rng);
+}
