@@ -1,6 +1,7 @@
 import { StyleSheet, View, Button } from 'react-native'
 import React from 'react'
 import { navigate } from 'expo-router/build/global-state/routing'
+import { useRouter } from "expo-router";
 
 const home = () => {
   return (
@@ -15,6 +16,10 @@ const home = () => {
 
       <View style={styles.buttonWrapper}>
         <Button title="View Food Calendar" onPress={() => navigate('../calendar')} />
+      </View>
+
+      <View style={styles.buttonWrapper}>
+        <Button title="View History (Food + Symptoms)" onPress={() => navigate('../history')} />
       </View>
     </View>
   );
