@@ -52,6 +52,7 @@ class CGame:
     Graph m_Graph;
 	CRoom* m_pRoom; ///< The room.
     vector<int> rareItemList = { 1,2,3,4,5,6 };
+    int itemListPos = 0;
 
   public:
     ~CGame(); ///< Destructor.
@@ -61,6 +62,8 @@ class CGame:
     void Release(); ///< Release the renderer.
 	void ChangeRoom();
     void createItemList();
+    void spawnRareItem(Vector2, bool, int);
+    void spawnCommonItem(Vector2, bool, int);
 }; //CGame
 
 #endif //__L4RC_GAME_GAME_H__

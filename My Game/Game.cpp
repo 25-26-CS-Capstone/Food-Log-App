@@ -119,6 +119,7 @@ void CGame::Release(){
 
 void CGame::BeginGame(){  
     m_pObjectManager->clear();  //clear old objects
+    createItemList();
 
     m_pRoom = new CRoom(64, m_pRenderer);
 
@@ -316,4 +317,54 @@ void CGame::ChangeRoom() {
 void CGame::createItemList() {
     default_random_engine rng(chrono::system_clock::now().time_since_epoch().count());
     shuffle(rareItemList.begin(), rareItemList.end(), rng);
+}
+
+void CGame::spawnRareItem(Vector2 pos, bool shop, int price) {
+    
+    
+    switch (rareItemList[itemListPos]) {
+    case 1:
+        m_pObjectManager->create(eSprite::thornRoll, pos, shop, price);
+        break;
+    case 2:
+        m_pObjectManager->create(eSprite::lifeDrop, pos, shop, price);
+        break;
+    case 3:
+        m_pObjectManager->create(eSprite::goldDrop, pos, shop, price);
+        break;
+    case 4:
+        m_pObjectManager->create(eSprite::backAttack, pos, shop, price);
+        break;
+    case 5:
+        m_pObjectManager->create(eSprite::deathExplosion, pos, shop, price);
+        break;
+    case 6:
+        m_pObjectManager->create(eSprite::damageShield, pos, shop, price);
+        break;
+    default:
+        break;
+    }
+    itemListPos++;
+}
+
+void CGame::spawnCommonItem(Vector2 pos, bool shop, int price) {
+    default_random_engine rng(chrono::system_clock::now().time_since_epoch().count());
+    mt19937 generator(rng);
+    uniform_int_distribution<> distribution(1, 100);
+    int randNum = distribution(generator);
+    if (randNum <= 20) {
+        m_pObjectManager->create(eSprite::maxHealthPickup, pos, shop, price);
+    }
+    else if (randNum <= 40) {
+        m_pObjectManager->create(eSprite::healthPickup, pos, shop, price);
+    }
+    else if (randNum <= 60) {
+        m_pObjectManager->create(eSprite::gold, pos, shop, price);
+    }
+    else if (randNum <= 80) {
+        m_pObjectManager->create(eSprite::attackUp, pos, shop, price);
+    }
+    else if (randNum <= 100) {
+        m_pObjectManager->create(eSprite::attackSpeedUp, pos, shop, price);
+    }
 }

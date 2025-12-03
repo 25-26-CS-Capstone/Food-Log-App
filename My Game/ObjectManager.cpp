@@ -58,41 +58,53 @@ CObject* CObjectManager::create(eSprite t, const Vector2& pos) {
     case eSprite::PlayerAttack:
         pObj = new Attack(eSprite::PlayerAttack, pos);
         break;
-    case eSprite::healthPickup:
-        pObj = new healthPickup(eSprite::healthPickup, pos, false, 0);
-        break;
-    case eSprite::maxHealthPickup:
-        pObj = new maxHealthPickup(eSprite::maxHealthPickup, pos, false, 0);
-        break;
-    case eSprite::gold:
-        pObj = new gold(eSprite::gold, pos, false, 0);
-        break;
     case eSprite::explosion:
         pObj = new explosion(eSprite::explosion, pos);
         break;
+    default: pObj = new CObject(t, pos);
+    } //switch
+
+
+    m_stdObjectList.push_back(pObj); //push pointer onto object list
+    return pObj; //return pointer to created object
+} //create
+
+CObject* CObjectManager::create(eSprite t, const Vector2& pos, bool shop, int price) {
+    CObject* pObj = nullptr;
+
+    switch (t) {
+    case eSprite::healthPickup:
+        pObj = new healthPickup(eSprite::healthPickup, pos, shop, price);
+        break;
+    case eSprite::maxHealthPickup:
+        pObj = new maxHealthPickup(eSprite::maxHealthPickup, pos, shop, price);
+        break;
+    case eSprite::gold:
+        pObj = new gold(eSprite::gold, pos, shop, price);
+        break;
     case eSprite::attackUp:
-        pObj = new attackUp(eSprite::attackUp, pos, false, 0);
+        pObj = new attackUp(eSprite::attackUp, pos, shop, price);
         break;
     case eSprite::attackSpeedUp:
-        pObj = new attackSpeedUp(eSprite::attackSpeedUp, pos, false, 0);
+        pObj = new attackSpeedUp(eSprite::attackSpeedUp, pos, shop, price);
         break;
     case eSprite::thornRoll:
-        pObj = new thornRoll(eSprite::thornRoll, pos, false, 0);
+        pObj = new thornRoll(eSprite::thornRoll, pos, shop, price);
         break;
     case eSprite::lifeDrop:
-        pObj = new lifeDrop(eSprite::lifeDrop, pos, false, 0);
+        pObj = new lifeDrop(eSprite::lifeDrop, pos, shop, price);
         break;
     case eSprite::goldDrop:
-        pObj = new goldDrop(eSprite::goldDrop, pos, false, 0);
+        pObj = new goldDrop(eSprite::goldDrop, pos, shop, price);
         break;
     case eSprite::backAttack:
-        pObj = new backAttack(eSprite::backAttack, pos, false, 0);
+        pObj = new backAttack(eSprite::backAttack, pos, shop, price);
         break;
     case eSprite::deathExplosion:
-        pObj = new deathExplosion(eSprite::deathExplosion, pos, false, 0);
+        pObj = new deathExplosion(eSprite::deathExplosion, pos, shop, price);
         break;
     case eSprite::damageShield:
-        pObj = new damageShield(eSprite::damageShield, pos, false, 0);
+        pObj = new damageShield(eSprite::damageShield, pos, shop, price);
         break;
     default: pObj = new CObject(t, pos);
     } //switch
