@@ -32,10 +32,14 @@ class CGame:
   private:
     bool m_bDrawFrameRate = false; ///< Draw the frame rate.
 	bool m_bDrawGraph = false; ///< Draw the graph.
+    int gameState;  //0 = menu, 1 = gameplay
+    int currentButton;
 //    LSpriteDesc2D* m_pSpriteDesc = nullptr; ///< Sprite descriptor.
 //    LSpriteRenderer* m_pRenderer = nullptr; ///< Pointer to renderer.
     void LoadImages(); ///< Load images.
     void LoadSounds(); ///< Load sounds.
+    void StartMenu();
+    void MenuUpdate();
     void BeginGame(); ///< Begin playing the game.
     void CreateObjects(); ///< Create game objects.
     void KeyboardHandler(); ///< The keyboard handler.

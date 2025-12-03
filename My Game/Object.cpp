@@ -30,8 +30,7 @@ void CObject::update(float deltaTime) {
 /// roll angle, proportional to frame time.
 
 void CObject::move() {
-	const float t = m_pTimer->GetFrameTime(); //frame interval in seconds
-	m_fRoll += 0.125f * XM_2PI * t; //rotate at 1/8 RPS
+
 } //move
 
 /// Ask the renderer to draw the sprite described in the sprite descriptor.

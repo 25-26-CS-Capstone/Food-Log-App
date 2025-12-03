@@ -26,8 +26,8 @@ void CGame::Initialize(){
 
   m_pObjectManager = new CObjectManager;
   LoadSounds(); //load the sounds for this game
-  
-  BeginGame();
+
+  StartMenu();
 } //Initialize
 
 /// Load the specific images needed for this game. This is where `eSprite`
@@ -93,6 +93,11 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::MapSheet, "MapSheet");
   m_pRenderer->Load(eSprite::MapRoom, "MapRoom");
   m_pRenderer->Load(eSprite::Connection, "Connection");
+  m_pRenderer->Load(eSprite::StartButton0, "StartButton0");
+  m_pRenderer->Load(eSprite::StartButton1, "StartButton1");
+  m_pRenderer->Load(eSprite::ExitButton0, "ExitButton0");
+  m_pRenderer->Load(eSprite::ExitButton1, "ExitButton1");
+
 
   m_pRenderer->EndResourceUpload();
 } //LoadImages
@@ -113,6 +118,50 @@ void CGame::Release(){
   m_pRenderer = nullptr; //for safety
 } //Release
 
+//create the main menu
+void CGame::StartMenu() {
+    m_pObjectManager->clear();
+
+    gameState = 0;
+    currentButton = 0;
+
+    m_pObjectManager->create(eSprite::Background, m_vWinCenter);
+    m_pObjectManager->create(eSprite::StartButton0, Vector2(700, 500.0f));
+    m_pObjectManager->create(eSprite::ExitButton0, Vector2(700, 200.0f));
+
+}
+
+//handle keyboard input in the main menu
+void CGame::MenuUpdate() {
+    m_pKeyboard->GetState();
+
+    if (m_pKeyboard->TriggerDown('W')) {
+        if (currentButton == 1) {
+            currentButton = 0;
+            m_pObjectManager->create(eSprite::StartButton1, Vector2(700, 500.0f));
+            m_pObjectManager->create(eSprite::ExitButton0, Vector2(700, 200.0f));
+        }
+    }
+
+    if (m_pKeyboard->TriggerDown('S')) {
+        if (currentButton == 0) {
+            currentButton = 1;
+            m_pObjectManager->create(eSprite::ExitButton1, Vector2(700, 200.0f));
+            m_pObjectManager->create(eSprite::StartButton0, Vector2(700, 500.0f));
+        }
+    }
+    
+    if (m_pKeyboard->TriggerDown('J')) {
+        if (currentButton == 0) {
+            BeginGame();
+        }
+        else if (currentButton == 1) {
+            //ADD COMMAND TO CLOSE GAME
+        }
+    }
+
+    
+}
 /// Call this function to start a new game. This should be re-entrant so that
 /// you can restart a new game without having to shut down and restart the
 /// program.
@@ -120,6 +169,7 @@ void CGame::Release(){
 void CGame::BeginGame(){  
     m_pObjectManager->clear();  //clear old objects
 
+    gameState = 1;
     m_pRoom = new CRoom(64, m_pRenderer);
 
     m_Graph.newGraph();
@@ -228,7 +278,7 @@ void CGame::KeyboardHandler() {
         m_pAudio->play(eSound::Grunt);
 
     if (m_pKeyboard->TriggerDown(VK_BACK)) //restart game
-        BeginGame(); //restart game
+        StartMenu(); //restart game
 
 } //KeyboardHandler
 
@@ -247,13 +297,19 @@ void CGame::DrawFrameRateText(){
 
 void CGame::RenderFrame(){
   m_pRenderer->BeginFrame(); //required before rendering
+  if (gameState == 0) {
+
+  } else if (gameState == 1) {
   m_pRenderer->Draw(eSprite::Background, m_vWinCenter); //draw start level background [current: stone level]
   m_pRoom->Draw(eSprite::Tiles, m_pPlayer); //draw the room tiles
   if (m_bDrawGraph)
     m_Graph.DrawGraph(m_pRenderer, m_pPlayer->GetCurrentNode());
-  m_pObjectManager->draw(); //draw objects
   mHud->Render();
+  }
+
+  m_pObjectManager->draw(); //draw objects
   if(m_bDrawFrameRate)DrawFrameRateText(); //draw frame rate, if required
+
   float deltaTime = m_pTimer->GetFrameTime();
   m_pObjectManager->update(deltaTime);
   m_pRenderer->EndFrame(); //required after rendering
@@ -266,15 +322,20 @@ void CGame::RenderFrame(){
 /// Move the game objects. Render a frame of animation.
 
 void CGame::ProcessFrame(){
-  KeyboardHandler(); //handle keyboard input
-  m_pAudio->BeginFrame(); //notify audio player that frame has begun
+    
+    if (gameState == 0) {
+        MenuUpdate();
+    }
+    else if (gameState==1) {
+        ChangeRoom();
+        KeyboardHandler(); //handle keyboard input
 
-  m_pTimer->Tick([&](){ //all time-dependent function calls should go here
-//    const float t = m_pTimer->GetFrameTime(); //frame interval in seconds
-      m_pObjectManager->move(); //move all objects
-  });
-
-  ChangeRoom();
+    }
+    m_pAudio->BeginFrame(); //notify audio player that frame has begun
+    m_pTimer->Tick([&]() { //all time-dependent function calls should go here
+        //    const float t = m_pTimer->GetFrameTime(); //frame interval in seconds
+        m_pObjectManager->move(); //move all objects
+        });
 
   RenderFrame(); //render a frame of animation
 } //ProcessFrame
