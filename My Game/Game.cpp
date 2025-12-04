@@ -168,6 +168,7 @@ void CGame::MenuUpdate() {
 
 void CGame::BeginGame(){  
     m_pObjectManager->clear();  //clear old objects
+    createItemList();
 
     gameState = 1;
     m_pRoom = new CRoom(64, m_pRenderer);
@@ -373,3 +374,79 @@ void CGame::ChangeRoom() {
         }
     }
 }//ChangeRoom
+
+void CGame::createItemList() {
+    default_random_engine rng(chrono::system_clock::now().time_since_epoch().count());
+    shuffle(rareItemList.begin(), rareItemList.end(), rng);
+}
+
+void CGame::spawnRareItem(Vector2 pos, bool shop, int price) {
+    
+    
+    switch (rareItemList[itemListPos]) {
+    case 1:
+        m_pObjectManager->create(eSprite::thornRoll, pos, shop, price);
+        break;
+    case 2:
+        m_pObjectManager->create(eSprite::lifeDrop, pos, shop, price);
+        break;
+    case 3:
+        m_pObjectManager->create(eSprite::goldDrop, pos, shop, price);
+        break;
+    case 4:
+        m_pObjectManager->create(eSprite::backAttack, pos, shop, price);
+        break;
+    case 5:
+        m_pObjectManager->create(eSprite::deathExplosion, pos, shop, price);
+        break;
+    case 6:
+        m_pObjectManager->create(eSprite::damageShield, pos, shop, price);
+        break;
+    default:
+        break;
+    }
+    itemListPos++;
+}
+
+void CGame::spawnCommonItem(Vector2 pos, bool shop, int price) {
+    default_random_engine rng(chrono::system_clock::now().time_since_epoch().count());
+    mt19937 generator(rng);
+    uniform_int_distribution<> distribution(1, 100);
+    int randNum = distribution(generator);
+    if (randNum <= 10) {
+        m_pObjectManager->create(eSprite::maxHealthPickup, pos, shop, price);
+    }
+    else if (randNum <= 40) {
+        m_pObjectManager->create(eSprite::healthPickup, pos, shop, price);
+    }
+    else if (randNum <= 90) {
+        m_pObjectManager->create(eSprite::gold, pos, shop, price);
+    }
+    else if (randNum <= 95) {
+        m_pObjectManager->create(eSprite::attackUp, pos, shop, price);
+    }
+    else if (randNum <= 100) {
+        m_pObjectManager->create(eSprite::attackSpeedUp, pos, shop, price);
+    }
+}
+
+/*
+Example of how to spawn items when room is cleared, can change depending on how we decide items should spawn:
+    if(enemyCount == 0){
+        spawnRareItem(Vector2(x, y), false, 0);
+        spawnCommonItem(Vector2(x, y), false, 0);
+    }
+
+Example of how to spawn items for a shop:
+    if(room == shop){
+        default_random_engine rng(chrono::system_clock::now().time_since_epoch().count());
+        mt19937 generator(rng);
+        uniform_int_distribution<> distribution(1, 5);
+        int randNum = distribution(generator);
+        spawnCommonItem(Vector2(x, y), true, randNum);
+        randNum = distribution(generator);
+        spawnCommonItem(Vector2(x, y), true, randNum);
+        uniform_int_distribution<> distribution2(5, 10);
+        randNum = distribution2(generator);
+        spawnRareItem(Vector2(x, y), true, randNum);
+*/

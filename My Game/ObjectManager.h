@@ -18,6 +18,7 @@ class CObjectManager :
 public:
     void update(float);
     CObject* create(eSprite, const Vector2&); ///< Create new object.
+    CObject* create(eSprite, const Vector2&, bool, int);
 }; //CObjectManager
 
 #endif //__L4RC_GAME_OBJECTMANAGER_H__
