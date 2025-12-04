@@ -352,19 +352,40 @@ void CGame::spawnCommonItem(Vector2 pos, bool shop, int price) {
     mt19937 generator(rng);
     uniform_int_distribution<> distribution(1, 100);
     int randNum = distribution(generator);
-    if (randNum <= 20) {
+    if (randNum <= 10) {
         m_pObjectManager->create(eSprite::maxHealthPickup, pos, shop, price);
     }
     else if (randNum <= 40) {
         m_pObjectManager->create(eSprite::healthPickup, pos, shop, price);
     }
-    else if (randNum <= 60) {
+    else if (randNum <= 90) {
         m_pObjectManager->create(eSprite::gold, pos, shop, price);
     }
-    else if (randNum <= 80) {
+    else if (randNum <= 95) {
         m_pObjectManager->create(eSprite::attackUp, pos, shop, price);
     }
     else if (randNum <= 100) {
         m_pObjectManager->create(eSprite::attackSpeedUp, pos, shop, price);
     }
 }
+
+/*
+Example of how to spawn items when room is cleared, can change depending on how we decide items should spawn:
+    if(enemyCount == 0){
+        spawnRareItem(Vector2(x, y), false, 0);
+        spawnCommonItem(Vector2(x, y), false, 0);
+    }
+
+Example of how to spawn items for a shop:
+    if(room == shop){
+        default_random_engine rng(chrono::system_clock::now().time_since_epoch().count());
+        mt19937 generator(rng);
+        uniform_int_distribution<> distribution(1, 5);
+        int randNum = distribution(generator);
+        spawnCommonItem(Vector2(x, y), true, randNum);
+        randNum = distribution(generator);
+        spawnCommonItem(Vector2(x, y), true, randNum);
+        uniform_int_distribution<> distribution2(5, 10);
+        randNum = distribution2(generator);
+        spawnRareItem(Vector2(x, y), true, randNum);
+*/
