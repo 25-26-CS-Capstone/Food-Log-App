@@ -4,7 +4,7 @@ from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report
 
-def load_dataset(file_path="food_allergy_dataset.csv"):
+def load_dataset(file_path="app/food_allergy_dataset.csv"):
     df = pd.read_csv(file_path)
     print("Dataset loaded successfully!")
     print("Shape:", df.shape)
@@ -39,7 +39,7 @@ def train_model(X, y):
     y_pred = model.predict(X_test)
     acc = accuracy_score(y_test, y_pred)
 
-    print(f"\n🎯 Model Accuracy: {acc:.2f}")
+    print(f"\nModel Accuracy: {acc:.2f}")
     print("\nClassification Report:")
     print(classification_report(y_test, y_pred))
 
