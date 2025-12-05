@@ -9,7 +9,8 @@ import {
   ActivityIndicator,
   FlatList,
 } from 'react-native';
-import { searchFood, getFoodDetails, formatFoodSearchResult } from '../utils/usdaAPI';
+import { searchFood as searchUSDA, getFoodDetails as getUSDADetails, formatFoodSearchResult as formatUSDA } from '../utils/usdaAPI';
+import { searchFood as searchOFF, getFoodDetails as getOFFDetails, formatFoodSearchResult as formatOFF } from '../utils/openFoodFactsAPI';
 
 const FoodInfo = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -17,6 +18,7 @@ const FoodInfo = () => {
   const [selectedFood, setSelectedFood] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [useOpenFoodFacts, setUseOpenFoodFacts] = useState(true); // Default to OpenFoodFacts
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -25,8 +27,17 @@ const FoodInfo = () => {
     setSelectedFood(null);
     
     try {
-      const results = await searchFood(searchQuery);
-      const formattedResults = results.map(formatFoodSearchResult);
+      let results;
+      let formattedResults;
+      
+      if (useOpenFoodFacts) {
+        results = await searchOFF(searchQuery, 'en', 20); // English language filter
+        formattedResults = results.map(formatOFF);
+      } else {
+        results = await searchUSDA(searchQuery);
+        formattedResults = results.map(formatUSDA);
+      }
+      
       setSearchResults(formattedResults);
     } catch (error) {
       console.error('Search error:', error);
@@ -39,7 +50,14 @@ const FoodInfo = () => {
     setIsLoadingDetails(true);
     
     try {
-      const details = await getFoodDetails(foodItem.fdcId);
+      let details;
+      
+      if (useOpenFoodFacts) {
+        details = await getOFFDetails(foodItem.code);
+      } else {
+        details = await getUSDADetails(foodItem.fdcId);
+      }
+      
       setSelectedFood(details);
       setSearchResults([]); // Hide search results when showing details
     } catch (error) {
@@ -54,11 +72,39 @@ const FoodInfo = () => {
     setSearchResults([]);
     setSelectedFood(null);
   };
+  
+  const getNutriscoreColor = (grade) => {
+    const colors = {
+      'a': '#038141',
+      'b': '#85BB2F',
+      'c': '#FECB02',
+      'd': '#EE8100',
+      'e': '#E63E11'
+    };
+    return colors[grade?.toLowerCase()] || '#666';
+  };
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       <Text style={styles.title}>Food Information Lookup</Text>
-      <Text style={styles.subtitle}>Search the USDA database for nutritional information</Text>
+      <Text style={styles.subtitle}>
+        Search {useOpenFoodFacts ? 'OpenFoodFacts' : 'USDA'} for nutritional and allergen information
+      </Text>
+      
+      <View style={styles.toggleContainer}>
+        <TouchableOpacity 
+          style={[styles.toggleButton, !useOpenFoodFacts && styles.toggleButtonActive]}
+          onPress={() => setUseOpenFoodFacts(false)}
+        >
+          <Text style={[styles.toggleText, !useOpenFoodFacts && styles.toggleTextActive]}>USDA</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.toggleButton, useOpenFoodFacts && styles.toggleButtonActive]}
+          onPress={() => setUseOpenFoodFacts(true)}
+        >
+          <Text style={[styles.toggleText, useOpenFoodFacts && styles.toggleTextActive]}>OpenFoodFacts</Text>
+        </TouchableOpacity>
+      </View>
       
       <View style={styles.searchContainer}>
         <TextInput
@@ -83,7 +129,9 @@ const FoodInfo = () => {
       {isSearching && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#007AFF" />
-          <Text style={styles.loadingText}>Searching USDA database...</Text>
+          <Text style={styles.loadingText}>
+            Searching {useOpenFoodFacts ? 'OpenFoodFacts' : 'USDA'} database...
+          </Text>
         </View>
       )}
 
@@ -92,15 +140,25 @@ const FoodInfo = () => {
           <Text style={styles.resultsTitle}>Search Results ({searchResults.length})</Text>
           <FlatList
             data={searchResults}
-            keyExtractor={(item) => item.fdcId.toString()}
+            keyExtractor={(item) => (item.code || item.fdcId).toString()}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={styles.resultItem}
                 onPress={() => showFoodDetails(item)}
               >
-                <Text style={styles.resultName}>{item.displayName}</Text>
+                <View style={styles.resultHeader}>
+                  <Text style={styles.resultName}>{item.displayName}</Text>
+                  {item.hasAllergens && (
+                    <Text style={styles.allergenBadge}>⚠️</Text>
+                  )}
+                </View>
                 {item.category && (
                   <Text style={styles.resultCategory}>{item.category}</Text>
+                )}
+                {item.hasAllergens && useOpenFoodFacts && (
+                  <Text style={styles.allergenPreview} numberOfLines={1}>
+                    Allergens: {item.allergens}
+                  </Text>
                 )}
               </TouchableOpacity>
             )}
@@ -121,6 +179,22 @@ const FoodInfo = () => {
           <Text style={styles.foodName}>{selectedFood.name}</Text>
           {selectedFood.brandName && (
             <Text style={styles.brandName}>Brand: {selectedFood.brandName}</Text>
+          )}
+          
+          {selectedFood.allergens && selectedFood.allergens !== 'No known allergens listed' && (
+            <View style={styles.allergenSection}>
+              <Text style={styles.allergenTitle}>⚠️ Allergens</Text>
+              <Text style={styles.allergenText}>{selectedFood.allergens}</Text>
+            </View>
+          )}
+          
+          {selectedFood.nutriscoreGrade && (
+            <View style={styles.nutriscoreContainer}>
+              <Text style={styles.nutriscoreLabel}>Nutri-Score: </Text>
+              <Text style={[styles.nutriscoreGrade, { color: getNutriscoreColor(selectedFood.nutriscoreGrade) }]}>
+                {selectedFood.nutriscoreGrade.toUpperCase()}
+              </Text>
+            </View>
           )}
           
           <View style={styles.nutritionSection}>
@@ -154,7 +228,32 @@ const FoodInfo = () => {
                   <Text style={styles.macroValue}>{selectedFood.fat}g</Text>
                 </View>
               )}
+              
+              {selectedFood.fiber && (
+                <View style={styles.macroItem}>
+                  <Text style={styles.macroLabel}>Fiber</Text>
+                  <Text style={styles.macroValue}>{selectedFood.fiber}g</Text>
+                </View>
+              )}
+              
+              {selectedFood.sugar && (
+                <View style={styles.macroItem}>
+                  <Text style={styles.macroLabel}>Sugar</Text>
+                  <Text style={styles.macroValue}>{selectedFood.sugar}g</Text>
+                </View>
+              )}
+              
+              {selectedFood.sodium && (
+                <View style={styles.macroItem}>
+                  <Text style={styles.macroLabel}>Sodium</Text>
+                  <Text style={styles.macroValue}>{selectedFood.sodium}mg</Text>
+                </View>
+              )}
             </View>
+            
+            {useOpenFoodFacts && (
+              <Text style={styles.per100gNote}>Per 100g</Text>
+            )}
           </View>
 
           {selectedFood.ingredients && selectedFood.ingredients !== 'No ingredients listed' && (
@@ -209,7 +308,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: 20,
+  },
+  toggleContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
+    borderRadius: 8,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#007AFF',
+  },
+  toggleButton: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+  },
+  toggleButtonActive: {
+    backgroundColor: '#007AFF',
+  },
+  toggleText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#007AFF',
+  },
+  toggleTextActive: {
+    color: '#fff',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -263,10 +388,26 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
+  resultHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   resultName: {
     fontSize: 16,
     fontWeight: '500',
     color: '#333',
+    flex: 1,
+  },
+  allergenBadge: {
+    fontSize: 18,
+    marginLeft: 8,
+  },
+  allergenPreview: {
+    fontSize: 12,
+    color: '#E63E11',
+    marginTop: 4,
+    fontStyle: 'italic',
   },
   resultCategory: {
     fontSize: 14,
@@ -289,6 +430,42 @@ const styles = StyleSheet.create({
     color: '#666',
     fontStyle: 'italic',
     marginBottom: 16,
+  },
+  allergenSection: {
+    backgroundColor: '#FFF3CD',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: '#E63E11',
+  },
+  allergenTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#856404',
+    marginBottom: 8,
+  },
+  allergenText: {
+    fontSize: 14,
+    color: '#856404',
+    lineHeight: 20,
+  },
+  nutriscoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    padding: 12,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+  },
+  nutriscoreLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  nutriscoreGrade: {
+    fontSize: 24,
+    fontWeight: 'bold',
   },
   nutritionSection: {
     marginBottom: 20,
@@ -322,6 +499,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#333',
+  },
+  per100gNote: {
+    fontSize: 12,
+    color: '#999',
+    fontStyle: 'italic',
+    marginTop: 8,
+    textAlign: 'center',
   },
   ingredientsSection: {
     marginBottom: 20,
