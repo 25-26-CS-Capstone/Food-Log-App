@@ -7,6 +7,8 @@
 #include "Enemy.h"
 #include "Attack.h"
 #include "Item.h"
+#include "IceBat.h"
+#include "Projectile.h"
 
 /// Create an object and put a pointer to it at the back of the object list
 /// `m_stdObjectList`, which it inherits from `LBaseObjectManager`.
@@ -149,6 +151,63 @@ void CObjectManager::update(float deltaTime) {
                 b->onCollision(a);
             }
             //test a bounds vs b bounds
+        }
+    }
+}
+
+/// Spawn an ice bat enemy with patrol behavior.
+/// \param pos Starting position.
+/// \param patrolStart First patrol point.
+/// \param patrolEnd Second patrol point.
+/// \return Pointer to created bat.
+CIceBat* CObjectManager::spawnIceBat(const Vector2& pos, const Vector2& patrolStart, const Vector2& patrolEnd) {
+    CIceBat* bat = new CIceBat(pos, patrolStart, patrolEnd);
+    m_stdObjectList.push_back(bat);
+    return bat;
+}
+
+/// Spawn a projectile.
+/// \param sprite Sprite type for projectile.
+/// \param pos Starting position.
+/// \param velocity Velocity vector.
+/// \param ownerType 'p' for player, 'e' for enemy.
+/// \return Pointer to created projectile.
+CProjectile* CObjectManager::spawnProjectile(eSprite sprite, const Vector2& pos, const Vector2& velocity, char ownerType) {
+    CProjectile* proj = new CProjectile(sprite, pos, velocity, ownerType);
+    m_stdObjectList.push_back(proj);
+    return proj;
+}
+
+/// Count the number of enemies in the level.
+/// \return Number of enemies (objects with collision type 'e').
+int CObjectManager::countEnemies() const {
+    int count = 0;
+    for (const CObject* obj : m_stdObjectList) {
+        if (obj && obj->GetCollisionType() == 'e') {
+            count++;
+        }
+    }
+    return count;
+}
+
+/// Clear all enemies and their projectiles from the level.
+void CObjectManager::clearEnemies() {
+    auto it = m_stdObjectList.begin();
+    while (it != m_stdObjectList.end()) {
+        CObject* obj = *it;
+        if (obj->GetCollisionType() == 'e') {
+            // Enemy object
+            delete obj;
+            it = m_stdObjectList.erase(it);
+        } else {
+            // Check if it's an enemy projectile
+            CProjectile* proj = dynamic_cast<CProjectile*>(obj);
+            if (proj && proj->GetOwnerType() == 'e') {
+                delete obj;
+                it = m_stdObjectList.erase(it);
+            } else {
+                ++it;
+            }
         }
     }
 }
