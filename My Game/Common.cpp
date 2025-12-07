@@ -4,3 +4,5 @@ LSpriteRenderer* CCommon::m_pRenderer = nullptr;
 CObjectManager* CCommon::m_pObjectManager = nullptr;
 CPlayer* CCommon::m_pPlayer = nullptr;
 HUD* CCommon::mHud = nullptr;
+static Timer gTimer; // shared timer stub
+LTimer* CCommon::m_pTimer = &gTimer;

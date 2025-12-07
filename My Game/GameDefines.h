@@ -4,12 +4,16 @@
 #ifndef __L4RC_GAME_GAMEDEFINES_H__
 #define __L4RC_GAME_GAMEDEFINES_H__
 
+// Include LARC engine defines for Vector2, XMFLOAT4, DirectX types
 #include "Defines.h"
-#include "Sound.h"
 
 
 const float screenWidth = 1024.0f;
 const float screenHeight = 768.0f;
+const float kBorderMargin = 20.0f;
+// Projectile balance
+const float kIceBatProjectileSpeed = 200.0f;    // default speed
+const float kIceBatShootCooldown = 1.5f;        // seconds between shots
 /// \brief Sprite enumerated type.
 ///
 /// An enumerated type for the sprites, which will be cast to an unsigned
@@ -25,6 +29,18 @@ enum class eSprite : UINT {
   InuitRunUp, InuitRunDownSheet, InuitRunDown,InuitIdleUpSheet,
   InuitIdleUp, InuitIdleDownSheet, InuitIdleDown,InuitRollSheet,
   InuitRoll, PlayerAttack, PlayerAttackSheet, TileSheet, Tiles, MapSheet, MapRoom, Connection,
+    // Ice Bat sprites
+    IceBatFlap64Sheet, IceBatFlap, IceBatAttackFlap,
+    // Projectile sprites
+    IceBatProjectile, PlayerProjectile,
+    // Item pickups
+    Item,
+    // Ice Bear sprites
+    IceBear,
+    IceBear0, IceBear1, IceBear2, IceBear3, IceBear4,
+    IceBear5, IceBear6, IceBear7, IceBear8,
+    IceBear128Sheet, IceBearInactive128, IceBearActive128,
+    IceBearSheet, IceBearInactive, IceBearActive,
   Size  //MUST BE LAST
 }; //eSprite
 

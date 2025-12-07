@@ -1,5 +1,5 @@
 #include "Item.h"
-#include "ComponentIncludes.h"
+#include "Component.h"
 
 Item::Item(eSprite t, const Vector2& p, bool s, int x) : CObject(t, p) {
 	width = 50.0f;

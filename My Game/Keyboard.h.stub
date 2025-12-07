@@ -1,0 +1,12 @@
+#pragma once
+
+// Minimal keyboard stub
+class Keyboard {
+public:
+    bool TriggerDown(char key) { return false; }
+    bool TriggerDown(int key) { return false; }
+    bool TriggerUp(char key) { return false; }
+    bool TriggerUp(int key) { return false; }
+    bool Down(char key) { return false; }
+    void GetState() {} // No-op
+};

@@ -6,7 +6,7 @@
 
 #include <unordered_map>
 #include <queue>
-#include "ComponentIncludes.h"
+#include "Component.h"
 
 using namespace std;
 
@@ -25,7 +25,7 @@ Node::Node(int id, int type) : id(id), type(type) {}
     edges++;
 }*/
 int Node::getNumEdges(){
-    return adj.size();
+    return static_cast<int>(adj.size());
 }
 int Node::getId(){
     return id;
@@ -221,31 +221,15 @@ void Graph::assignScreenPositions(const Vector2& origin, float spacing)
 
 
 void Graph::DrawGraph(LSpriteRenderer* m_pRenderer, Node* playerNode) {
-    LSpriteDesc2D desc;
-    desc.m_nSpriteIndex = static_cast<int>(eSprite::MapRoom);
-
-
     // --- Draw Nodes (Rooms) ---
     for (Node* n : nodes) {
-        LSpriteDesc2D desc = {};
-        desc.m_nSpriteIndex = static_cast<int>(eSprite::MapRoom);
-        desc.m_vPos = n->position;
-        switch (n->getType()) {
-            case 0: desc.m_nCurrentFrame = 4; break; // start
-            case 1: desc.m_nCurrentFrame = 1; break;
-            case 2: desc.m_nCurrentFrame = 2; break;
-            case 3: desc.m_nCurrentFrame = 3; break;
-            case 4: desc.m_nCurrentFrame = 0; break;
-            case 999: desc.m_nCurrentFrame = 6; break; // boss
-            default: desc.m_nCurrentFrame = 7; break; // fallback
-        }
-        m_pRenderer->Draw(&desc);
+        Vector2 pos = n->position;
+        eSprite sprite = eSprite::MapRoom;
+        // Draw room at position (frames/variants handled by renderer or we just use base sprite)
+        m_pRenderer->Draw(sprite, pos);
     }
 
-   
-
     // --- Draw Edges (Halls) ---
-
     for (Node* n : nodes) {
         for (auto& edge : n->adj) {
             int aId = n->getId();
@@ -260,16 +244,13 @@ void Graph::DrawGraph(LSpriteRenderer* m_pRenderer, Node* playerNode) {
             float angle = atan2f(b.y - a.y, b.x - a.x);
             float length = (b - a).Length();
 
-            m_pRenderer->Draw(eSprite::Connection, mid, angle);
+            m_pRenderer->Draw(eSprite::Connection, mid);
         }
     }
 
     if (playerNode) {
-        LSpriteDesc2D marker = {};
-        marker.m_nSpriteIndex = static_cast<int>(eSprite::MapRoom); // reuse MapRoom or define a new sprite
-        marker.m_nCurrentFrame = 5; // choose a unique frame index for player marker
-        marker.m_vPos = playerNode->position;
-        m_pRenderer->Draw(&marker);
+        // Draw player marker at current node position
+        m_pRenderer->Draw(eSprite::MapRoom, playerNode->position);
     }
 }
 
@@ -283,7 +264,7 @@ int main(){
     mainGraph.graphGen(mainGraph.nodes.at(0), 9, 2, 2, false, false, idsNum);
     mainGraph.printGraph();
 
-    cout << "end";
+    std::cout << "end";
 
 
 }*/

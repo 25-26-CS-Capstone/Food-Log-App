@@ -1,0 +1,14 @@
+#pragma once
+#include "GameDefines.h"
+
+// Minimal audio stub
+class Audio {
+public:
+    void Initialize(eSound) {}
+    void Load(eSound, const char*) {}
+    void play(eSound) {}
+    void play(int soundId) {}
+    void stop(int soundId) {}
+    void load(const char* path) {}
+    void BeginFrame() {}
+};

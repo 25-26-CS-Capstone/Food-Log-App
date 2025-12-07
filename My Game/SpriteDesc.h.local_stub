@@ -1,0 +1,6 @@
+#pragma once
+#include "Defines.h"
+#include <string>
+
+// Minimal sprite description placeholder
+class LSpriteDesc2D { };

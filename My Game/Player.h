@@ -19,11 +19,13 @@ class CRoom;
 
 class CPlayer: public CObject{
   protected:  
-    LEventTimer* m_pFrameEvent = nullptr; ///< Frame event timer.
-    LSpriteDesc2D currentSprite;
+    EventTimer* m_pFrameEvent = nullptr; ///< Frame event timer.
     CObjectManager* objectmanager;
 
     void UpdateFramenumber(); ///< Update frame number.
+    
+    eSprite currentSprite = eSprite::InuitIdleRight; ///< Current sprite
+    int m_nCurrentFrame = 0; ///< Current animation frame
     
     int playerState = 0;    //states: 0 = normal, 1 = roll, 2 = damaged
     bool isAttacking = false;
@@ -37,7 +39,7 @@ class CPlayer: public CObject{
     int direction = 0;
     int counter = 0;
     char recentInput = 'D';
-    unsigned int lastSprite;
+    eSprite lastSprite = eSprite::InuitIdleRight;
     float maxHealth = 3.0;
 
 
@@ -115,6 +117,10 @@ class CPlayer: public CObject{
     bool getDamageShield() { return damageShield; }
     void setActiveShield(bool x) { activeShield = x; }
     bool getActiveShield() { return activeShield; }
+  // Compatibility methods used by IceBear/Projectile
+  void ApplyKnockback(const Vector2& dir, float strength, float dt);
+  bool GetInvincible() const;
+  void applyHitEffect();
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

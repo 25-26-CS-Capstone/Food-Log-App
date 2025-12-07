@@ -32,12 +32,25 @@ class CGame:
   private:
     bool m_bDrawFrameRate = false; ///< Draw the frame rate.
 	bool m_bDrawGraph = false; ///< Draw the graph.
+    bool m_bDeterministicSpawns = true; ///< When true, seed RNG by room type for reproducible spawns
+	int m_nEnemyCount = 0; ///< Current enemy count in room
+	bool m_bRoomCleared = false; ///< True when all enemies defeated
+	bool m_bItemsSpawned = false; ///< Prevent spawning items multiple times
+	
+	// Keyboard, Audio, and Timer are managed by the LARC engine
+	// These stubs have been removed
+	// class Keyboard* m_pKeyboard = nullptr;
+	// class Audio* m_pAudio = nullptr;
+	// class Timer* m_pTimer = nullptr;
 //    LSpriteDesc2D* m_pSpriteDesc = nullptr; ///< Sprite descriptor.
 //    LSpriteRenderer* m_pRenderer = nullptr; ///< Pointer to renderer.
     void LoadImages(); ///< Load images.
     void LoadSounds(); ///< Load sounds.
     void BeginGame(); ///< Begin playing the game.
     void CreateObjects(); ///< Create game objects.
+    void SpawnEnemies(); ///< Spawn enemies based on room spawn positions.
+    void CheckRoomCleared(); ///< Check if all enemies defeated and spawn rewards.
+    void SpawnRandomItems(); ///< Spawn random items when room is cleared.
     void KeyboardHandler(); ///< The keyboard handler.
     void RenderFrame(); ///< Render an animation frame.
     void DrawFrameRateText(); ///< Draw frame rate text to screen.

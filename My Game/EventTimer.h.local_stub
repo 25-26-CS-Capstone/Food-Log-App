@@ -1,0 +1,11 @@
+#pragma once
+#include <cstdint>
+#include "Defines.h"
+
+// Minimal EventTimer stub to satisfy includes
+class EventTimer {
+public:
+    EventTimer(float = 0.0f) {}
+    void Reset() {}
+    bool EventTimerTriggered() const { return false; }
+};

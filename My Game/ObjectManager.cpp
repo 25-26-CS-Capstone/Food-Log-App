@@ -2,11 +2,13 @@
 /// \brief Code for the the object manager class CObjectManager.
 
 #include "ObjectManager.h"
-#include "ComponentIncludes.h"
+#include "Component.h"
 #include "Player.h"
 #include "Enemy.h"
+#include "IceBat.h"
 #include "Attack.h"
 #include "Item.h"
+#include "Projectile.h"
 
 /// Create an object and put a pointer to it at the back of the object list
 /// `m_stdObjectList`, which it inherits from `LBaseObjectManager`.
@@ -102,20 +104,87 @@ CObject* CObjectManager::create(eSprite t, const Vector2& pos) {
     return pObj; //return pointer to created object
 } //create
 
+/// Spawn a projectile and add it to the managed object list.
+/// \param sprite Projectile sprite type.
+/// \param pos Initial position.
+/// \param vel Initial velocity.
+/// \param ownerType 'p' for player or 'e' for enemy.
+/// \return Pointer to the created projectile.
+CProjectile* CObjectManager::spawnProjectile(eSprite sprite, const Vector2& pos, const Vector2& vel, char ownerType) {
+    CProjectile* proj = new CProjectile(sprite, pos, vel, ownerType);
+    m_stdObjectList.push_back(proj);
+    return proj;
+}
+
+/// Spawn an IceBat enemy with a patrol route and add to the object list.
+/// \param pos Initial position (used as starting reference).
+/// \param patrolStart First patrol waypoint.
+/// \param patrolEnd Second patrol waypoint.
+/// \return Pointer to the created IceBat as a CObject.
+CIceBat* CObjectManager::spawnIceBat(const Vector2& pos, const Vector2& patrolStart, const Vector2& patrolEnd) {
+    CIceBat* bat = new CIceBat(pos, patrolStart, patrolEnd);
+    m_stdObjectList.push_back(bat);
+    return bat;
+}
+
+/// Clear all enemies (and their projectiles) from the scene.
+/// Used when changing rooms to prevent enemies from carrying over.
+void CObjectManager::clearEnemies() {
+    auto it = m_stdObjectList.begin();
+    while (it != m_stdObjectList.end()) {
+        CObject* obj = *it;
+        // Check if object is an enemy or enemy projectile
+        if (obj->GetCollisionType() == 'e' || 
+            (dynamic_cast<CProjectile*>(obj) && dynamic_cast<CProjectile*>(obj)->GetOwnerType() == 'e')) {
+            delete obj;
+            it = m_stdObjectList.erase(it);
+        }
+        else {
+            ++it;
+        }
+    }
+}
+
+/// Count the number of enemies currently alive in the scene.
+/// \return Number of enemies with type 'e'.
+int CObjectManager::countEnemies() const {
+    int count = 0;
+    for (const CObject* obj : m_stdObjectList) {
+        if (obj && obj->GetCollisionType() == 'e') {
+            count++;
+        }
+    }
+    return count;
+}
+
 void CObjectManager::update(float deltaTime) {
-    for (auto itA = m_stdObjectList.begin(); itA != m_stdObjectList.end(); ++itA) {
-        auto itB = itA;
-        ++itB;
+    auto itA = m_stdObjectList.begin();
+    while (itA != m_stdObjectList.end()) {
         CObject* a = *itA;
         Vector2 tempA = a->m_vPos;
 
-        if (a->m_bDead == true) {
+        // Remove dead objects safely
+        if (a->m_bDead) {
             delete a;
             itA = m_stdObjectList.erase(itA);
             continue;
         }
+
+        // Basic cleanup for projectiles: remove if out of bounds
+        if (auto proj = dynamic_cast<CProjectile*>(a)) {
+            if (proj->IsOutOfBounds()) {
+                a->m_bDead = true;
+                delete a;
+                itA = m_stdObjectList.erase(itA);
+                continue;
+            }
+        }
+
         a->update(deltaTime);
-        for (; itB != m_stdObjectList.end(); ++itB) {
+
+        // Collision checks against subsequent objects
+        auto itB = std::next(itA);
+        while (itB != m_stdObjectList.end()) {
             CObject* b = *itB;
             Vector2 tempB = b->m_vPos;
             float ax = tempA.x;
@@ -126,17 +195,18 @@ void CObjectManager::update(float deltaTime) {
             float by = tempB.y;
             float bh = b->height;
             float bw = b->width;
-            
-            
+
             bool overlap = !(ax + aw < bx || bx + bw < ax ||
                 ay + ah < by || by + bh < ay);
 
-            if (overlap)
-            {
+            if (overlap) {
                 a->onCollision(b);
                 b->onCollision(a);
             }
-            //test a bounds vs b bounds
+
+            ++itB;
         }
+
+        ++itA;
     }
 }

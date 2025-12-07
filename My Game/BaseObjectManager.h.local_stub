@@ -1,0 +1,27 @@
+#pragma once
+#include <list>
+#include "Defines.h"
+
+// Simple templated base object manager used by CObjectManager
+template<typename T>
+class LBaseObjectManager {
+public:
+    std::list<T*> m_stdObjectList;
+    ~LBaseObjectManager() {
+        for (auto* p : m_stdObjectList) delete p;
+        m_stdObjectList.clear();
+    }
+
+    void move() {
+        for (auto* p : m_stdObjectList) p->move();
+    }
+
+    void draw() {
+        for (auto* p : m_stdObjectList) p->draw();
+    }
+
+    void clear() {
+        for (auto* p : m_stdObjectList) delete p;
+        m_stdObjectList.clear();
+    }
+};
