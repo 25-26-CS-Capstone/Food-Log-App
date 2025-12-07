@@ -170,24 +170,6 @@ void CPlayer::move(){
         }
         
     }//player state 2 - 'damaged'
-    else if (playerState == 3) {//if player takes damage, tint red and apply knockback
-
-        //knockback
-        /////////[IMPLEMENT KNOCKBACK]///////////
-        //the following is temporary inverted movement
-        const float delta = 200.0f * m_pTimer->GetFrameTime(); //change in position
-        m_vPos += delta * Vector2::UnitX * -xspeed * 10;    //change x position
-        m_vPos += delta * Vector2::UnitY * -yspeed * 10;    //chang y position
-
-        if (counter > 0) {
-            counter -= 1;
-        }
-        else {
-            playerState = 0;
-            //currentSprite.m_f4Tint = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-        }
-
-    }//player state 3 - 'wall collision'
 	//Room stuff. Remove if it should go somewhere else.
 	UpdateBasedOnTile();
 
@@ -362,19 +344,6 @@ void CPlayer::changeGoldCount(int x) {
 }
 
 void CPlayer::update(float deltaTime) {
-    if (m_vPos.y > screenHeight - 20.0f) {
-        playerState = 3;
-    }
-    else if (m_vPos.y < 20.0f) {
-        playerState = 3;
-    }
-    else if (m_vPos.x > screenWidth + 7.0f) {
-        playerState = 3;
-    }
-    else if (m_vPos.x < 20.0f) {
-        playerState = 3;
-    }
-
     attackCooldown -= deltaTime;
     if (activeShield == false && damageShield == true) {
         shieldCooldown -= deltaTime;
