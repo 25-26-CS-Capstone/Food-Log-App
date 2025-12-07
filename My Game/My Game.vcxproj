@@ -71,8 +71,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>Game</TargetName>
-    <IncludePath>$(LARCENGINE_DIR)\Inc;$(DIRECTXTK12_DIR)\Src;$(DIRECTXTK12_DIR)\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LARCENGINE_DIR)\$(Platform)\$(Configuration)\;$(DIRECTXTK12LIB_DIR)\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\sebas\larc_engine-master\larc_engine-master\Inc;C:\Users\sebas\Documents\DirectXTK12-main\Inc;C:\Users\sebas\Documents\DirectXTK12-main\Src;Inc;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\sebas\larc_engine-master\larc_engine-master\$(Platform)\$(Configuration)\;C:\Users\sebas\Documents\DirectXTK12-main\Bin\Desktop_2022_Win10\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\</IntDir>

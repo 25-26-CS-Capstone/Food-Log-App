@@ -2,18 +2,15 @@
 /// \brief Code for the game object class CObject.
 
 #include "Object.h"
-#include "Component.h"
+#include "ComponentIncludes.h"
 #include "Player.h"
 
 /// Create an object, given its sprite type and initial position.
 /// \param t Type of sprite.
 /// \param p Initial position of object.
 
-CObject::CObject(eSprite t, const Vector2& p) {
-	width = 64.0f;
-	height = 64.0f;
-	type = 'o';
-	m_vPos = p;
+CObject::CObject(eSprite t, const Vector2& p) :
+	LBaseObject(t, p) {
 } //constructor
 
 /// Destructor.
@@ -33,7 +30,7 @@ void CObject::update(float deltaTime) {
 /// roll angle, proportional to frame time.
 
 void CObject::move() {
-	// Default object movement (can be overridden)
+
 } //move
 
 /// Ask the renderer to draw the sprite described in the sprite descriptor.
@@ -44,5 +41,5 @@ void CObject::move() {
 /// sprite descriptor.
 
 void CObject::draw() {
-	// Default draw - subclasses override
+	m_pRenderer->Draw(this);
 } //draw

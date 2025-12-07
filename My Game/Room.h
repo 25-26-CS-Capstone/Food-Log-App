@@ -8,6 +8,8 @@
 
 #include <vector>
 
+using namespace std;
+
 #include "Common.h"
 #include "Settings.h"
 #include "Sprite.h"
@@ -20,13 +22,11 @@ class CRoom : public CCommon, public LSettings
 private:
     int m_nWidth = 0; ///< Number of tiles wide.
     int m_nHeight = 0; ///< Number of tiles high.
-    int m_nCurrentType = -1; ///< Current room type/id (from Node::getType()).
 
     float m_fTileSize; ///< tile width and height.
     Vector2 m_vTileRadius; ///< til radius.
 
     char** m_chMap = nullptr; ///< The level map.
-    std::vector<Vector2> m_vecEnemySpawns; ///< Enemy spawn positions in world space.
 
     LSpriteRenderer* m_pRenderer = nullptr;
 
@@ -49,8 +49,6 @@ public:
 	int GetWidth() const { return m_nWidth; } ///< Get width in tiles.
 	int GetHeight() const { return m_nHeight; } ///< Get height in tiles.
 	int GetTileSize() const { return (int)m_fTileSize; } ///< Get tile size.
-    const std::vector<Vector2>& GetEnemySpawns() const { return m_vecEnemySpawns; } ///< Get enemy spawn positions.
-    int GetCurrentRoomType() const { return m_nCurrentType; }
 
     //void DrawBoundingBoxes(eSprite t); ///< Draw the bounding boxes.
 

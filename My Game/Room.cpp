@@ -22,15 +22,14 @@ CRoom::~CRoom() {
 
 ///< Load a room.
 void CRoom::LoadRoom(Node* node) {
-    m_nCurrentType = node ? node->getType() : -1;
-    std::string mapPath = "Media\\Maps\\Room" + std::to_string(m_nCurrentType) + ".txt";
+
+    string mapPath = "Media\\Maps\\Room" + std::to_string(node->getType()) + ".txt";
 	LoadMap(mapPath.data());
 
 } //LoadRoom
 
 void CRoom::LoadMap(const char* filename) {
     //m_vecTurrets.clear(); //clear turrets from previous level
-    m_vecEnemySpawns.clear(); // Clear previous spawn points
 
     if (m_chMap != nullptr) { //unload any previous maps
         for (int i = 0; i < m_nHeight; i++)
@@ -43,7 +42,7 @@ void CRoom::LoadMap(const char* filename) {
 
     fopen_s(&input, filename, "rb"); //open the map file
     if (input == nullptr) //abort if it's missing
-        ABORT("Map %s not found.", filename);
+        ABORT("Map &s not found.", filename);
 
     //read map file into a character buffer 
 
@@ -68,10 +67,8 @@ void CRoom::LoadMap(const char* filename) {
             w++; //skip characters until the end of line
         else {
             if (w == 0)ABORT("Panic!");
-            if (w != m_nWidth && m_nWidth >= 0 && w != 0) { //not the same length as the previous one
-                std::string msg = "Line " + std::to_string(m_nHeight) + " of map is not the same length as the previous one.";
-                ABORT(msg.c_str());
-            }
+            if (w != m_nWidth && m_nWidth >= 0 && w != 0) //not the same length as the previous one
+                ABORT("Line %d of map is not the same length as the previous one.", m_nHeight);
             m_nWidth = w; w = 0; m_nHeight++; //next line
         } //else
     } //for
@@ -97,22 +94,9 @@ void CRoom::LoadMap(const char* filename) {
 
     int index = 0; //index into character buffer
 
-    float offsetX = (m_nWinWidth - m_nWidth * m_fTileSize) / 2.0f;
-    float offsetY = (m_nWinHeight - m_nHeight * m_fTileSize) / 2.0f;
-
     for (int i = 0; i < m_nHeight; i++) {
         for (int j = 0; j < m_nWidth; j++) {
             m_chMap[i][j] = buffer[index]; //load character into map
-            
-            // Check for enemy spawn marker 'E' and convert to world position
-            if (buffer[index] == 'E') {
-                float worldX = offsetX + (j + 0.5f) * m_fTileSize;
-                float worldY = offsetY + (m_nHeight - 1 - i + 0.5f) * m_fTileSize;
-                m_vecEnemySpawns.push_back(Vector2(worldX, worldY));
-                // Replace 'E' with 'F' (floor) so it renders as floor
-                m_chMap[i][j] = 'F';
-            }
-            
             index++; //next index
         } //for
         while (buffer[index] == '\r' || buffer[index] == '\n')
@@ -145,7 +129,10 @@ void CRoom::DrawDoors(eSprite t, Node* node) {
     if (!node || !m_pRenderer) return;
 
 
-    // Draw doors using simple renderer API
+    LSpriteDesc2D desc;
+    desc.m_nSpriteIndex = static_cast<int>(t);
+    desc.m_nCurrentFrame = 1; // door frame
+
     float offsetX = (m_nWinWidth - m_nWidth * m_fTileSize) / 2.0f;
     float offsetY = (m_nWinHeight - m_nHeight * m_fTileSize) / 2.0f;
 
@@ -160,24 +147,23 @@ void CRoom::DrawDoors(eSprite t, Node* node) {
         };
 
     for (const Edge& edge : node->adj) {
-        Vector2 pos;
         switch (edge.direction) {
         case NORTH:
-            pos = TileToWorld(centerCol, static_cast<float>(m_nHeight - 1));
+            desc.m_vPos = TileToWorld(centerCol, m_nHeight - 1);
             break;
         case EAST:
-            pos = TileToWorld(static_cast<float>(m_nWidth - 1), centerRow);
+            desc.m_vPos = TileToWorld(m_nWidth - 1, centerRow);
             break;
         case SOUTH:
-            pos = TileToWorld(centerCol, 0.0f);
+            desc.m_vPos = TileToWorld(centerCol, 0);
             break;
         case WEST:
-            pos = TileToWorld(0.0f, centerRow);
+            desc.m_vPos = TileToWorld(0, centerRow);
             break;
         default:
             continue;
         }
-        m_pRenderer->Draw(t, pos);
+        m_pRenderer->Draw(&desc);
     }
 }//DrawDoors
 
@@ -201,7 +187,10 @@ void CRoom::Draw(eSprite t, CPlayer* m_pPlayer) {
         " Height: " + std::to_string(m_nHeight) + " First row: [" + firstRow + "]\n").c_str());
 */
 
-    // draw tiles using renderer
+
+    LSpriteDesc2D desc; //sprite descriptor for tile
+    desc.m_nSpriteIndex = static_cast<int>(t); //sprite index for tile
+
 
     /*const int w = (int)ceil(m_nWinWidth / m_fTileSize) + 2; //width of window in tiles, with 2 extra
     const int h = (int)ceil(m_nWinHeight / m_fTileSize) + 2; //height of window in tiles, with 2 extra
@@ -229,11 +218,24 @@ void CRoom::Draw(eSprite t, CPlayer* m_pPlayer) {
                 OutputDebugStringA("Out-of-bounds index prevented.\n");
                 continue;
             }
-            // Compute position and draw tile sprite
-            Vector2 pos;
-            pos.x = offsetX + (j + 0.5f) * m_fTileSize;
-            pos.y = offsetY + (m_nHeight - 1 - i + 0.5f) * m_fTileSize;
-            m_pRenderer->Draw(t, pos);
+            switch (tile) { //select which frame of the tile sprite is to be drawn
+            case 'F': desc.m_nCurrentFrame = 3; break; //floor
+            case 'W': desc.m_nCurrentFrame = 0; break; //wall
+			case 'I': desc.m_nCurrentFrame = 4; break; //ice
+            case 'H': desc.m_nCurrentFrame = 5; break; //hazard
+            default:  continue; //skip empty/unknown
+            } //switch
+
+            if (desc.m_nCurrentFrame < 0 || desc.m_nCurrentFrame >= 6) continue; //guard
+
+            desc.m_vPos.x = offsetX + (j + 0.5f) * m_fTileSize;
+            desc.m_vPos.y = offsetY + (m_nHeight - 1 - i + 0.5f) * m_fTileSize;
+
+            if (desc.m_nSpriteIndex >= static_cast<int>(eSprite::Size)) {
+                OutputDebugStringA("Invalid sprite index! Tiles out of range.\n");
+                return;
+            }
+            m_pRenderer->Draw(&desc); //finally we can draw a tile
         } //for
     } //for
     //OutputDebugStringA("About to call DrawDoors\n");

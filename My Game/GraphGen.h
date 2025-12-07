@@ -9,6 +9,8 @@
 #include "SpriteRenderer.h"
 #include "GameDefines.h"
 
+using namespace std;
+
 extern int MAP_LEN;
 extern int BRANCH_NUM;
 extern int BRANCH_MAX_LEN;
@@ -35,7 +37,7 @@ private:
     int type;
     int edges = 0;
 public:
-    std::vector<Edge> adj;
+    vector<Edge> adj;
 	Vector2 position;
 
     Node(int id, int type);
@@ -52,7 +54,7 @@ private:
     bool hasDirection(Node* node, int dir);
 
 public:
-    std::vector<Node*> nodes;
+    vector<Node*> nodes;
 
     Node* addVertex(int id, int type);
     void addEdge(Node* from, Node* to);

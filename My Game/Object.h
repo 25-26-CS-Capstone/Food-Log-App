@@ -37,7 +37,6 @@ public:
     virtual void update(float);
     virtual void move(); ///< Move object.
     virtual void draw(); ///< Draw object.
-    char GetCollisionType() const { return type; }
 }; //CObject
 
 #endif //__L4RC_GAME_OBJECT_H__
