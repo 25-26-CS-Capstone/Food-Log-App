@@ -25,7 +25,7 @@ class CPlayer: public CObject{
 
     void UpdateFramenumber(); ///< Update frame number.
     
-    int playerState = 0;    //states: 0 = normal, 1 = roll, 2 = damaged
+    int playerState = 0;    //states: 0 = normal, 1 = roll, 2 = damaged. 3 = wall collision
     bool isAttacking = false;
     float currentHealth = 3.0;
     float xspeed = 0.0;
