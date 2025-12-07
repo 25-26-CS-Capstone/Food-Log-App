@@ -8,8 +8,8 @@
 #include "Sound.h"
 
 
-const float screenWidth = 1024.0f;
-const float screenHeight = 768.0f;
+const float screenWidth = 1400.0f;
+const float screenHeight = 760.0f;
 /// \brief Sprite enumerated type.
 ///
 /// An enumerated type for the sprites, which will be cast to an unsigned
