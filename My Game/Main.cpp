@@ -10,6 +10,10 @@
 static LWindow g_cWindow; ///< The window class.
 static CGame g_cGame; ///< The game class.
 
+/// \brief Get global window instance
+/// \return Pointer to the window instance
+Window* GetWindow() { return &g_cWindow; }
+
 /// \brief The main entry point for this application.  
 ///
 /// The main entry point for this application. 
