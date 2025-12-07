@@ -137,7 +137,7 @@ void CGame::BeginGame(){
 void CGame::CreateObjects() {
     const float h = m_pRenderer->GetHeight(eSprite::InuitIdleRight);
     m_pPlayer = (CPlayer*)m_pObjectManager->create(eSprite::InuitIdleRight,
-        Vector2(100.0f, h / 2.0f));
+        Vector2(300.0f, 300.0f));
     m_pPlayer->SetRoom(m_pRoom);
 	m_pPlayer->SetCurrentNode(m_Graph.nodes.at(0));
     //m_pObjectManager->create(eSprite::testEnemy, Vector2(1000.0f, 300.0f));
