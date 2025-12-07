@@ -351,13 +351,17 @@ void CGame::ChangeRoom() {
     int col = static_cast<int>(pos.x / m_pRoom->GetTileSize());
     int row = static_cast<int>(pos.y / m_pRoom->GetTileSize());
 
+    int centerCol = m_pRoom->GetWidth() / 2;
+    int centerRow = m_pRoom->GetHeight() / 2;
+    int doorCol = -1, doorRow = -1;
+
     for (Edge& edge : currentNode->adj) {
         int doorCol = col, doorRow = row;
         switch (edge.direction) {
-        case NORTH: doorRow = 0; break;
-        case SOUTH: doorRow = m_pRoom->GetHeight() - 1; break;
-        case WEST:  doorCol = 0; break;
-        case EAST:  doorCol = m_pRoom->GetWidth() - 1; break;
+        case NORTH: doorCol = centerCol; doorRow = 0; break;
+        case SOUTH: doorCol = centerCol; doorRow = m_pRoom->GetHeight() - 1; break;
+        case WEST:  doorCol = 0; doorRow = centerRow; break;
+        case EAST:  doorCol = m_pRoom->GetWidth() - 1; doorRow = centerRow; break;
         }
 
         if (col == doorCol && row == doorRow) {
@@ -368,7 +372,7 @@ void CGame::ChangeRoom() {
             case NORTH: m_pPlayer->m_vPos = (Vector2(pos.x, (m_pRoom->GetHeight() - 2) * m_pRoom->GetTileSize())); break;
             case SOUTH: m_pPlayer->m_vPos = (Vector2(pos.x, m_pRoom->GetTileSize())); break;
             case WEST:  m_pPlayer->m_vPos = (Vector2((m_pRoom->GetWidth() - 2) * m_pRoom->GetTileSize(), pos.y)); break;
-            case EAST:  m_pPlayer->m_vPos = (Vector2(m_pRoom->GetTileSize(), pos.y)); break;
+            case EAST:  m_pPlayer->m_vPos = (Vector2(2*m_pRoom->GetTileSize(), pos.y)); break;
             }
             return;
         }

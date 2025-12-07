@@ -1,4 +1,16 @@
-﻿  Room.cpp
-C:\Users\Douglas\Documents\GitHub\group-1\My Game\Room.cpp(152,60): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
-C:\Users\Douglas\Documents\GitHub\group-1\My Game\Room.cpp(155,48): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+﻿  Game.cpp
+C:\Users\Douglas\Documents\GitHub\group-1\My Game\Game.cpp(372,88): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Douglas\Documents\GitHub\group-1\My Game\Game.cpp(373,81): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Douglas\Documents\GitHub\group-1\My Game\Game.cpp(374,80): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Douglas\Documents\GitHub\group-1\My Game\Game.cpp(375,55): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\Douglas\Documents\GitHub\group-1\My Game\Game.cpp(383,83): warning C4244: 'argument': conversion from '_Rep' to 'unsigned int', possible loss of data
+C:\Users\Douglas\Documents\GitHub\group-1\My Game\Game.cpp(383,83): warning C4244:         with
+C:\Users\Douglas\Documents\GitHub\group-1\My Game\Game.cpp(383,83): warning C4244:         [
+C:\Users\Douglas\Documents\GitHub\group-1\My Game\Game.cpp(383,83): warning C4244:             _Rep=std::chrono::system_clock::rep
+C:\Users\Douglas\Documents\GitHub\group-1\My Game\Game.cpp(383,83): warning C4244:         ]
+C:\Users\Douglas\Documents\GitHub\group-1\My Game\Game.cpp(416,83): warning C4244: 'argument': conversion from '_Rep' to 'unsigned int', possible loss of data
+C:\Users\Douglas\Documents\GitHub\group-1\My Game\Game.cpp(416,83): warning C4244:         with
+C:\Users\Douglas\Documents\GitHub\group-1\My Game\Game.cpp(416,83): warning C4244:         [
+C:\Users\Douglas\Documents\GitHub\group-1\My Game\Game.cpp(416,83): warning C4244:             _Rep=std::chrono::system_clock::rep
+C:\Users\Douglas\Documents\GitHub\group-1\My Game\Game.cpp(416,83): warning C4244:         ]
   My Game.vcxproj -> C:\Users\Douglas\Documents\GitHub\group-1\x64\Debug\Game.exe
