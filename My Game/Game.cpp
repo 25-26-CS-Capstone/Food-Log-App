@@ -12,6 +12,7 @@
 #include "Keyboard.h"
 #include "Audio.h"
 #include "IceBat.h"
+#include "SpriteInit.h"
 #include "shellapi.h"
 
 
@@ -35,6 +36,16 @@ void CGame::Initialize(){
     if (log) log << "LoadImages begin" << std::endl;
     LoadImages(); //load images from xml file list
     if (log) log << "LoadImages end" << std::endl;
+
+    // Initialize sprite resources from Media/Images folder
+    if (m_pRenderer) {
+        if (log) log << "InitializeSprites begin" << std::endl;
+        LSpriteResourceManager* mgr = m_pRenderer->GetResourceManager();
+        if (mgr) {
+            InitializeSprites(*mgr);
+        }
+        if (log) log << "InitializeSprites end" << std::endl;
+    }
 
     if (log) log << "ObjectManager create" << std::endl;
     m_pObjectManager = new CObjectManager;

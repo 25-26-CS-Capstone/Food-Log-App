@@ -5,6 +5,12 @@
 
 using UINT = unsigned int;
 
+enum class eSpriteMode {
+    Batched2D,
+    Scaled2x,
+    Standard
+};
+
 struct Vector2 {
     float x;
     float y;
@@ -43,4 +49,3 @@ struct XMFLOAT4 {
     XMFLOAT4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {}
 };
 
-enum class eSpriteMode { Batched2D, Immediate2D };
