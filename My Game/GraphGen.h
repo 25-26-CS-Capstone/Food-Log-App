@@ -15,7 +15,6 @@ extern int MAP_LEN;
 extern int BRANCH_NUM;
 extern int BRANCH_MAX_LEN;
 extern int LOOP_NUM;
-extern int LOOP_MAX_LEN;
 extern int ROOM_TYPES;
 
 
@@ -52,17 +51,21 @@ private:
     int oppositeDir(int dir);
     bool isConnected(Node* a, Node* b);
     bool hasDirection(Node* node, int dir);
+    int pickFreeDirection(Vector2 pos);
+    Vector2 moveInDirection(Vector2 pos, int dir);
+    void addLoops(Node* startNode, int loopNum);
 
 public:
     vector<Node*> nodes;
 
-    Node* addVertex(int id, int type);
+    Node* addVertex(int id, int type, Vector2 pos);
     void addEdge(Node* from, Node* to);
     void graphGen(Node* first, int length, int branchNum, int loopNum, bool branch, bool loop, int& idCounter);
     void printGraph();
     void newGraph();
 	void DrawGraph(LSpriteRenderer* m_pRenderer, Node* playerNode);
-    void Graph::assignScreenPositions(const Vector2& origin, float spacing);
+    void assignScreenPositions(const Vector2& origin, float spacing);
+
 
 };
 
