@@ -14,6 +14,10 @@
 #include "Attack.h"
 #include "Room.h"
 #include "GraphGen.h"
+#include <vector>
+#include <algorithm>
+#include <random>
+#include <chrono>
 
 /// \brief The game class.
 ///
@@ -32,25 +36,16 @@ class CGame:
   private:
     bool m_bDrawFrameRate = false; ///< Draw the frame rate.
 	bool m_bDrawGraph = false; ///< Draw the graph.
-    bool m_bDeterministicSpawns = true; ///< When true, seed RNG by room type for reproducible spawns
-	int m_nEnemyCount = 0; ///< Current enemy count in room
-	bool m_bRoomCleared = false; ///< True when all enemies defeated
-	bool m_bItemsSpawned = false; ///< Prevent spawning items multiple times
-	
-	// Keyboard, Audio, and Timer are managed by the LARC engine
-	// These stubs have been removed
-	// class Keyboard* m_pKeyboard = nullptr;
-	// class Audio* m_pAudio = nullptr;
-	// class Timer* m_pTimer = nullptr;
+    int gameState;  //0 = menu, 1 = gameplay
+    int currentButton;
 //    LSpriteDesc2D* m_pSpriteDesc = nullptr; ///< Sprite descriptor.
 //    LSpriteRenderer* m_pRenderer = nullptr; ///< Pointer to renderer.
     void LoadImages(); ///< Load images.
     void LoadSounds(); ///< Load sounds.
+    void StartMenu();
+    void MenuUpdate();
     void BeginGame(); ///< Begin playing the game.
     void CreateObjects(); ///< Create game objects.
-    void SpawnEnemies(); ///< Spawn enemies based on room spawn positions.
-    void CheckRoomCleared(); ///< Check if all enemies defeated and spawn rewards.
-    void SpawnRandomItems(); ///< Spawn random items when room is cleared.
     void KeyboardHandler(); ///< The keyboard handler.
     void RenderFrame(); ///< Render an animation frame.
     void DrawFrameRateText(); ///< Draw frame rate text to screen.
@@ -60,6 +55,8 @@ class CGame:
 
     Graph m_Graph;
 	CRoom* m_pRoom; ///< The room.
+    vector<int> rareItemList = { 1,2,3,4,5,6 };
+    int itemListPos = 0;
 
   public:
     ~CGame(); ///< Destructor.
@@ -68,6 +65,9 @@ class CGame:
     void ProcessFrame(); ///< Process an animation frame.
     void Release(); ///< Release the renderer.
 	void ChangeRoom();
+    void createItemList();
+    void spawnRareItem(Vector2, bool, int);
+    void spawnCommonItem(Vector2, bool, int);
 }; //CGame
 
 #endif //__L4RC_GAME_GAME_H__

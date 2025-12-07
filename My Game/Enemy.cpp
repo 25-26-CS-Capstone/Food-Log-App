@@ -1,5 +1,5 @@
 #include "Enemy.h"
-#include "Component.h"
+#include "ComponentIncludes.h"
 #include "ObjectManager.h"
 
 CEnemy::CEnemy(eSprite t, const Vector2& p) : CObject(t, p) {

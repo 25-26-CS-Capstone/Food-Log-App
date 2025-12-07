@@ -3,16 +3,11 @@
 
 #include "Game.h"
 #include "Window.h"
-#include <fstream>
 
 //#define USE_DEBUG_CONSOLE ///< Define to use a console window for debug messages.
 
 static LWindow g_cWindow; ///< The window class.
 static CGame g_cGame; ///< The game class.
-
-/// \brief Get global window instance
-/// \return Pointer to the window instance
-Window* GetWindow() { return &g_cWindow; }
 
 /// \brief The main entry point for this application.  
 ///
@@ -36,24 +31,9 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance,
     const bool console = false;
   #endif //USE_DEBUG_CONSOLE
 
-  // Minimal startup diagnostics written to working directory
-  std::ofstream log("startup.log", std::ios::out | std::ios::app);
-  if (log) {
-    log << "Starting wWinMain" << std::endl;
-  }
-
-  auto init    = [&](){
-    if (log) log << "Initialize begin" << std::endl;
-    g_cGame.Initialize();
-    if (log) log << "Initialize end" << std::endl;
-  };
-  auto process = [&](){ g_cGame.ProcessFrame(); };
-  auto release = [&](){
-    if (log) log << "Release begin" << std::endl;
-    g_cGame.Release();
-    if (log) log << "Release end" << std::endl;
-    if (log) log << "Shutdown" << std::endl;
-  };
+  auto init    = [&](){g_cGame.Initialize();};
+  auto process = [&](){g_cGame.ProcessFrame();};
+  auto release = [&](){g_cGame.Release();};
 
   return g_cWindow.WinMain(hInstance, console, init, process, release);
 } //wWinMain

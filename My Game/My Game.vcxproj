@@ -71,8 +71,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>Game</TargetName>
-    <IncludePath>C:\Users\sebas\larc_engine-master\larc_engine-master\Inc;$(DIRECTXTK12_DIR)\Src;$(DIRECTXTK12_DIR)\Inc;C:\Users\sebas\Documents\DirectXTK12-main\Src;C:\Users\sebas\Documents\DirectXTK12-main\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\sebas\larc_engine-master\larc_engine-master\$(Platform)\$(Configuration)\;$(DIRECTXTK12LIB_DIR)\$(Platform)\$(Configuration)\;C:\Users\sebas\Documents\DirectXTK12-main\Bin\Desktop_2022_Win10\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(LARCENGINE_DIR)\Inc;$(DIRECTXTK12_DIR)\Src;$(DIRECTXTK12_DIR)\Inc;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LARCENGINE_DIR)\$(Platform)\$(Configuration)\;$(DIRECTXTK12LIB_DIR)\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\</IntDir>
@@ -87,8 +87,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>Game</TargetName>
-    <IncludePath>C:\Users\sebas\larc_engine-master\larc_engine-master\Inc;$(DIRECTXTK12_DIR)\Src;$(DIRECTXTK12_DIR)\Inc;C:\Users\sebas\Documents\DirectXTK12-main\Src;C:\Users\sebas\Documents\DirectXTK12-main\Inc;C:\Users\sebas\Documents\DirectXTK-main\Inc;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\sebas\larc_engine-master\larc_engine-master\$(Platform)\$(Configuration)\;$(DIRECTXTK12LIB_DIR)\$(Platform)\$(Configuration)\;C:\Users\sebas\Documents\DirectXTK12-main\Bin\Desktop_2022_Win10\$(Platform)\$(Configuration)\;C:\Users\sebas\Documents\DirectXTK-main\Bin\Desktop_2022_Win10\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(LARCENGINE_DIR)\Inc;$(DIRECTXTK12_DIR)\Src;$(DIRECTXTK12_DIR)\Inc;$(IncludePath)</IncludePath>
+    <LibraryPath>$(LARCENGINE_DIR)\$(Platform)\$(Configuration)\;$(DIRECTXTK12LIB_DIR)\$(Platform)\$(Configuration)\;$(LibraryPath)</LibraryPath>
     <CodeAnalysisRuleSet>NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)$(Platform)\$(Configuration)\</IntDir>
@@ -111,15 +111,12 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(LARCENGINE_DIR)\Inc;$(DIRECTXTK12_DIR)\Src;$(DIRECTXTK12_DIR)\Inc;C:\Users\sebas\Documents\DirectXTK12-main\Src;C:\Users\sebas\Documents\DirectXTK12-main\Inc;C:\Users\sebas\Documents\DirectXTK-main\Inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/FS %(AdditionalOptions)</AdditionalOptions>
-      <ProgramDataBaseFileName>$(IntDir)$(ProjectName).vc143.pdb</ProgramDataBaseFileName>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <AdditionalDependencies>Engine.lib;d3d12.lib;dxgi.lib;dxguid.lib;uuid.lib;runtimeobject.lib;DirectXTK12.lib;xinput.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(LARCENGINE_DIR)\$(Platform)\$(Configuration)\;$(DIRECTXTK12LIB_DIR)\$(Platform)\$(Configuration)\;C:\Users\sebas\Documents\DirectXTK12-main\Bin\Desktop_2022_Win10\$(Platform)\$(Configuration)\;C:\Users\sebas\Documents\DirectXTK-main\Bin\Desktop_2022_Win10\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <OutputFile>$(OutDir)Game.exe</OutputFile>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
     </Link>
@@ -171,44 +168,26 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GraphGen.cpp" />
     <ClCompile Include="HUD.cpp" />
-    <ClCompile Include="IceBat.cpp" />
-    <ClCompile Include="IceBear.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectManager.cpp" />
     <ClCompile Include="Player.cpp" />
-    <ClCompile Include="Projectile.cpp" />
     <ClCompile Include="Room.cpp" />
-    <ClCompile Include="SpriteResource.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Attack.h" />
-    <ClInclude Include="BaseObject.h" />
-    <ClInclude Include="BaseObjectManager.h" />
     <ClInclude Include="Common.h" />
-    <ClInclude Include="Component.h" />
-    <ClInclude Include="Defines.h" />
     <ClInclude Include="Enemy.h" />
-    <ClInclude Include="EnemyBase.h" />
-    <ClInclude Include="EventTimer.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameDefines.h" />
     <ClInclude Include="GraphGen.h" />
     <ClInclude Include="HUD.h" />
-    <ClInclude Include="IceBat.h" />
-    <ClInclude Include="IceBear.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectManager.h" />
     <ClInclude Include="Player.h" />
-    <ClInclude Include="Projectile.h" />
     <ClInclude Include="Room.h" />
-    <ClInclude Include="Settings.h" />
-    <ClInclude Include="Sprite.h" />
-    <ClInclude Include="SpriteDesc.h" />
-    <ClInclude Include="SpriteRenderer.h" />
-    <ClInclude Include="SpriteResource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="My Game.rc" />

@@ -2,13 +2,11 @@
 /// \brief Code for the the object manager class CObjectManager.
 
 #include "ObjectManager.h"
-#include "Component.h"
+#include "ComponentIncludes.h"
 #include "Player.h"
 #include "Enemy.h"
-#include "IceBat.h"
 #include "Attack.h"
 #include "Item.h"
-#include "Projectile.h"
 
 /// Create an object and put a pointer to it at the back of the object list
 /// `m_stdObjectList`, which it inherits from `LBaseObjectManager`.
@@ -60,41 +58,8 @@ CObject* CObjectManager::create(eSprite t, const Vector2& pos) {
     case eSprite::PlayerAttack:
         pObj = new Attack(eSprite::PlayerAttack, pos);
         break;
-    case eSprite::healthPickup:
-        pObj = new healthPickup(eSprite::healthPickup, pos, false, 0);
-        break;
-    case eSprite::maxHealthPickup:
-        pObj = new maxHealthPickup(eSprite::maxHealthPickup, pos, false, 0);
-        break;
-    case eSprite::gold:
-        pObj = new gold(eSprite::gold, pos, false, 0);
-        break;
     case eSprite::explosion:
         pObj = new explosion(eSprite::explosion, pos);
-        break;
-    case eSprite::attackUp:
-        pObj = new attackUp(eSprite::attackUp, pos, false, 0);
-        break;
-    case eSprite::attackSpeedUp:
-        pObj = new attackSpeedUp(eSprite::attackSpeedUp, pos, false, 0);
-        break;
-    case eSprite::thornRoll:
-        pObj = new thornRoll(eSprite::thornRoll, pos, false, 0);
-        break;
-    case eSprite::lifeDrop:
-        pObj = new lifeDrop(eSprite::lifeDrop, pos, false, 0);
-        break;
-    case eSprite::goldDrop:
-        pObj = new goldDrop(eSprite::goldDrop, pos, false, 0);
-        break;
-    case eSprite::backAttack:
-        pObj = new backAttack(eSprite::backAttack, pos, false, 0);
-        break;
-    case eSprite::deathExplosion:
-        pObj = new deathExplosion(eSprite::deathExplosion, pos, false, 0);
-        break;
-    case eSprite::damageShield:
-        pObj = new damageShield(eSprite::damageShield, pos, false, 0);
         break;
     default: pObj = new CObject(t, pos);
     } //switch
@@ -104,87 +69,65 @@ CObject* CObjectManager::create(eSprite t, const Vector2& pos) {
     return pObj; //return pointer to created object
 } //create
 
-/// Spawn a projectile and add it to the managed object list.
-/// \param sprite Projectile sprite type.
-/// \param pos Initial position.
-/// \param vel Initial velocity.
-/// \param ownerType 'p' for player or 'e' for enemy.
-/// \return Pointer to the created projectile.
-CProjectile* CObjectManager::spawnProjectile(eSprite sprite, const Vector2& pos, const Vector2& vel, char ownerType) {
-    CProjectile* proj = new CProjectile(sprite, pos, vel, ownerType);
-    m_stdObjectList.push_back(proj);
-    return proj;
-}
+CObject* CObjectManager::create(eSprite t, const Vector2& pos, bool shop, int price) {
+    CObject* pObj = nullptr;
 
-/// Spawn an IceBat enemy with a patrol route and add to the object list.
-/// \param pos Initial position (used as starting reference).
-/// \param patrolStart First patrol waypoint.
-/// \param patrolEnd Second patrol waypoint.
-/// \return Pointer to the created IceBat as a CObject.
-CIceBat* CObjectManager::spawnIceBat(const Vector2& pos, const Vector2& patrolStart, const Vector2& patrolEnd) {
-    CIceBat* bat = new CIceBat(pos, patrolStart, patrolEnd);
-    m_stdObjectList.push_back(bat);
-    return bat;
-}
+    switch (t) {
+    case eSprite::healthPickup:
+        pObj = new healthPickup(eSprite::healthPickup, pos, shop, price);
+        break;
+    case eSprite::maxHealthPickup:
+        pObj = new maxHealthPickup(eSprite::maxHealthPickup, pos, shop, price);
+        break;
+    case eSprite::gold:
+        pObj = new gold(eSprite::gold, pos, shop, price);
+        break;
+    case eSprite::attackUp:
+        pObj = new attackUp(eSprite::attackUp, pos, shop, price);
+        break;
+    case eSprite::attackSpeedUp:
+        pObj = new attackSpeedUp(eSprite::attackSpeedUp, pos, shop, price);
+        break;
+    case eSprite::thornRoll:
+        pObj = new thornRoll(eSprite::thornRoll, pos, shop, price);
+        break;
+    case eSprite::lifeDrop:
+        pObj = new lifeDrop(eSprite::lifeDrop, pos, shop, price);
+        break;
+    case eSprite::goldDrop:
+        pObj = new goldDrop(eSprite::goldDrop, pos, shop, price);
+        break;
+    case eSprite::backAttack:
+        pObj = new backAttack(eSprite::backAttack, pos, shop, price);
+        break;
+    case eSprite::deathExplosion:
+        pObj = new deathExplosion(eSprite::deathExplosion, pos, shop, price);
+        break;
+    case eSprite::damageShield:
+        pObj = new damageShield(eSprite::damageShield, pos, shop, price);
+        break;
+    default: pObj = new CObject(t, pos);
+    } //switch
 
-/// Clear all enemies (and their projectiles) from the scene.
-/// Used when changing rooms to prevent enemies from carrying over.
-void CObjectManager::clearEnemies() {
-    auto it = m_stdObjectList.begin();
-    while (it != m_stdObjectList.end()) {
-        CObject* obj = *it;
-        // Check if object is an enemy or enemy projectile
-        if (obj->GetCollisionType() == 'e' || 
-            (dynamic_cast<CProjectile*>(obj) && dynamic_cast<CProjectile*>(obj)->GetOwnerType() == 'e')) {
-            delete obj;
-            it = m_stdObjectList.erase(it);
-        }
-        else {
-            ++it;
-        }
-    }
-}
 
-/// Count the number of enemies currently alive in the scene.
-/// \return Number of enemies with type 'e'.
-int CObjectManager::countEnemies() const {
-    int count = 0;
-    for (const CObject* obj : m_stdObjectList) {
-        if (obj && obj->GetCollisionType() == 'e') {
-            count++;
-        }
-    }
-    return count;
-}
+    m_stdObjectList.push_back(pObj); //push pointer onto object list
+    return pObj; //return pointer to created object
+} //create
 
 void CObjectManager::update(float deltaTime) {
-    auto itA = m_stdObjectList.begin();
-    while (itA != m_stdObjectList.end()) {
+    for (auto itA = m_stdObjectList.begin(); itA != m_stdObjectList.end(); ++itA) {
+        auto itB = itA;
+        ++itB;
         CObject* a = *itA;
         Vector2 tempA = a->m_vPos;
 
-        // Remove dead objects safely
-        if (a->m_bDead) {
+        if (a->m_bDead == true) {
             delete a;
             itA = m_stdObjectList.erase(itA);
             continue;
         }
-
-        // Basic cleanup for projectiles: remove if out of bounds
-        if (auto proj = dynamic_cast<CProjectile*>(a)) {
-            if (proj->IsOutOfBounds()) {
-                a->m_bDead = true;
-                delete a;
-                itA = m_stdObjectList.erase(itA);
-                continue;
-            }
-        }
-
         a->update(deltaTime);
-
-        // Collision checks against subsequent objects
-        auto itB = std::next(itA);
-        while (itB != m_stdObjectList.end()) {
+        for (; itB != m_stdObjectList.end(); ++itB) {
             CObject* b = *itB;
             Vector2 tempB = b->m_vPos;
             float ax = tempA.x;
@@ -195,18 +138,17 @@ void CObjectManager::update(float deltaTime) {
             float by = tempB.y;
             float bh = b->height;
             float bw = b->width;
-
+            
+            
             bool overlap = !(ax + aw < bx || bx + bw < ax ||
                 ay + ah < by || by + bh < ay);
 
-            if (overlap) {
+            if (overlap)
+            {
                 a->onCollision(b);
                 b->onCollision(a);
             }
-
-            ++itB;
+            //test a bounds vs b bounds
         }
-
-        ++itA;
     }
 }

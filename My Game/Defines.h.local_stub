@@ -1,5 +1,0 @@
-#pragma once
-
-// Local game Defines.h - minimal, most types come from engine's <Defines.h> via GameDefines.h
-
-enum class eSpriteMode { Batched2D, Immediate2D };
