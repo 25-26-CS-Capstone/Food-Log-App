@@ -211,6 +211,16 @@
 	</sprite>
 
 	<sprite name="Connection" file="Connection.png"/>
+
+	<!-- IceBat sprites and projectile (using TestEnemy as placeholder) -->
+	<sprite name="IceBatFlap64Sheet" file="TestEnemy.png"/>
+	<sprite name="IceBatFlap" sheet="IceBatFlap64Sheet" frames="1">
+		<frame index="0" left="0" top="0" right="64" bottom="64"/>
+	</sprite>
+	<sprite name="IceBatAttackFlap" sheet="IceBatFlap64Sheet" frames="1">
+		<frame index="0" left="0" top="0" right="64" bottom="64"/>
+	</sprite>
+	<sprite name="IceBatProjectile" file="TestEnemy.png"/>
 	
   </sprites>
 
