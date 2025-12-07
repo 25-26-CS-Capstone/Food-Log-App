@@ -15,6 +15,8 @@ extern int BRANCH_NUM = 2;
 extern int BRANCH_MAX_LEN = 3;
 extern int LOOP_NUM = 0;
 extern int ROOM_TYPES = 6;
+extern int SHOP_NUM = 1;
+extern int ITEM_NUM = 2;
 
 extern int idsNum = 0;
 
@@ -83,7 +85,7 @@ void Graph::graphGen(Node* first, int length, int branchNum, int loopNum, bool b
         direction = pickFreeDirection(pos);
         //loop to move back one if no free direction?
         pos = moveInDirection(pos, direction);
-        current = this->addVertex(++idCounter, (int)rand()% ROOM_TYPES, pos);
+        current = this->addVertex(++idCounter, ((int)rand()% ROOM_TYPES-1)+1, pos);
         this->addEdge(prev, current);
         prev = current;
     }
@@ -152,6 +154,51 @@ void Graph::addLoops(Node* startNode, int loopNum) {
     }
 }
 
+//Loop through nodes and add item and shop rooms randomly
+void Graph::addItemRooms(Node* startNode, int shopNum, int itemNum) {
+    int checkNum = 0;
+    Node* branchNode = nullptr;
+	Node* current = nullptr;
+    int direction;
+    for (int x = 0; x < shopNum; ++x) {
+            while (checkNum < nodes.size()) {
+                branchNode = nodes.at(rand() % nodes.size());
+                direction = pickFreeDirection(branchNode->position);
+                if (direction == -1) {
+                    checkNum++;
+                }
+                else {
+                    break;
+                }
+            }
+            if (checkNum == nodes.size())
+                break; //no available nodes to add to
+            //add shop room
+			current = this->addVertex(idsNum++, 997, moveInDirection(branchNode->position, direction));
+            addEdge(branchNode, current);
+    }
+
+    for (int x = 0; x < shopNum; ++x) {
+        checkNum = 0;
+
+            while (checkNum < nodes.size()) {
+                branchNode = nodes.at(rand() % nodes.size());
+                direction = pickFreeDirection(branchNode->position);
+                if (direction == -1) {
+                    checkNum++;
+                }
+                else {
+                    break;
+                }
+            }
+            if (checkNum == nodes.size())
+                break; //no available nodes to add to
+            //add item room
+            current = this->addVertex(idsNum++, 998, moveInDirection(branchNode->position, direction));
+            addEdge(branchNode, current);
+        }
+}
+
 void Graph::newGraph(){
     for (Node* n : nodes) {
         delete n;
@@ -163,7 +210,7 @@ void Graph::newGraph(){
     addVertex(idsNum++, 0, pos);
     graphGen(nodes.at(0), MAP_LEN, BRANCH_NUM, LOOP_NUM, false, false, idsNum);
     addLoops(nodes.at(0), LOOP_NUM);
-    //addItemRooms(nodes.at(0));
+    addItemRooms(nodes.at(0), SHOP_NUM, ITEM_NUM);
 }
 
 void Graph::printGraph(){
@@ -294,9 +341,11 @@ void Graph::DrawGraph(LSpriteRenderer* m_pRenderer, Node* playerNode) {
         switch (n->getType()) {
             case 0: desc.m_nCurrentFrame = 4; break; // start
             case 1: desc.m_nCurrentFrame = 1; break;
-            case 2: desc.m_nCurrentFrame = 2; break;
-            case 3: desc.m_nCurrentFrame = 3; break;
-            case 4: desc.m_nCurrentFrame = 0; break;
+            case 2: desc.m_nCurrentFrame = 1; break;
+            case 3: desc.m_nCurrentFrame = 1; break;
+            case 4: desc.m_nCurrentFrame = 1; break;
+			case 997: desc.m_nCurrentFrame = 2; break; // shop
+			case 998: desc.m_nCurrentFrame = 3; break; // item room
             case 999: desc.m_nCurrentFrame = 6; break; // boss
             default: desc.m_nCurrentFrame = 7; break; // fallback
         }

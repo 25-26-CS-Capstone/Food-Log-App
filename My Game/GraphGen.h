@@ -54,6 +54,7 @@ private:
     int pickFreeDirection(Vector2 pos);
     Vector2 moveInDirection(Vector2 pos, int dir);
     void addLoops(Node* startNode, int loopNum);
+    void addItemRooms(Node* startNode, int shopNum, int itemNum);
 
 public:
     vector<Node*> nodes;
