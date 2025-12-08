@@ -38,6 +38,10 @@
     <sprite name="digit7" file="Digit7.png"/>
     <sprite name="digit8" file="Digit8.png"/>
     <sprite name="digit9" file="Digit9.png"/>
+	<sprite name="StartButton0" file="StartButtonNormal.png"/>
+	<sprite name="StartButton1" file="StartButtonUsed.png"/>
+	<sprite name="ExitButton0" file="ExitButtonNormal.png"/>
+	<sprite name="ExitButton1" file="ExitButtonUsed.png"/>
 
 	  
 	<sprite name="InuitIdleLeftSheet" file="InuitIdleLeft.png"/>
