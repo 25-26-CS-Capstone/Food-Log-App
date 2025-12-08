@@ -29,10 +29,10 @@ void CEnemy::update(float deltaTime) {
 		m_pPlayer->GetCurrentNode()->changeEnemyCount(-1);
 		m_bDead = true;
 		if (m_pPlayer->getLifeDrop() == true) {
-			m_pObjectManager->create(eSprite::healthPickup, this->m_vPos);
+			m_pObjectManager->create(eSprite::healthPickup, this->m_vPos, false, 0);
 		}
 		if (m_pPlayer->getGoldDrop() == true) {
-			m_pObjectManager->create(eSprite::gold, this->m_vPos);
+			m_pObjectManager->create(eSprite::gold, this->m_vPos, false, 0);
 		}
 		if (m_pPlayer->getDeathExplosion() == true) {
 			m_pObjectManager->create(eSprite::explosion, this->m_vPos);
