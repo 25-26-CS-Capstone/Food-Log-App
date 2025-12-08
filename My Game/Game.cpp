@@ -266,9 +266,6 @@ void CGame::KeyboardHandler() {
     if (m_pKeyboard->TriggerDown('P'))
         m_bDrawGraph = !m_bDrawGraph;//draw the graph for debugging
 
-    if (m_pKeyboard->TriggerDown('K'))
-        m_pPlayer->GetCurrentNode()->SetCleared(!m_pPlayer->GetCurrentNode()->GetCleared());//toggles room cleared
-
     if (m_pKeyboard->TriggerDown(VK_F1)) //help
         ShellExecute(0, 0, "https://larc.unt.edu/code/physics/blank/", 0, 0, SW_SHOW);
 
@@ -350,10 +347,6 @@ void CGame::ChangeRoom() {
     Node* currentNode = m_pPlayer->GetCurrentNode();
     if (!currentNode) return;
 
-    if (!m_pPlayer->GetCurrentNode()->GetCleared()) {
-        return;
-    }
-
     Vector2 pos = m_pPlayer->m_vPos;
     int col = static_cast<int>(pos.x / m_pRoom->GetTileSize());
     int row = static_cast<int>(pos.y / m_pRoom->GetTileSize());
@@ -370,8 +363,9 @@ void CGame::ChangeRoom() {
         case WEST:  doorCol = 0; doorRow = centerRow; break;
         case EAST:  doorCol = m_pRoom->GetWidth() - 1; doorRow = centerRow; break;
         }
+
         if (col == doorCol && row == doorRow) {
-            //Change room
+            // Change room
             m_pObjectManager->deleteShopItems();
             m_pPlayer->SetCurrentNode(edge.to);
             m_pRoom->LoadRoom(edge.to);
@@ -396,8 +390,8 @@ void CGame::ChangeRoom() {
             switch (edge.direction) {
             case NORTH: m_pPlayer->m_vPos = (Vector2(pos.x, (m_pRoom->GetHeight() - 2) * m_pRoom->GetTileSize())); break;
             case SOUTH: m_pPlayer->m_vPos = (Vector2(pos.x, m_pRoom->GetTileSize())); break;
-            case WEST:  m_pPlayer->m_vPos = (Vector2((m_pRoom->GetWidth() - 2) * m_pRoom->GetTileSize(), pos.y)); break;
-            case EAST:  m_pPlayer->m_vPos = (Vector2(2 * m_pRoom->GetTileSize(), pos.y)); break;
+            case WEST:  m_pPlayer->m_vPos = (Vector2((m_pRoom->GetWidth() - 2) * m_pRoom->GetTileSize() + 50.0f, pos.y)); break;
+            case EAST:  m_pPlayer->m_vPos = (Vector2(2*m_pRoom->GetTileSize() + 50.0f, pos.y)); break;
             }
             return;
         }
