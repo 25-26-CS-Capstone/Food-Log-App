@@ -383,4 +383,7 @@ void CPlayer::update(float deltaTime) {
             shieldCooldown = 10.0f;
         }
     }
+    if (currentNode->getEnemyCount() == 0) {
+        currentNode->SetCleared(true);
+    }
 }

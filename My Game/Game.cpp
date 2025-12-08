@@ -60,6 +60,7 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::backAttack, "backAttack");
   m_pRenderer->Load(eSprite::deathExplosion, "deathExplosion");
   m_pRenderer->Load(eSprite::damageShield, "damageShield");
+  m_pRenderer->Load(eSprite::bossEnemy, "bossEnemy");
   m_pRenderer->Load(eSprite::digit0, "digit0");
   m_pRenderer->Load(eSprite::digit1, "digit1");
   m_pRenderer->Load(eSprite::digit2, "digit2");
@@ -315,6 +316,7 @@ void CGame::RenderFrame(){
   if(m_bDrawFrameRate)DrawFrameRateText(); //draw frame rate, if required
 
   float deltaTime = m_pTimer->GetFrameTime();
+
   m_pObjectManager->update(deltaTime);
   m_pRenderer->EndFrame(); //required after rendering
 } //RenderFrame
@@ -389,6 +391,14 @@ void CGame::ChangeRoom() {
                 }
                 else if (m_pPlayer->GetCurrentNode()->getType() == 997) {
                     spawnRareItem(Vector2(700.0f, 380.0f), false, 0);
+                }
+                else if (m_pPlayer->GetCurrentNode()->getType() == 999) {
+                    m_pObjectManager->create(eSprite::bossEnemy, Vector2(700.0f, 380.0f));
+                    m_pPlayer->GetCurrentNode()->changeEnemyCount(-1);
+                }
+                else if (m_pPlayer->GetCurrentNode()->getType() > 0 && m_pPlayer->GetCurrentNode()->getType() <7){
+                    m_pObjectManager->create(eSprite::testEnemy, Vector2(500.0f, 380.0f));
+                    m_pObjectManager->create(eSprite::testEnemy, Vector2(900.0f, 380.0f));
                 }
             }
             m_pPlayer->GetCurrentNode()->changeVisited(true);

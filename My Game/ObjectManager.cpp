@@ -61,6 +61,9 @@ CObject* CObjectManager::create(eSprite t, const Vector2& pos) {
     case eSprite::explosion:
         pObj = new explosion(eSprite::explosion, pos);
         break;
+    case eSprite::bossEnemy:
+        pObj = new CEnemy(eSprite::bossEnemy, pos);
+        break;
     default: pObj = new CObject(t, pos);
     } //switch
 
@@ -138,8 +141,8 @@ void CObjectManager::update(float deltaTime) {
             float by = tempB.y;
             float bh = b->height;
             float bw = b->width;
-            
-            
+
+
             bool overlap = !(ax + aw < bx || bx + bw < ax ||
                 ay + ah < by || by + bh < ay);
 
@@ -151,6 +154,7 @@ void CObjectManager::update(float deltaTime) {
             //test a bounds vs b bounds
         }
     }
+
 }
 
 void CObjectManager::deleteShopItems() {

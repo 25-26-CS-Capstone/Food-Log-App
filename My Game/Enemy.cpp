@@ -3,9 +3,16 @@
 #include "ObjectManager.h"
 
 CEnemy::CEnemy(eSprite t, const Vector2& p) : CObject(t, p) {
-	width = 200.0f;
-	height = 200.0f;
-	type = 'e';
+	if (t == eSprite::testEnemy) {
+		width = 100.0f;
+		height = 100.0f;
+		type = 'e';
+	}
+	else {
+		width = 300.0f;
+		height = 300.0f;
+		type = 'e';
+	}
 } //constructor
 
 CEnemy::~CEnemy() {
@@ -18,6 +25,7 @@ void CEnemy::move() {
 
 void CEnemy::update(float deltaTime) {
 	if (currentHealth <= 0) {
+		m_pPlayer->GetCurrentNode()->changeEnemyCount(-1);
 		m_bDead = true;
 		if (m_pPlayer->getLifeDrop() == true) {
 			m_pObjectManager->create(eSprite::healthPickup, this->m_vPos);

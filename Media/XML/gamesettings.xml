@@ -27,7 +27,8 @@
     <sprite name="goldDrop" file="GoldDrop.png"/>
     <sprite name="backAttack" file="BackAttack.png"/> 
     <sprite name="deathExplosion" file="DeathExplosion.png"/> 
-    <sprite name="damageShield" file="DamageShield.png"/>       
+    <sprite name="damageShield" file="DamageShield.png"/>
+    <sprite name="bossEnemy" file="BossEnemy.png"/>       
     <sprite name="digit0" file="Digit0.png"/>
     <sprite name="digit1" file="Digit1.png"/>
     <sprite name="digit2" file="Digit2.png"/>
