@@ -45,7 +45,6 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::PIGSPRITE, "pig");
   m_pRenderer->Load(eSprite::healthBar, "healthBar");
   m_pRenderer->Load(eSprite::healthBarBackground, "healthBarBackground");
-  m_pRenderer->Load(eSprite::testEnemy, "testEnemy");
   m_pRenderer->Load(eSprite::healthPickup, "healthPickup");
   m_pRenderer->Load(eSprite::maxHealthPickup, "maxHealthPickup");
   m_pRenderer->Load(eSprite::PlayerAttackSheet, "PlayerAttackSheet");
@@ -153,7 +152,6 @@ void CGame::MenuUpdate() {
 void CGame::BeginGame(){  
     m_pObjectManager->clear();  //clear old objects
     createItemList();
-
     gameState = 1;
     m_pRoom = new CRoom(64, m_pRenderer);
 
@@ -161,7 +159,6 @@ void CGame::BeginGame(){
 	m_Graph.assignScreenPositions(Vector2(m_nWinWidth/2.0f, m_nWinHeight/2.0f), 96.f);
 	m_pRoom->LoadRoom(m_Graph.nodes.at(0));
     m_Graph.nodes.at(0)->changeVisited(true); // Mark starting room as visited
-    m_Graph.nodes.at(0)->SetCleared(true); // Mark starting room as cleared
     
     // Mark shop and item rooms as cleared (no enemies spawn there)
     // Note: Boss room (999) is NOT marked cleared so the boss spawns
@@ -185,10 +182,6 @@ void CGame::CreateObjects() {
     m_pPlayer->SetRoom(m_pRoom);
 	m_pPlayer->SetCurrentNode(m_Graph.nodes.at(0));
     m_pObjectManager->SetPlayer(m_pPlayer);  // Set player on ObjectManager for projectile tracking
-    //m_pObjectManager->create(eSprite::testEnemy, Vector2(1000.0f, 300.0f));
-    //m_pObjectManager->create(eSprite::maxHealthPickup, Vector2(200.0f, 300.0f));
-    //m_pObjectManager->create(eSprite::lifeDrop, Vector2(400.0f, 300.0f));
-    //m_pObjectManager->create(eSprite::goldDrop, Vector2(600.0f, 300.0f));
     
     SpawnEnemies(); // Spawn enemies for the starting room
 }
