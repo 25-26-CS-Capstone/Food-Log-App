@@ -203,7 +203,7 @@ void CGame::gameOverUpdate() {
             BeginGame();
         }
         else if (currentButton == 1) {
-            Release();
+            Release();  
         }
     }
 }
@@ -424,7 +424,7 @@ void CGame::ProcessFrame(){
     else if (gameState==1) {
         ChangeRoom();
         KeyboardHandler(); //handle keyboard input
-        if (m_pPlayer != nullptr && m_pPlayer->getCurrentHealth() == 0) {
+        if (m_pPlayer != nullptr && m_pPlayer->getCurrentHealth() <= 0) {
             gameOver();
         }
         if (m_pPlayer != nullptr && m_pPlayer->GetCurrentNode()->getType() == 999 && m_pPlayer->GetCurrentNode()->getEnemyCount() == 0) {
@@ -442,7 +442,16 @@ void CGame::ProcessFrame(){
         m_pObjectManager->move(); //move all objects
         });
     if (m_pPlayer != nullptr && m_pPlayer->GetCurrentNode()->getEnemyCount() == 0 && m_pPlayer->GetCurrentNode()->getType() > 0 && m_pPlayer->GetCurrentNode()->getType() < 7 && m_pPlayer->GetCurrentNode()->getItemSpawn() == false) {
-        m_pObjectManager->create(eSprite::gold, Vector2(700.0f, 360.0f), false, 0);
+        default_random_engine rng(chrono::system_clock::now().time_since_epoch().count());
+        mt19937 generator(rng);
+        uniform_int_distribution<> distribution(1, 2);
+        int randNum = distribution(generator);
+        if (randNum == 1) {
+            m_pObjectManager->create(eSprite::gold, Vector2(700.0f, 360.0f), false, 0);
+        }
+        else {
+            m_pObjectManager->create(eSprite::healthPickup, Vector2(700.0f, 360.0f), false, 0);
+        }
         m_pPlayer->GetCurrentNode()->changeItemSpawn(true);
     }
   RenderFrame(); //render a frame of animation
@@ -500,8 +509,8 @@ void CGame::ChangeRoom() {
                     m_pPlayer->GetCurrentNode()->changeEnemyCount(-1);
                 }
                 else if (m_pPlayer->GetCurrentNode()->getType() > 0 && m_pPlayer->GetCurrentNode()->getType() <7 && m_pPlayer->GetCurrentNode()->GetCleared() == false){
-                    m_pObjectManager->create(eSprite::testEnemy, Vector2(500.0f, 380.0f));
-                    m_pObjectManager->create(eSprite::testEnemy, Vector2(900.0f, 380.0f));
+                    m_pObjectManager->create(eSprite::testEnemy, Vector2(600.0f, 380.0f));
+                    m_pObjectManager->create(eSprite::testEnemy, Vector2(800.0f, 380.0f));
                 }
             }
             m_pPlayer->GetCurrentNode()->changeVisited(true);
