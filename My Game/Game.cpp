@@ -439,7 +439,7 @@ void CGame::ProcessFrame(){
         m_pObjectManager->move(); //move all objects
         });
     if (m_pPlayer != nullptr && m_pPlayer->GetCurrentNode()->getEnemyCount() == 0 && m_pPlayer->GetCurrentNode()->getType() > 0 && m_pPlayer->GetCurrentNode()->getType() < 7 && m_pPlayer->GetCurrentNode()->getItemSpawn() == false) {
-        spawnCommonItem(Vector2(700.0f, 380.0f), false, 0);
+        m_pObjectManager->create(eSprite::gold, Vector2(700.0f, 360.0f), false, 0);
         m_pPlayer->GetCurrentNode()->changeItemSpawn(true);
     }
   RenderFrame(); //render a frame of animation
@@ -480,12 +480,12 @@ void CGame::ChangeRoom() {
                 if (m_pPlayer->GetCurrentNode()->getType() == 998) {
                     default_random_engine rng(chrono::system_clock::now().time_since_epoch().count());
                     mt19937 generator(rng);
-                    uniform_int_distribution<> distribution(1, 5);
+                    uniform_int_distribution<> distribution(1, 3);
                     int randNum = distribution(generator);
                     spawnCommonItem(Vector2(400.0f, 380.0f), true, randNum);
                     randNum = distribution(generator);
                     spawnCommonItem(Vector2(700.0f, 380.0f), true, randNum);
-                    uniform_int_distribution<> distribution2(5, 10);
+                    uniform_int_distribution<> distribution2(3, 5);
                     randNum = distribution2(generator);
                     spawnRareItem(Vector2(1000.0f, 380.0f), true, randNum);
                 }
@@ -551,16 +551,13 @@ void CGame::spawnCommonItem(Vector2 pos, bool shop, int price) {
     mt19937 generator(rng);
     uniform_int_distribution<> distribution(1, 100);
     int randNum = distribution(generator);
-    if (randNum <= 10) {
+    if (randNum <= 25) {
         m_pObjectManager->create(eSprite::maxHealthPickup, pos, shop, price);
     }
-    else if (randNum <= 40) {
+    else if (randNum <= 50) {
         m_pObjectManager->create(eSprite::healthPickup, pos, shop, price);
     }
-    else if (randNum <= 90) {
-        m_pObjectManager->create(eSprite::gold, pos, shop, price);
-    }
-    else if (randNum <= 95) {
+    else if (randNum <= 75) {
         m_pObjectManager->create(eSprite::attackUp, pos, shop, price);
     }
     else if (randNum <= 100) {

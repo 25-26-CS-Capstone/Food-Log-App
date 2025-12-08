@@ -15,7 +15,7 @@ CPlayer::CPlayer(eSprite t, const Vector2& p): CObject(t, p){
   currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitIdleRight;
   objectmanager = m_pObjectManager;
   m_nCurrentFrame = 0;
-  width = 150.0f;
+  width = 100.0f;
   height = 132.0f;
   type = 'p';
 } //constructor

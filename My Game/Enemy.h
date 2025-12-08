@@ -5,6 +5,10 @@
 
 #include "Object.h"
 #include "Player.h"
+#include <vector>
+#include <algorithm>
+#include <random>
+#include <chrono>
 
 class CEnemy : public CObject {
 protected:
@@ -12,7 +16,8 @@ protected:
     float currentHealth = 3.0;
     float invulnTime = 0.3f;
     bool damaged = false;
-
+    int moveDir = 1;
+    int moveCount = 0;
 public:
     CEnemy(eSprite t, const Vector2& p); ///< Constructor.
     virtual ~CEnemy(); ///< Destructor.

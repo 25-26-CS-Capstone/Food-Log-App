@@ -44,6 +44,26 @@ void CEnemy::update(float deltaTime) {
 			invulnTime = 0.3f;
 		}
 	}
+	if (moveCount == 20) {
+		moveCount = 0;
+		default_random_engine rng(chrono::system_clock::now().time_since_epoch().count());
+		mt19937 generator(rng);
+		uniform_int_distribution<> distribution(1, 4);
+	    moveDir = distribution(generator);
+	}
+	if (moveDir == 1 && m_vPos.y < screenHeight) {
+		m_vPos += Vector2(0.0f, 1.0f);
+	}
+	else if (moveDir == 2 && m_vPos.x < screenWidth) {
+		m_vPos += Vector2(1.0f, 0.0f);
+	}
+	else if (moveDir == 3 && m_vPos.y < 0.0f) {
+		m_vPos += Vector2(0.0f, -1.0f);
+	}
+	else if (moveDir == 4) {
+		m_vPos += Vector2(-1.0f, 0.0f && m_vPos.x < 0.0f);
+	}
+	moveCount++;
 }
 
 
