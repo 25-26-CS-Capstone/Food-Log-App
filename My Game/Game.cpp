@@ -390,8 +390,8 @@ void CGame::ChangeRoom() {
             switch (edge.direction) {
             case NORTH: m_pPlayer->m_vPos = (Vector2(pos.x, (m_pRoom->GetHeight() - 2) * m_pRoom->GetTileSize())); break;
             case SOUTH: m_pPlayer->m_vPos = (Vector2(pos.x, m_pRoom->GetTileSize())); break;
-            case WEST:  m_pPlayer->m_vPos = (Vector2((m_pRoom->GetWidth() - 2) * m_pRoom->GetTileSize(), pos.y)); break;
-            case EAST:  m_pPlayer->m_vPos = (Vector2(2*m_pRoom->GetTileSize(), pos.y)); break;
+            case WEST:  m_pPlayer->m_vPos = (Vector2((m_pRoom->GetWidth() - 2) * m_pRoom->GetTileSize() + 50.0f, pos.y)); break;
+            case EAST:  m_pPlayer->m_vPos = (Vector2(2*m_pRoom->GetTileSize() + 50.0f, pos.y)); break;
             }
             return;
         }
