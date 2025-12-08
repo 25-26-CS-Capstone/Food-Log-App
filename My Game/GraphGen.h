@@ -37,6 +37,7 @@ private:
     int edges = 0;
     bool visited = false;
     bool cleared = false;
+    bool itemSpawn = false;
     int enemyCount = 2;
 public:
     vector<Edge> adj;
@@ -53,6 +54,8 @@ public:
     void SetCleared(bool isCleared);
     int getEnemyCount() { return enemyCount; }
     void changeEnemyCount(int x) { enemyCount += x; }
+    bool getItemSpawn() { return itemSpawn; }
+    void changeItemSpawn(bool x) { itemSpawn = x; }
 };
 
 class Graph {

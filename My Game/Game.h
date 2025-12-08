@@ -38,6 +38,7 @@ class CGame:
 	bool m_bDrawGraph = false; ///< Draw the graph.
     int gameState;  //0 = menu, 1 = gameplay
     int currentButton;
+    bool itemSpawn = false;
 //    LSpriteDesc2D* m_pSpriteDesc = nullptr; ///< Sprite descriptor.
 //    LSpriteRenderer* m_pRenderer = nullptr; ///< Pointer to renderer.
     void LoadImages(); ///< Load images.
@@ -49,7 +50,10 @@ class CGame:
     void KeyboardHandler(); ///< The keyboard handler.
     void RenderFrame(); ///< Render an animation frame.
     void DrawFrameRateText(); ///< Draw frame rate text to screen.
-    
+    void gameOver();
+    void gameOverUpdate();
+    void gameWin();
+    void gameWinUpdate();
 
 	
 

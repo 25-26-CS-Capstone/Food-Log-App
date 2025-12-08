@@ -157,12 +157,98 @@ void CGame::MenuUpdate() {
             BeginGame();
         }
         else if (currentButton == 1) {
-            //ADD COMMAND TO CLOSE GAME
+            Release();
         }
     }
 
     
 }
+
+void CGame::gameOver() {
+    m_pObjectManager->clear();
+
+    gameState = 2;
+    currentButton = 0;
+
+    m_pObjectManager->create(eSprite::Background, m_vWinCenter);
+    m_pObjectManager->create(eSprite::StartButton0, Vector2(700, 500.0f));
+    m_pObjectManager->create(eSprite::ExitButton0, Vector2(700, 200.0f));
+
+
+}
+
+void CGame::gameOverUpdate() {
+    m_pKeyboard->GetState();
+
+    if (m_pKeyboard->TriggerDown('W')) {
+        if (currentButton == 1) {
+            currentButton = 0;
+            m_pObjectManager->create(eSprite::StartButton1, Vector2(700, 500.0f));
+            m_pObjectManager->create(eSprite::ExitButton0, Vector2(700, 200.0f));
+        }
+    }
+
+    if (m_pKeyboard->TriggerDown('S')) {
+        if (currentButton == 0) {
+            currentButton = 1;
+            m_pObjectManager->create(eSprite::ExitButton1, Vector2(700, 200.0f));
+            m_pObjectManager->create(eSprite::StartButton0, Vector2(700, 500.0f));
+        }
+    }
+
+    if (m_pKeyboard->TriggerDown('J')) {
+        if (currentButton == 0) {
+            BeginGame();
+        }
+        else if (currentButton == 1) {
+            Release();
+        }
+    }
+}
+
+void CGame::gameWin() {
+    m_pObjectManager->clear();
+
+    gameState = 3;
+    currentButton = 0;
+
+    m_pObjectManager->create(eSprite::Background, m_vWinCenter);
+    m_pObjectManager->create(eSprite::StartButton0, Vector2(700, 500.0f));
+    m_pObjectManager->create(eSprite::ExitButton0, Vector2(700, 200.0f));
+
+
+}
+
+void CGame::gameWinUpdate() {
+    m_pKeyboard->GetState();
+
+    if (m_pKeyboard->TriggerDown('W')) {
+        if (currentButton == 1) {
+            currentButton = 0;
+            m_pObjectManager->create(eSprite::StartButton1, Vector2(700, 500.0f));
+            m_pObjectManager->create(eSprite::ExitButton0, Vector2(700, 200.0f));
+        }
+    }
+
+    if (m_pKeyboard->TriggerDown('S')) {
+        if (currentButton == 0) {
+            currentButton = 1;
+            m_pObjectManager->create(eSprite::ExitButton1, Vector2(700, 200.0f));
+            m_pObjectManager->create(eSprite::StartButton0, Vector2(700, 500.0f));
+        }
+    }
+
+    if (m_pKeyboard->TriggerDown('J')) {
+        if (currentButton == 0) {
+            BeginGame();
+        }
+        else if (currentButton == 1) {
+            Release();
+        }
+    }
+}
+
+
 /// Call this function to start a new game. This should be re-entrant so that
 /// you can restart a new game without having to shut down and restart the
 /// program.
@@ -261,9 +347,6 @@ void CGame::KeyboardHandler() {
 
     }
 
-    if (m_pKeyboard->TriggerDown('O'))
-        m_pPlayer->changeHealth(-1.0);
-
     if (m_pKeyboard->TriggerDown('P'))
         m_bDrawGraph = !m_bDrawGraph;//draw the graph for debugging
 
@@ -335,14 +418,27 @@ void CGame::ProcessFrame(){
     else if (gameState==1) {
         ChangeRoom();
         KeyboardHandler(); //handle keyboard input
-
+        if (m_pPlayer != nullptr && m_pPlayer->getCurrentHealth() == 0) {
+            gameOver();
+        }
+        if (m_pPlayer != nullptr && m_pPlayer->GetCurrentNode()->getType() == 999 && m_pPlayer->GetCurrentNode()->getEnemyCount() == 0) {
+            gameWin();
+        }
+    } else if(gameState == 2){
+        gameOverUpdate();
+    }
+    else if (gameState == 3) {
+        gameWinUpdate();
     }
     m_pAudio->BeginFrame(); //notify audio player that frame has begun
     m_pTimer->Tick([&]() { //all time-dependent function calls should go here
         //    const float t = m_pTimer->GetFrameTime(); //frame interval in seconds
         m_pObjectManager->move(); //move all objects
         });
-
+    if (m_pPlayer != nullptr && m_pPlayer->GetCurrentNode()->getEnemyCount() == 0 && m_pPlayer->GetCurrentNode()->getType() > 0 && m_pPlayer->GetCurrentNode()->getType() < 7 && m_pPlayer->GetCurrentNode()->getItemSpawn() == false) {
+        spawnCommonItem(Vector2(700.0f, 380.0f), false, 0);
+        m_pPlayer->GetCurrentNode()->changeItemSpawn(true);
+    }
   RenderFrame(); //render a frame of animation
 } //ProcessFrame
 
@@ -374,6 +470,7 @@ void CGame::ChangeRoom() {
         if (col == doorCol && row == doorRow) {
             // Change room
             m_pObjectManager->deleteShopItems();
+            itemSpawn = false;
             m_pPlayer->SetCurrentNode(edge.to);
             m_pRoom->LoadRoom(edge.to);
             if (m_pPlayer->GetCurrentNode()->getVisited() == false) {
@@ -396,7 +493,7 @@ void CGame::ChangeRoom() {
                     m_pObjectManager->create(eSprite::bossEnemy, Vector2(700.0f, 380.0f));
                     m_pPlayer->GetCurrentNode()->changeEnemyCount(-1);
                 }
-                else if (m_pPlayer->GetCurrentNode()->getType() > 0 && m_pPlayer->GetCurrentNode()->getType() <7){
+                else if (m_pPlayer->GetCurrentNode()->getType() > 0 && m_pPlayer->GetCurrentNode()->getType() <7 && m_pPlayer->GetCurrentNode()->GetCleared() == false){
                     m_pObjectManager->create(eSprite::testEnemy, Vector2(500.0f, 380.0f));
                     m_pObjectManager->create(eSprite::testEnemy, Vector2(900.0f, 380.0f));
                 }

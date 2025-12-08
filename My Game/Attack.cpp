@@ -2,7 +2,7 @@
 
 Attack::Attack(eSprite t, const Vector2& p):CObject(t,p) {
 	width = 100.0f;
-	height = 20.0f;
+	height = 10.0f;
 	type = 'a';
 	m_pPlayer->setAttackCooldown(m_pPlayer->getAttackCooldownValue());
 }
