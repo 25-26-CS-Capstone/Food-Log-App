@@ -1,10 +1,9 @@
-import { StyleSheet, Text, View, Button, Platform, Alert } from 'react-native';
-import React from 'react';
-import { navigate } from 'expo-router/build/global-state/routing';
+import { StyleSheet, View, Button } from 'react-native'
+import React from 'react'
+import { navigate } from 'expo-router/build/global-state/routing'
+import { useRouter } from "expo-router";
 
 const home = () => {
-
-
   return (
     <View style={styles.container}>
 
@@ -20,6 +19,9 @@ const home = () => {
         <Button title="View Food Calendar" onPress={() => navigate('../calendar')} />
       </View>
 
+      <View style={styles.buttonWrapper}>
+        <Button title="View History (Food + Symptoms)" onPress={() => navigate('../history')} />
+      </View>
     </View>
   );
 };

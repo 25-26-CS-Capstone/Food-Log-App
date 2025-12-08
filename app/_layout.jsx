@@ -52,6 +52,7 @@ const RootLayout = () => {
         <Stack.Screen name="food_log" options={{title: 'Food Log'}} />
         <Stack.Screen name="symptom_log" options={{title: 'Symptom Log'}} />
         <Stack.Screen name="previous_logs" options={{title: 'Previous Logs'}} />
+        <Stack.Screen name="history" options={{ title: "History" }} />
         <Stack.Screen name="index" options={{headerShown: false}}/>
       </Stack>
   )
