@@ -98,7 +98,16 @@ void CGame::LoadImages(){
     m_pRenderer->Load(eSprite::IceBatFlap, "IceBatFlap");
     m_pRenderer->Load(eSprite::IceBatAttackFlap, "IceBatAttackFlap");
     m_pRenderer->Load(eSprite::IceBatProjectile, "IceBatProjectile");
-    // Ice bear sprites (boss)
+    // Ice bear sprites (boss) - all 9 frames for animation
+    m_pRenderer->Load(eSprite::IceBear0, "IceBear0");
+    m_pRenderer->Load(eSprite::IceBear1, "IceBear1");
+    m_pRenderer->Load(eSprite::IceBear2, "IceBear2");
+    m_pRenderer->Load(eSprite::IceBear3, "IceBear3");
+    m_pRenderer->Load(eSprite::IceBear4, "IceBear4");
+    m_pRenderer->Load(eSprite::IceBear5, "IceBear5");
+    m_pRenderer->Load(eSprite::IceBear6, "IceBear6");
+    m_pRenderer->Load(eSprite::IceBear7, "IceBear7");
+    m_pRenderer->Load(eSprite::IceBear8, "IceBear8");
     m_pRenderer->Load(eSprite::IceBearInactive128, "IceBearInactive128");
     m_pRenderer->Load(eSprite::IceBearActive128, "IceBearActive128");
   m_pRenderer->Load(eSprite::StartButton0, "StartButton0");
@@ -154,10 +163,11 @@ void CGame::BeginGame(){
     m_Graph.nodes.at(0)->setVisited(true); // Mark starting room as visited
     m_Graph.nodes.at(0)->SetCleared(true); // Mark starting room as cleared
     
-    // Mark shop, item, and boss rooms as cleared (no enemies spawn there)
+    // Mark shop and item rooms as cleared (no enemies spawn there)
+    // Note: Boss room (999) is NOT marked cleared so the boss spawns
     for (Node* node : m_Graph.nodes) {
         int roomType = node->getType();
-        if (roomType == 997 || roomType == 998 || roomType == 999) {
+        if (roomType == 997 || roomType == 998) {
             node->SetCleared(true);
         }
     }

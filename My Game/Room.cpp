@@ -147,6 +147,14 @@ void CRoom::DrawDoors(eSprite t, Node* node) {
         };
 
     for (const Edge& edge : node->adj) {
+        // Check if the door leads to boss room (999) and make it blue
+        if (edge.to && edge.to->getType() == 999) {
+            desc.m_f4Tint = XMFLOAT4(0.0f, 0.5f, 1.0f, 1.0f); // Blue tint for boss door
+        }
+        else {
+            desc.m_f4Tint = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f); // Normal white tint
+        }
+        
         switch (edge.direction) {
         case NORTH:
             desc.m_vPos = TileToWorld(centerCol, m_nHeight - 1);

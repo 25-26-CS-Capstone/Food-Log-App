@@ -14,8 +14,8 @@
 
 CIceBear::CIceBear(const Vector2& pos)
     : CEnemyBase(eSprite::IceBear0, pos),
-            m_fHealth(200.0f),        // Much higher health than IceBat
-            m_fMaxHealth(200.0f),
+            m_fHealth(10.0f),        // Boss with 10 HP
+            m_fMaxHealth(10.0f),
             m_vVelocity(Vector2::Zero),
             m_fBaseSpeed(35.0f),      // Very slow base speed (was 50.0f)
             m_fRushSpeed(200.0f),     // Reduced rush speed (was 250.0f)
@@ -59,6 +59,41 @@ void CIceBear::draw() {
     ApplyEngagementTint();
     // Simple draw using current sprite and position
     m_pRenderer->Draw(m_eCurrentSprite, m_vPos);
+    
+    // Draw health bar above the ice bear
+    if (isAlive()) {
+        const float barTotalWidth = 100.0f;
+        const float barOffsetY = 60.0f; // Above the bear
+        
+        Vector2 barCenterPos = m_vPos;
+        barCenterPos.y += barOffsetY;
+        
+        float healthPercent = m_fHealth / m_fMaxHealth;
+        
+        // Draw 10 health segments (one per HP)
+        const int maxSegments = 10;
+        const float segmentWidth = 8.0f;
+        const float segmentSpacing = 2.0f;
+        const float totalBarWidth = maxSegments * (segmentWidth + segmentSpacing);
+        
+        for (int i = 0; i < maxSegments; i++) {
+            Vector2 segmentPos = barCenterPos;
+            segmentPos.x += (i - maxSegments / 2.0f) * (segmentWidth + segmentSpacing);
+            
+            LSpriteDesc2D segDesc = {};
+            if (i < (int)m_fHealth) {
+                // Filled segment (green)
+                segDesc.m_nSpriteIndex = static_cast<int>(eSprite::healthBar);
+                segDesc.m_f4Tint = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+            } else {
+                // Empty segment (red background)
+                segDesc.m_nSpriteIndex = static_cast<int>(eSprite::healthBarBackground);
+                segDesc.m_f4Tint = XMFLOAT4(0.5f, 0.0f, 0.0f, 1.0f);
+            }
+            segDesc.m_vPos = segmentPos;
+            m_pRenderer->Draw(&segDesc);
+        }
+    }
 }
 
 /// Main movement and AI update function called each frame.
@@ -232,12 +267,15 @@ void CIceBear::updateAnimation() {
 /// Advance animation frame number (player-style frame cycling).
 void CIceBear::updateFrameNumber() {
     // Pause animation on middle frame during hit for visual emphasis
-    if (m_eEngagement == EngagementState::HIT && m_nCurrentFrame == 1) {
+    if (m_eEngagement == EngagementState::HIT && m_nCurrentFrame == 4) {
         return; // Hold on middle frame for strong visual feedback
     }
     
-    // Simple frame advancement - just cycle through frames
-    m_nCurrentFrame = (m_nCurrentFrame + 1) % 3; // Assuming 3 frames per sprite
+    // Cycle through all 9 animation frames (0-8)
+    m_nCurrentFrame = (m_nCurrentFrame + 1) % 9;
+    
+    // Update sprite based on current frame
+    m_eCurrentSprite = static_cast<eSprite>(static_cast<int>(eSprite::IceBear0) + m_nCurrentFrame);
 }
 
 /// Apply damage to the Ice Bear.

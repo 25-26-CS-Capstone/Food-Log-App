@@ -54,6 +54,15 @@
 	</sprite>
 	<sprite name="IceBatProjectile" file="IceBatProjectile.png"/>
 	<!-- Ice Bear sprites (boss) -->
+	<sprite name="IceBear0" file="icebear_frame_0.png"/>
+	<sprite name="IceBear1" file="icebear_frame_1.png"/>
+	<sprite name="IceBear2" file="icebear_frame_2.png"/>
+	<sprite name="IceBear3" file="icebear_frame_3.png"/>
+	<sprite name="IceBear4" file="icebear_frame_4.png"/>
+	<sprite name="IceBear5" file="icebear_frame_5.png"/>
+	<sprite name="IceBear6" file="icebear_frame_6.png"/>
+	<sprite name="IceBear7" file="icebear_frame_7.png"/>
+	<sprite name="IceBear8" file="icebear_frame_8.png"/>
 	<sprite name="IceBearInactive128" file="icebear_frame_0.png"/>
 	<sprite name="IceBearActive128" file="icebear_frame_4.png"/>
 	<sprite name="StartButton0" file="StartButtonNormal.png"/>
