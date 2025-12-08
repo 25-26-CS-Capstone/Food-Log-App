@@ -128,6 +128,8 @@ char CRoom::GetTileAt(const Vector2& position) const {
 void CRoom::DrawDoors(eSprite t, Node* node) {
     if (!node || !m_pRenderer) return;
 
+    if(!node->GetCleared())
+		return; // Don't draw doors if room is cleared
 
     LSpriteDesc2D desc;
     desc.m_nSpriteIndex = static_cast<int>(t);

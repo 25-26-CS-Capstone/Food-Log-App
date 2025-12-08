@@ -34,6 +34,12 @@ int Node::getId(){
 int Node::getType(){
     return type;
 }
+bool Node::GetCleared() {
+	return cleared;
+}
+void Node::SetCleared(bool isCleared) {
+    cleared = isCleared;
+}
 
 
 Node* Graph::addVertex(int id, int type, Vector2 pos){
