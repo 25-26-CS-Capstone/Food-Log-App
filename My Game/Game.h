@@ -14,10 +14,6 @@
 #include "Attack.h"
 #include "Room.h"
 #include "GraphGen.h"
-<<<<<<< HEAD
-#include "IceBat.h"
-=======
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 #include <vector>
 #include <algorithm>
 #include <random>
@@ -50,9 +46,6 @@ class CGame:
     void MenuUpdate();
     void BeginGame(); ///< Begin playing the game.
     void CreateObjects(); ///< Create game objects.
-    void SpawnEnemies(); ///< Spawn enemies based on current room.
-    void CheckRoomCleared(); ///< Check if all enemies defeated.
-    void SpawnRandomItems(); ///< Spawn reward items.
     void KeyboardHandler(); ///< The keyboard handler.
     void RenderFrame(); ///< Render an animation frame.
     void DrawFrameRateText(); ///< Draw frame rate text to screen.
@@ -64,15 +57,6 @@ class CGame:
 	CRoom* m_pRoom; ///< The room.
     vector<int> rareItemList = { 1,2,3,4,5,6 };
     int itemListPos = 0;
-<<<<<<< HEAD
-    
-    // Enemy spawn tracking
-    int m_nEnemyCount = 0; ///< Number of enemies spawned in current room.
-    bool m_bRoomCleared = false; ///< Whether room has been cleared.
-    bool m_bItemsSpawned = false; ///< Whether items have been spawned.
-    bool m_bDeterministicSpawns = true; ///< Use deterministic spawns for testing.
-=======
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 
   public:
     ~CGame(); ///< Destructor.

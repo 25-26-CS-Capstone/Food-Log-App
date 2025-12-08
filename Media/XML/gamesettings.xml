@@ -38,36 +38,6 @@
     <sprite name="digit7" file="Digit7.png"/>
     <sprite name="digit8" file="Digit8.png"/>
     <sprite name="digit9" file="Digit9.png"/>
-<<<<<<< HEAD
-	<!-- Ice bat sprites -->
-	<sprite name="IceBatFlap64Sheet" file="icebat_flap_64.png"/>
-	<sprite name="IceBatFlap" sheet="IceBatFlap64Sheet" frames="4">
-		<frame index="0" left="0" top="0" right="64" bottom="64"/>
-		<frame index="1" left="64" top="0" right="128" bottom="64"/>
-		<frame index="2" left="128" top="0" right="192" bottom="64"/>
-		<frame index="3" left="192" top="0" right="256" bottom="64"/>
-	</sprite>
-	<sprite name="IceBatAttackFlap" sheet="IceBatFlap64Sheet" frames="4">
-		<frame index="0" left="0" top="0" right="64" bottom="64"/>
-		<frame index="1" left="64" top="0" right="128" bottom="64"/>
-		<frame index="2" left="128" top="0" right="192" bottom="64"/>
-		<frame index="3" left="192" top="0" right="256" bottom="64"/>
-	</sprite>
-	<sprite name="IceBatProjectile" file="IceBatProjectile.png"/>
-	<!-- Ice Bear sprites (boss) -->
-	<sprite name="IceBear0" file="icebear_frame_0.png"/>
-	<sprite name="IceBear1" file="icebear_frame_1.png"/>
-	<sprite name="IceBear2" file="icebear_frame_2.png"/>
-	<sprite name="IceBear3" file="icebear_frame_3.png"/>
-	<sprite name="IceBear4" file="icebear_frame_4.png"/>
-	<sprite name="IceBear5" file="icebear_frame_5.png"/>
-	<sprite name="IceBear6" file="icebear_frame_6.png"/>
-	<sprite name="IceBear7" file="icebear_frame_7.png"/>
-	<sprite name="IceBear8" file="icebear_frame_8.png"/>
-	<sprite name="IceBearInactive128" file="icebear_frame_0.png"/>
-	<sprite name="IceBearActive128" file="icebear_frame_4.png"/>
-=======
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 	<sprite name="StartButton0" file="StartButtonNormal.png"/>
 	<sprite name="StartButton1" file="StartButtonUsed.png"/>
 	<sprite name="ExitButton0" file="ExitButtonNormal.png"/>

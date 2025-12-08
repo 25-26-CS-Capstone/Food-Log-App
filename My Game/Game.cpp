@@ -93,26 +93,6 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::MapSheet, "MapSheet");
   m_pRenderer->Load(eSprite::MapRoom, "MapRoom");
   m_pRenderer->Load(eSprite::Connection, "Connection");
-<<<<<<< HEAD
-    // Ice bat sprites
-    m_pRenderer->Load(eSprite::IceBatFlap64Sheet, "IceBatFlap64Sheet");
-    m_pRenderer->Load(eSprite::IceBatFlap, "IceBatFlap");
-    m_pRenderer->Load(eSprite::IceBatAttackFlap, "IceBatAttackFlap");
-    m_pRenderer->Load(eSprite::IceBatProjectile, "IceBatProjectile");
-    // Ice bear sprites (boss) - all 9 frames for animation
-    m_pRenderer->Load(eSprite::IceBear0, "IceBear0");
-    m_pRenderer->Load(eSprite::IceBear1, "IceBear1");
-    m_pRenderer->Load(eSprite::IceBear2, "IceBear2");
-    m_pRenderer->Load(eSprite::IceBear3, "IceBear3");
-    m_pRenderer->Load(eSprite::IceBear4, "IceBear4");
-    m_pRenderer->Load(eSprite::IceBear5, "IceBear5");
-    m_pRenderer->Load(eSprite::IceBear6, "IceBear6");
-    m_pRenderer->Load(eSprite::IceBear7, "IceBear7");
-    m_pRenderer->Load(eSprite::IceBear8, "IceBear8");
-    m_pRenderer->Load(eSprite::IceBearInactive128, "IceBearInactive128");
-    m_pRenderer->Load(eSprite::IceBearActive128, "IceBearActive128");
-=======
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
   m_pRenderer->Load(eSprite::StartButton0, "StartButton0");
   m_pRenderer->Load(eSprite::StartButton1, "StartButton1");
   m_pRenderer->Load(eSprite::ExitButton0, "ExitButton0");
@@ -125,11 +105,10 @@ void CGame::LoadImages(){
 /// Initialize the audio player and load game sounds.
 
 void CGame::LoadSounds(){
-  // Audio disabled for now
-  //m_pAudio->Initialize(eSound::Size);
-  //m_pAudio->Load(eSound::Grunt, "grunt");
-  //m_pAudio->Load(eSound::Clang, "clang");
-  //m_pAudio->Load(eSound::OINK, "oink");
+  m_pAudio->Initialize(eSound::Size);
+  m_pAudio->Load(eSound::Grunt, "grunt");
+  m_pAudio->Load(eSound::Clang, "clang");
+  m_pAudio->Load(eSound::OINK, "oink");
 } //LoadSounds
 
 /// Release all of the DirectX12 objects by deleting the renderer.
@@ -141,10 +120,6 @@ void CGame::Release(){
 
 //create the main menu
 void CGame::StartMenu() {
-<<<<<<< HEAD
-    // Menu disabled - start game directly
-    BeginGame();
-=======
     m_pObjectManager->clear();
 
     gameState = 0;
@@ -154,14 +129,10 @@ void CGame::StartMenu() {
     m_pObjectManager->create(eSprite::StartButton0, Vector2(700, 500.0f));
     m_pObjectManager->create(eSprite::ExitButton0, Vector2(700, 200.0f));
 
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 }
 
 //handle keyboard input in the main menu
 void CGame::MenuUpdate() {
-<<<<<<< HEAD
-    // Menu disabled
-=======
     m_pKeyboard->GetState();
 
     if (m_pKeyboard->TriggerDown('W')) {
@@ -190,7 +161,6 @@ void CGame::MenuUpdate() {
     }
 
     
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 }
 /// Call this function to start a new game. This should be re-entrant so that
 /// you can restart a new game without having to shut down and restart the
@@ -204,19 +174,9 @@ void CGame::BeginGame(){
     m_pRoom = new CRoom(64, m_pRenderer);
 
     m_Graph.newGraph();
-	m_Graph.assignScreenPositions(Vector2(m_nWinWidth/2.0f, m_nWinHeight/2.0f), 96.f);
+	m_Graph.assignScreenPositions(m_vWinCenter, 96.f);
 	m_pRoom->LoadRoom(m_Graph.nodes.at(0));
-    m_Graph.nodes.at(0)->setVisited(true); // Mark starting room as visited
-    m_Graph.nodes.at(0)->SetCleared(true); // Mark starting room as cleared
     
-    // Mark shop and item rooms as cleared (no enemies spawn there)
-    // Note: Boss room (999) is NOT marked cleared so the boss spawns
-    for (Node* node : m_Graph.nodes) {
-        int roomType = node->getType();
-        if (roomType == 997 || roomType == 998) {
-            node->SetCleared(true);
-        }
-    }
 
     CreateObjects(); //create new objects
     mHud = new HUD(m_pRenderer, m_pPlayer);
@@ -230,125 +190,17 @@ void CGame::CreateObjects() {
         Vector2(300.0f, 300.0f));
     m_pPlayer->SetRoom(m_pRoom);
 	m_pPlayer->SetCurrentNode(m_Graph.nodes.at(0));
-    m_pObjectManager->SetPlayer(m_pPlayer);  // Set player on ObjectManager for projectile tracking
     //m_pObjectManager->create(eSprite::testEnemy, Vector2(1000.0f, 300.0f));
     //m_pObjectManager->create(eSprite::maxHealthPickup, Vector2(200.0f, 300.0f));
     //m_pObjectManager->create(eSprite::lifeDrop, Vector2(400.0f, 300.0f));
     //m_pObjectManager->create(eSprite::goldDrop, Vector2(600.0f, 300.0f));
-    
-    SpawnEnemies(); // Spawn enemies for the starting room
-}
 
-/// Spawn enemies for the current room. For now, drop a single ice bat in the room center
-/// with a simple left-right patrol so we always have at least one enemy when entering.
-void CGame::SpawnEnemies() {
-    if (!m_pRoom || !m_pObjectManager || !m_pPlayer) return;
-
-    Node* node = m_pPlayer->GetCurrentNode();
-    if (!node) return;
-    
-    // Don't spawn enemies if room has been cleared already
-    if (node->GetCleared()) {
-        m_nEnemyCount = 0;
-        m_bRoomCleared = true;
-        m_bItemsSpawned = true;
-        return;
-    }
-
-    const float tile = static_cast<float>(m_pRoom->GetTileSize());
-    const float w = static_cast<float>(m_pRoom->GetWidth());
-    const float h = static_cast<float>(m_pRoom->GetHeight());
-
-    const int roomType = node->getType();
-
-    // Boss room (type 999): spawn one Ice Bear only
-    if (roomType == 999) {
-        Vector2 center(w * 0.5f * tile, h * 0.5f * tile);
-        m_pObjectManager->spawnIceBear(center);
-        m_nEnemyCount = 1;
-        m_bRoomCleared = false;
-        m_bItemsSpawned = false;
-        return;
-    }
-
-    // Regular rooms: spawn 3–4 bats
-    int batCount = 3 + (rand() % 2);  // 3 or 4
-    for (int i = 0; i < batCount; i++) {
-        float xOffset = (i % 2 == 0) ? -200.0f : 200.0f;
-        float yOffset = ((i / 2) % 2 == 0) ? -80.0f : 80.0f;
-
-        Vector2 center(w * 0.5f * tile + xOffset, h * 0.5f * tile + yOffset);
-        Vector2 patrolOffset(120.0f, 0.0f);
-        Vector2 patrolStart = center + patrolOffset;
-        Vector2 patrolEnd = center - patrolOffset;
-
-        m_pObjectManager->spawnIceBat(center, patrolStart, patrolEnd);
-    }
-
-    m_nEnemyCount = batCount;
-    m_bRoomCleared = false;
-    m_bItemsSpawned = false;
-} // SpawnEnemies
-
-/// Check if all enemies have been defeated and spawn items.
-void CGame::CheckRoomCleared() {
-    if (m_bRoomCleared || m_bItemsSpawned) return;
-    
-    const int currentEnemies = m_pObjectManager->countEnemies();
-    if (currentEnemies == 0 && m_nEnemyCount > 0) {
-        m_bRoomCleared = true;
-        m_pPlayer->GetCurrentNode()->SetCleared(true); // Mark node as cleared
-        SpawnRandomItems();
-        m_bItemsSpawned = true;
-    }
-}
-
-/// Spawn 1-3 random reward items near room center.
-void CGame::SpawnRandomItems() {
-    // Don't spawn items in boss, shop, or loot rooms
-    int roomType = m_pPlayer->GetCurrentNode()->getType();
-    if (roomType == 999 || roomType == 997 || roomType == 998) {
-        return;
-    }
-    
-    std::random_device rd;
-    std::mt19937 rng(rd());
-    std::uniform_int_distribution<int> countDist(1, 3);
-    const int itemCount = countDist(rng);
-    
-    // Weighted item pool (common items duplicated for higher chance)
-    std::vector<eSprite> itemPool = {
-        eSprite::healthPickup, eSprite::healthPickup, eSprite::healthPickup,
-        eSprite::gold, eSprite::gold, eSprite::gold,
-        eSprite::maxHealthPickup,
-        eSprite::attackUp,
-        eSprite::attackSpeedUp,
-        eSprite::thornRoll,
-        eSprite::lifeDrop,
-        eSprite::goldDrop,
-        eSprite::backAttack,
-        eSprite::deathExplosion,
-        eSprite::damageShield
-    };
-    
-    std::uniform_int_distribution<size_t> itemDist(0, itemPool.size() - 1);
-    std::uniform_real_distribution<float> offsetDist(-80.0f, 80.0f);
-    
-    Vector2 centerPos = m_vWinCenter;
-    
-    for (int i = 0; i < itemCount; i++) {
-        eSprite item = itemPool[itemDist(rng)];
-        Vector2 spawnPos = centerPos + Vector2(offsetDist(rng), offsetDist(rng));
-        m_pObjectManager->create(item, spawnPos);
-    }
 }
 
 /// Poll the keyboard state and respond to the key presses that happened since
 /// the last frame.
 
 void CGame::KeyboardHandler() {
-    // Keyboard disabled for now - player movement handled in Player.cpp
-    /*
     m_pKeyboard->GetState(); //get current keyboard state 
 
     if (m_pKeyboard->TriggerDown('L') && m_pPlayer->getAttackCooldown() <= 0.0f) {
@@ -423,8 +275,6 @@ void CGame::KeyboardHandler() {
     if (m_pKeyboard->TriggerDown(VK_F2)) //toggle frame rate 
         m_bDrawFrameRate = !m_bDrawFrameRate;
 
-    // Audio/keyboard temporarily disabled
-    /*
     if (m_pKeyboard->TriggerDown(VK_SPACE)) //play sound
         m_pAudio->play(eSound::Clang);
 
@@ -433,10 +283,6 @@ void CGame::KeyboardHandler() {
 
     if (m_pKeyboard->TriggerDown(VK_BACK)) //restart game
         StartMenu(); //restart game
-<<<<<<< HEAD
-    */
-=======
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 
 } //KeyboardHandler
 
@@ -489,20 +335,11 @@ void CGame::ProcessFrame(){
         KeyboardHandler(); //handle keyboard input
 
     }
-<<<<<<< HEAD
-    // m_pAudio->BeginFrame(); //notify audio player that frame has begun (disabled)
-=======
     m_pAudio->BeginFrame(); //notify audio player that frame has begun
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
     m_pTimer->Tick([&]() { //all time-dependent function calls should go here
         //    const float t = m_pTimer->GetFrameTime(); //frame interval in seconds
         m_pObjectManager->move(); //move all objects
         });
-<<<<<<< HEAD
-    
-    CheckRoomCleared(); //check if enemies defeated and spawn items
-=======
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 
   RenderFrame(); //render a frame of animation
 } //ProcessFrame
@@ -534,11 +371,7 @@ void CGame::ChangeRoom() {
 
         if (col == doorCol && row == doorRow) {
             // Change room
-<<<<<<< HEAD
-            m_pObjectManager->clearEnemies(); // Clear enemies from previous room
-=======
             m_pObjectManager->deleteShopItems();
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
             m_pPlayer->SetCurrentNode(edge.to);
             m_pRoom->LoadRoom(edge.to);
             if (m_pPlayer->GetCurrentNode()->getVisited() == false) {
@@ -564,13 +397,6 @@ void CGame::ChangeRoom() {
             case SOUTH: m_pPlayer->m_vPos = (Vector2(pos.x, m_pRoom->GetTileSize())); break;
             case WEST:  m_pPlayer->m_vPos = (Vector2((m_pRoom->GetWidth() - 2) * m_pRoom->GetTileSize() + 50.0f, pos.y)); break;
             case EAST:  m_pPlayer->m_vPos = (Vector2(2*m_pRoom->GetTileSize() + 50.0f, pos.y)); break;
-            }
-            SpawnEnemies(); // Spawn enemies for new room
-            
-            // Spawn items in the room on first visit
-            if (!edge.to->isVisited()) {
-                edge.to->setVisited(true);
-                SpawnRandomItems();
             }
             return;
         }

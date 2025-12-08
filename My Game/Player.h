@@ -1,4 +1,4 @@
-﻿/// \file Player.h
+/// \file Player.h
 /// \brief Interface for the player object class CPlayer.
 
 #ifndef __L4RC_GAME_PLAYER_H__
@@ -22,10 +22,6 @@ class CPlayer: public CObject{
     LEventTimer* m_pFrameEvent = nullptr; ///< Frame event timer.
     LSpriteDesc2D currentSprite;
     CObjectManager* objectmanager;
-
-    int m_nCurrentFrame = 0;  ///< Current animation frame
-    int m_nMaxFrames = 20;    ///< Max frames for current animation
-    float m_fAnimTimer = 0.0f; ///< Animation timer for frame advancement
 
     void UpdateFramenumber(); ///< Update frame number.
     

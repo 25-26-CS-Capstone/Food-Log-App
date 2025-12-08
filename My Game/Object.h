@@ -33,7 +33,6 @@ public:
     float width;
     float height;
     char type;
-    char GetCollisionType() const { return type; } ///< Get collision type.
     virtual void onCollision(CObject*);
     virtual void update(float);
     virtual void move(); ///< Move object.
