@@ -132,6 +132,7 @@ void CPlayer::move(){
             if (xspeed > -(SPEEDDEC * 1.5) && xspeed < (SPEEDDEC * 1.5))xspeed = 0;   //to prevent rubber banding at small speeds
             if (yspeed > -(SPEEDDEC * 1.5) && yspeed < (SPEEDDEC * 1.5))yspeed = 0;
             //decrement speed
+	        UpdateBasedOnTile();
         }
     } //playerstate 0 - 'normal'
     else if (playerState == 1) {    //if the player rolls, block input, decrement the counter to return to normal state
@@ -189,7 +190,6 @@ void CPlayer::move(){
 
     }//player state 3 - 'wall collision'
 	//Room stuff. Remove if it should go somewhere else.
-	UpdateBasedOnTile();
 
   UpdateFramenumber(); //choose current frame
 } //move
@@ -338,15 +338,27 @@ void CPlayer::UpdateBasedOnTile() {
     OutputDebugString(buffer);
     */
 
-    if (currentTileType != newTileType) {
         switch (newTileType) {
-        case 'F': break; //floor
-        case 'W': break; //wall
-        case 'I': break; //ice
-        case 'H': break; //hazard
+        case 'F': 
+            currentSprite.m_f4Tint = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+            SPEEDDEC = 0.2F;
+            break; //floor
+        case 'W': 
+            
+            break; //wall
+         
+        case 'I': 
+            currentSprite.m_f4Tint = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+            SPEEDDEC = 0.05F;
+            break; //ice
+        case 'H': 
+            currentSprite.m_f4Tint = XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
+            currentHealth = currentHealth - 0.01f;
+            SPEEDDEC = 0.2F;
+            break; //hazard
         default: break;
 		}//switch
-	}//if
+	//if
 
     currentTileType = newTileType;
 }//UpdateBasedOnTile
@@ -362,6 +374,7 @@ void CPlayer::changeGoldCount(int x) {
 }
 
 void CPlayer::update(float deltaTime) {
+   
     if (m_vPos.y > screenHeight - 20.0f) {
         playerState = 3;
     }
@@ -374,7 +387,7 @@ void CPlayer::update(float deltaTime) {
     else if (m_vPos.x < -10.0f) {
         playerState = 3;
     }
-
+    
     attackCooldown -= deltaTime;
     if (activeShield == false && damageShield == true) {
         shieldCooldown -= deltaTime;
