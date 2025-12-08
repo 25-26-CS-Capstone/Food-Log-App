@@ -128,6 +128,8 @@ char CRoom::GetTileAt(const Vector2& position) const {
 void CRoom::DrawDoors(eSprite t, Node* node) {
     if (!node || !m_pRenderer) return;
 
+    if(!node->GetCleared())
+       return; // Don't draw doors if room is cleared
 
     LSpriteDesc2D desc;
     desc.m_nSpriteIndex = static_cast<int>(t);
@@ -231,6 +233,10 @@ void CRoom::Draw(eSprite t, CPlayer* m_pPlayer) {
             case 'W': desc.m_nCurrentFrame = 0; break; //wall
 			case 'I': desc.m_nCurrentFrame = 4; break; //ice
             case 'H': desc.m_nCurrentFrame = 5; break; //hazard
+            case 'L': desc.m_nCurrentFrame = 3; break; //loot
+            case 'S': desc.m_nCurrentFrame = 3; break; //shop item
+            case 'E': desc.m_nCurrentFrame = 4; break; //enemy ice
+            case 'C': desc.m_nCurrentFrame = 3; break; //enemy floor
             default:  continue; //skip empty/unknown
             } //switch
 

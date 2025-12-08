@@ -15,7 +15,6 @@ extern int MAP_LEN;
 extern int BRANCH_NUM;
 extern int BRANCH_MAX_LEN;
 extern int LOOP_NUM;
-extern int LOOP_MAX_LEN;
 extern int ROOM_TYPES;
 
 
@@ -36,8 +35,13 @@ private:
     int id;
     int type;
     int edges = 0;
+<<<<<<< HEAD
     bool visited = false; ///< Track if room has been visited
     bool cleared = false; ///< Track if room enemies are cleared
+=======
+    bool visited = false;
+    bool cleared = false;
+>>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 public:
     vector<Edge> adj;
 	Vector2 position;
@@ -47,10 +51,17 @@ public:
     int getNumEdges();
     int getId();
     int getType();
+<<<<<<< HEAD
     bool isVisited() const { return visited; }
     void setVisited(bool v) { visited = v; }
     bool GetCleared() const { return cleared; }
     void SetCleared(bool c) { cleared = c; }
+=======
+    bool getVisited() { return visited; }
+    void changeVisited(bool x) { visited = x; }
+    bool GetCleared();
+    void SetCleared(bool isCleared);
+>>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 };
 
 class Graph {
@@ -58,17 +69,22 @@ private:
     int oppositeDir(int dir);
     bool isConnected(Node* a, Node* b);
     bool hasDirection(Node* node, int dir);
+    int pickFreeDirection(Vector2 pos);
+    Vector2 moveInDirection(Vector2 pos, int dir);
+    void addLoops(Node* startNode, int loopNum);
+    void addItemRooms(Node* startNode, int shopNum, int itemNum);
 
 public:
     vector<Node*> nodes;
 
-    Node* addVertex(int id, int type);
+    Node* addVertex(int id, int type, Vector2 pos);
     void addEdge(Node* from, Node* to);
     void graphGen(Node* first, int length, int branchNum, int loopNum, bool branch, bool loop, int& idCounter);
     void printGraph();
     void newGraph();
 	void DrawGraph(LSpriteRenderer* m_pRenderer, Node* playerNode);
-    void Graph::assignScreenPositions(const Vector2& origin, float spacing);
+    void assignScreenPositions(const Vector2& origin, float spacing);
+
 
 };
 

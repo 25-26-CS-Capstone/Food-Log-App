@@ -14,12 +14,18 @@ extern int MAP_LEN = 10;
 extern int BRANCH_NUM = 2;
 extern int BRANCH_MAX_LEN = 3;
 extern int LOOP_NUM = 0;
-extern int LOOP_MAX_LEN = 0;
 extern int ROOM_TYPES = 6;
+extern int SHOP_NUM = 1;
+extern int ITEM_NUM = 2;
 
 extern int idsNum = 0;
 
-Node::Node(int id, int type) : id(id), type(type) {}
+Node::Node(int id, int type)
+    : id(id), type(type)
+{
+    if (type == 997 || type == 998 || type == 0)
+        cleared = true;
+}
 /*void Node::addEdge(Node* to){
     adj.push_back(to);
     edges++;
@@ -33,10 +39,17 @@ int Node::getId(){
 int Node::getType(){
     return type;
 }
+bool Node::GetCleared() {
+	return cleared;
+}
+void Node::SetCleared(bool isCleared) {
+    cleared = isCleared;
+}
 
 
-Node* Graph::addVertex(int id, int type){
+Node* Graph::addVertex(int id, int type, Vector2 pos){
     Node* n = new Node(id, type);
+    n->position = pos;
     nodes.push_back(n);
     return n;
 }
@@ -47,18 +60,22 @@ void Graph::addEdge(Node* from, Node* to){
     if (from->adj.size() >= 4 || to->adj.size() >= 4)
 		return; //max 4 edges. Needs a real fix later as this can result in unconnected Nodes.
 
-    int dir = rand()%4;
-    int tried = 0;
+    Vector2 a = from->position;
+    Vector2 b = to->position;
+    int dir = -1;
 
-    while (hasDirection(from, dir) && tried < 4) {
-        dir = (dir + 1) % 4;
-        tried++;
+    if (b.x == a.x && b.y == a.y - 1) dir = 0; 
+    else if (b.x == a.x + 1 && b.y == a.y) dir = 1;
+    else if (b.x == a.x && b.y == a.y + 1) dir = 2;
+    else if (b.x == a.x - 1 && b.y == a.y) dir = 3;
+    else {
+        //not adjacent
+        return;
     }
 
-
-    /*if(hasDirection(to, oppositeDir(dir)))
-        return;
-    */
+    if (hasDirection(from, dir)) return;
+    if (hasDirection(to, oppositeDir(dir))) return;
+    if (isConnected(from, to)) return;
 
     from->adj.push_back({to, dir});
     to->adj.push_back({from, oppositeDir(dir)});
@@ -70,23 +87,35 @@ void Graph::graphGen(Node* first, int length, int branchNum, int loopNum, bool b
     Node* current;
     Node* branchNode = nullptr;
     int branchesChecked = 0;
+    int direction;
+    Vector2 pos = first->position;
+    Vector2 tryPos;
+
     //nodes.push_back(first);
     for(int i = 1; i < length; ++i){
-        current = this->addVertex(++idCounter, (int)rand()% ROOM_TYPES);
+        direction = pickFreeDirection(pos);
+        //loop to move back one if no free direction?
+        pos = moveInDirection(pos, direction);
+        current = this->addVertex(++idCounter, (rand() % ROOM_TYPES) + 1, pos);
         this->addEdge(prev, current);
         prev = current;
     }
     if(!branch){
-        this->addVertex(999, 999); //boss room
+        direction = pickFreeDirection(pos);
+        //loop to move back one if no free direction?
+        pos = moveInDirection(pos, direction);
+        this->addVertex(999, 999, pos); //boss room
         this->addEdge(nodes.at(length-1), nodes.at(length));
     }
 
-    //branch
+    //branch, heavily flawed
     for(int i = 0; i < branchNum; ++i){
 		branchesChecked = 0;
+
         while( branchesChecked < nodes.size()) {
             branchNode = nodes.at(rand()%nodes.size());
-            if (branchNode->getNumEdges() >= 4) {
+			direction = pickFreeDirection(branchNode->position);
+            if (direction == -1) {
                 branchesChecked++;
             }
             else {
@@ -99,29 +128,87 @@ void Graph::graphGen(Node* first, int length, int branchNum, int loopNum, bool b
 
         graphGen(branchNode, BRANCH_MAX_LEN, 0, 0, true, false, idCounter);
     }
+}
 
-    //loop
-    for(int i = 0; i < loopNum; ++i){
-        if (nodes.size() < 2) break; //need at least two nodes
-
+void Graph::addLoops(Node* startNode, int loopNum) {
+    for (int i = 0; i < loopNum; ++i) {
         Node* a = nodes.at(rand() % nodes.size());
-        Node* b = nodes.at(rand() % nodes.size()); 
 
-
-        //check if nodes are already connected
-        int safety = 0;
-        while ((a == b || isConnected(a, b) || a->getNumEdges() >= 4 || b->getNumEdges() >= 4) && safety < 50) {
-            a = nodes.at(rand() % nodes.size());
-            b = nodes.at(rand() % nodes.size());
-            safety++;
+        vector<Node*> candidates;
+        for (int d = 0; d < 4; d++) {
+            Vector2 newPos = moveInDirection(a->position, d);
+            // find node at this position
+            for (Node* n : nodes) {
+                if (n->position == newPos && !isConnected(a, n)) {
+                    candidates.push_back(n);
+                }
+            }
         }
 
-        if (a != b && !isConnected(a, b)) {
-            int dir = rand() % 4;
-            addEdge(a, b);
+        if (candidates.empty())
+            continue;
+
+        // pick a random valid neighbor
+        Node* b = candidates.at(rand() % candidates.size());
+
+        // connect them using correct direction
+        int d = -1;
+        for (int k = 0; k < 4; k++) {
+            if (moveInDirection(a->position, k) == b->position) {
+                d = k;
+                break;
+            }
         }
-        }
+        if (d == -1) continue;
+
+        addEdge(a, b);
     }
+}
+
+//Loop through nodes and add item and shop rooms randomly
+void Graph::addItemRooms(Node* startNode, int shopNum, int itemNum) {
+    int checkNum = 0;
+    Node* branchNode = nullptr;
+	Node* current = nullptr;
+    int direction;
+    for (int x = 0; x < shopNum; ++x) {
+            while (checkNum < nodes.size()) {
+                branchNode = nodes.at(rand() % nodes.size());
+                direction = pickFreeDirection(branchNode->position);
+                if (direction == -1) {
+                    checkNum++;
+                }
+                else {
+                    break;
+                }
+            }
+            if (checkNum == nodes.size())
+                break; //no available nodes to add to
+            //add shop room
+			current = this->addVertex(idsNum++, 997, moveInDirection(branchNode->position, direction));
+            addEdge(branchNode, current);
+    }
+
+    for (int x = 0; x < shopNum; ++x) {
+        checkNum = 0;
+
+            while (checkNum < nodes.size()) {
+                branchNode = nodes.at(rand() % nodes.size());
+                direction = pickFreeDirection(branchNode->position);
+                if (direction == -1) {
+                    checkNum++;
+                }
+                else {
+                    break;
+                }
+            }
+            if (checkNum == nodes.size())
+                break; //no available nodes to add to
+            //add item room
+            current = this->addVertex(idsNum++, 998, moveInDirection(branchNode->position, direction));
+            addEdge(branchNode, current);
+        }
+}
 
 void Graph::newGraph(){
     for (Node* n : nodes) {
@@ -130,8 +217,11 @@ void Graph::newGraph(){
     nodes.clear();
 
     idsNum = 0;
-    addVertex(idsNum++, 0);
+    Vector2 pos(0, 0);
+    addVertex(idsNum++, 0, pos);
     graphGen(nodes.at(0), MAP_LEN, BRANCH_NUM, LOOP_NUM, false, false, idsNum);
+    addLoops(nodes.at(0), LOOP_NUM);
+    addItemRooms(nodes.at(0), SHOP_NUM, ITEM_NUM);
 }
 
 void Graph::printGraph(){
@@ -166,6 +256,35 @@ bool Graph::hasDirection(Node* node, int dir) {
         if (node->adj.at(i).direction == dir) return true;
     }
     return false;
+}
+int Graph::pickFreeDirection(Vector2 pos) {
+    std::vector<int> dirs = { 0, 1, 2, 3 };
+    std::shuffle(dirs.begin(), dirs.end(), default_random_engine(rand()));
+
+    for (int d : dirs) {
+        Vector2 newPos = moveInDirection(pos, d);
+
+        bool occupied = false;
+        for (Node* n : nodes) {
+            if (n->position == newPos) {
+                occupied = true;
+                break;
+            }
+        }
+
+        if (!occupied)
+            return d;
+    }
+    return -1;//no free directions available
+}
+Vector2 Graph::moveInDirection(Vector2 pos, int dir) {
+    switch (dir) {
+    case 0: return Vector2(pos.x, pos.y - 1);//up
+    case 1: return Vector2(pos.x + 1, pos.y);//right
+    case 2: return Vector2(pos.x, pos.y + 1);//down
+    case 3: return Vector2(pos.x - 1, pos.y);//left
+    default: return pos;
+    }
 }
 
 
@@ -233,9 +352,13 @@ void Graph::DrawGraph(LSpriteRenderer* m_pRenderer, Node* playerNode) {
         switch (n->getType()) {
             case 0: desc.m_nCurrentFrame = 4; break; // start
             case 1: desc.m_nCurrentFrame = 1; break;
-            case 2: desc.m_nCurrentFrame = 2; break;
-            case 3: desc.m_nCurrentFrame = 3; break;
-            case 4: desc.m_nCurrentFrame = 0; break;
+            case 2: desc.m_nCurrentFrame = 1; break;
+            case 3: desc.m_nCurrentFrame = 1; break;
+            case 4: desc.m_nCurrentFrame = 1; break;
+            case 5: desc.m_nCurrentFrame = 1; break;
+            case 6: desc.m_nCurrentFrame = 1; break;
+			case 997: desc.m_nCurrentFrame = 2; break; // shop
+			case 998: desc.m_nCurrentFrame = 3; break; // item room
             case 999: desc.m_nCurrentFrame = 6; break; // boss
             default: desc.m_nCurrentFrame = 7; break; // fallback
         }

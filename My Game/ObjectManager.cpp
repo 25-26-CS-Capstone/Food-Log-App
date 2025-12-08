@@ -156,6 +156,7 @@ void CObjectManager::update(float deltaTime) {
     }
 }
 
+<<<<<<< HEAD
 /// Spawn an ice bat enemy with patrol behavior.
 /// \param pos Starting position.
 /// \param patrolStart First patrol point.
@@ -221,6 +222,13 @@ void CObjectManager::clearEnemies() {
             } else {
                 ++it;
             }
+=======
+void CObjectManager::deleteShopItems() {
+    for (auto itA = m_stdObjectList.begin(); itA != m_stdObjectList.end(); ++itA) {
+        CObject* A = *itA;
+        if (A->type == 'i') {
+            A->m_bDead = true;
+>>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
         }
     }
 }

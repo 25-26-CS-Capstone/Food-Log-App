@@ -93,6 +93,7 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::MapSheet, "MapSheet");
   m_pRenderer->Load(eSprite::MapRoom, "MapRoom");
   m_pRenderer->Load(eSprite::Connection, "Connection");
+<<<<<<< HEAD
     // Ice bat sprites
     m_pRenderer->Load(eSprite::IceBatFlap64Sheet, "IceBatFlap64Sheet");
     m_pRenderer->Load(eSprite::IceBatFlap, "IceBatFlap");
@@ -110,6 +111,8 @@ void CGame::LoadImages(){
     m_pRenderer->Load(eSprite::IceBear8, "IceBear8");
     m_pRenderer->Load(eSprite::IceBearInactive128, "IceBearInactive128");
     m_pRenderer->Load(eSprite::IceBearActive128, "IceBearActive128");
+=======
+>>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
   m_pRenderer->Load(eSprite::StartButton0, "StartButton0");
   m_pRenderer->Load(eSprite::StartButton1, "StartButton1");
   m_pRenderer->Load(eSprite::ExitButton0, "ExitButton0");
@@ -138,13 +141,56 @@ void CGame::Release(){
 
 //create the main menu
 void CGame::StartMenu() {
+<<<<<<< HEAD
     // Menu disabled - start game directly
     BeginGame();
+=======
+    m_pObjectManager->clear();
+
+    gameState = 0;
+    currentButton = 0;
+
+    m_pObjectManager->create(eSprite::Background, m_vWinCenter);
+    m_pObjectManager->create(eSprite::StartButton0, Vector2(700, 500.0f));
+    m_pObjectManager->create(eSprite::ExitButton0, Vector2(700, 200.0f));
+
+>>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 }
 
 //handle keyboard input in the main menu
 void CGame::MenuUpdate() {
+<<<<<<< HEAD
     // Menu disabled
+=======
+    m_pKeyboard->GetState();
+
+    if (m_pKeyboard->TriggerDown('W')) {
+        if (currentButton == 1) {
+            currentButton = 0;
+            m_pObjectManager->create(eSprite::StartButton1, Vector2(700, 500.0f));
+            m_pObjectManager->create(eSprite::ExitButton0, Vector2(700, 200.0f));
+        }
+    }
+
+    if (m_pKeyboard->TriggerDown('S')) {
+        if (currentButton == 0) {
+            currentButton = 1;
+            m_pObjectManager->create(eSprite::ExitButton1, Vector2(700, 200.0f));
+            m_pObjectManager->create(eSprite::StartButton0, Vector2(700, 500.0f));
+        }
+    }
+    
+    if (m_pKeyboard->TriggerDown('J')) {
+        if (currentButton == 0) {
+            BeginGame();
+        }
+        else if (currentButton == 1) {
+            //ADD COMMAND TO CLOSE GAME
+        }
+    }
+
+    
+>>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 }
 /// Call this function to start a new game. This should be re-entrant so that
 /// you can restart a new game without having to shut down and restart the
@@ -181,7 +227,7 @@ void CGame::BeginGame(){
 void CGame::CreateObjects() {
     const float h = m_pRenderer->GetHeight(eSprite::InuitIdleRight);
     m_pPlayer = (CPlayer*)m_pObjectManager->create(eSprite::InuitIdleRight,
-        Vector2(100.0f, h / 2.0f));
+        Vector2(300.0f, 300.0f));
     m_pPlayer->SetRoom(m_pRoom);
 	m_pPlayer->SetCurrentNode(m_Graph.nodes.at(0));
     m_pObjectManager->SetPlayer(m_pPlayer);  // Set player on ObjectManager for projectile tracking
@@ -368,6 +414,9 @@ void CGame::KeyboardHandler() {
     if (m_pKeyboard->TriggerDown('P'))
         m_bDrawGraph = !m_bDrawGraph;//draw the graph for debugging
 
+    if (m_pKeyboard->TriggerDown('K'))
+		m_pPlayer->GetCurrentNode()->SetCleared(!m_pPlayer->GetCurrentNode()->GetCleared()); //Invert Cleared
+
     if (m_pKeyboard->TriggerDown(VK_F1)) //help
         ShellExecute(0, 0, "https://larc.unt.edu/code/physics/blank/", 0, 0, SW_SHOW);
 
@@ -384,7 +433,10 @@ void CGame::KeyboardHandler() {
 
     if (m_pKeyboard->TriggerDown(VK_BACK)) //restart game
         StartMenu(); //restart game
+<<<<<<< HEAD
     */
+=======
+>>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 
 } //KeyboardHandler
 
@@ -437,13 +489,20 @@ void CGame::ProcessFrame(){
         KeyboardHandler(); //handle keyboard input
 
     }
+<<<<<<< HEAD
     // m_pAudio->BeginFrame(); //notify audio player that frame has begun (disabled)
+=======
+    m_pAudio->BeginFrame(); //notify audio player that frame has begun
+>>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
     m_pTimer->Tick([&]() { //all time-dependent function calls should go here
         //    const float t = m_pTimer->GetFrameTime(); //frame interval in seconds
         m_pObjectManager->move(); //move all objects
         });
+<<<<<<< HEAD
     
     CheckRoomCleared(); //check if enemies defeated and spawn items
+=======
+>>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 
   RenderFrame(); //render a frame of animation
 } //ProcessFrame
@@ -454,29 +513,57 @@ void CGame::ChangeRoom() {
     Node* currentNode = m_pPlayer->GetCurrentNode();
     if (!currentNode) return;
 
+    if (!m_pPlayer->GetCurrentNode()->GetCleared()) return;
+
     Vector2 pos = m_pPlayer->m_vPos;
     int col = static_cast<int>(pos.x / m_pRoom->GetTileSize());
     int row = static_cast<int>(pos.y / m_pRoom->GetTileSize());
 
+    int centerCol = m_pRoom->GetWidth() / 2;
+    int centerRow = m_pRoom->GetHeight() / 2;
+    int doorCol = -1, doorRow = -1;
+
     for (Edge& edge : currentNode->adj) {
         int doorCol = col, doorRow = row;
         switch (edge.direction) {
-        case NORTH: doorRow = 0; break;
-        case SOUTH: doorRow = m_pRoom->GetHeight() - 1; break;
-        case WEST:  doorCol = 0; break;
-        case EAST:  doorCol = m_pRoom->GetWidth() - 1; break;
+        case NORTH: doorCol = centerCol; doorRow = 0; break;
+        case SOUTH: doorCol = centerCol; doorRow = m_pRoom->GetHeight() - 1; break;
+        case WEST:  doorCol = 0; doorRow = centerRow; break;
+        case EAST:  doorCol = m_pRoom->GetWidth() - 1; doorRow = centerRow; break;
         }
 
         if (col == doorCol && row == doorRow) {
             // Change room
+<<<<<<< HEAD
             m_pObjectManager->clearEnemies(); // Clear enemies from previous room
+=======
+            m_pObjectManager->deleteShopItems();
+>>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
             m_pPlayer->SetCurrentNode(edge.to);
             m_pRoom->LoadRoom(edge.to);
+            if (m_pPlayer->GetCurrentNode()->getVisited() == false) {
+                if (m_pPlayer->GetCurrentNode()->getType() == 998) {
+                    default_random_engine rng(chrono::system_clock::now().time_since_epoch().count());
+                    mt19937 generator(rng);
+                    uniform_int_distribution<> distribution(1, 5);
+                    int randNum = distribution(generator);
+                    spawnCommonItem(Vector2(400.0f, 380.0f), true, randNum);
+                    randNum = distribution(generator);
+                    spawnCommonItem(Vector2(700.0f, 380.0f), true, randNum);
+                    uniform_int_distribution<> distribution2(5, 10);
+                    randNum = distribution2(generator);
+                    spawnRareItem(Vector2(1000.0f, 380.0f), true, randNum);
+                }
+                else if (m_pPlayer->GetCurrentNode()->getType() == 997) {
+                    spawnRareItem(Vector2(700.0f, 380.0f), false, 0);
+                }
+            }
+            m_pPlayer->GetCurrentNode()->changeVisited(true);
             switch (edge.direction) {
             case NORTH: m_pPlayer->m_vPos = (Vector2(pos.x, (m_pRoom->GetHeight() - 2) * m_pRoom->GetTileSize())); break;
             case SOUTH: m_pPlayer->m_vPos = (Vector2(pos.x, m_pRoom->GetTileSize())); break;
-            case WEST:  m_pPlayer->m_vPos = (Vector2((m_pRoom->GetWidth() - 2) * m_pRoom->GetTileSize(), pos.y)); break;
-            case EAST:  m_pPlayer->m_vPos = (Vector2(m_pRoom->GetTileSize(), pos.y)); break;
+            case WEST:  m_pPlayer->m_vPos = (Vector2((m_pRoom->GetWidth() - 2) * m_pRoom->GetTileSize() + 50.0f, pos.y)); break;
+            case EAST:  m_pPlayer->m_vPos = (Vector2(2*m_pRoom->GetTileSize() + 50.0f, pos.y)); break;
             }
             SpawnEnemies(); // Spawn enemies for new room
             

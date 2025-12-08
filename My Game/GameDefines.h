@@ -10,10 +10,13 @@
 
 const float screenWidth = 1400.0f;
 const float screenHeight = 760.0f;
+<<<<<<< HEAD
 const float kBorderMargin = 20.0f;
 // Projectile balance
 const float kIceBatProjectileSpeed = 200.0f;    // default speed
 const float kIceBatShootCooldown = 1.5f;        // seconds between shots
+=======
+>>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 /// \brief Sprite enumerated type.
 ///
 /// An enumerated type for the sprites, which will be cast to an unsigned
@@ -29,6 +32,7 @@ enum class eSprite : UINT {
   InuitRunUp, InuitRunDownSheet, InuitRunDown,InuitIdleUpSheet,
   InuitIdleUp, InuitIdleDownSheet, InuitIdleDown,InuitRollSheet,
   InuitRoll, PlayerAttack, PlayerAttackSheet, TileSheet, Tiles, MapSheet, MapRoom, Connection,
+<<<<<<< HEAD
     // Ice Bat sprites
     IceBatFlap64Sheet, IceBatFlap, IceBatAttackFlap,
     // Projectile sprites
@@ -42,6 +46,9 @@ enum class eSprite : UINT {
     IceBear128Sheet, IceBearInactive128, IceBearActive128,
     IceBearSheet, IceBearInactive, IceBearActive,
     StartButton0, StartButton1, ExitButton0, ExitButton1,
+=======
+  StartButton0, StartButton1, ExitButton0, ExitButton1,
+>>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
   Size  //MUST BE LAST
 }; //eSprite
 
