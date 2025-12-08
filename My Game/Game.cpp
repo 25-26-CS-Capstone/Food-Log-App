@@ -152,6 +152,15 @@ void CGame::BeginGame(){
 	m_Graph.assignScreenPositions(Vector2(m_nWinWidth/2.0f, m_nWinHeight/2.0f), 96.f);
 	m_pRoom->LoadRoom(m_Graph.nodes.at(0));
     m_Graph.nodes.at(0)->setVisited(true); // Mark starting room as visited
+    m_Graph.nodes.at(0)->SetCleared(true); // Mark starting room as cleared
+    
+    // Mark shop, item, and boss rooms as cleared (no enemies spawn there)
+    for (Node* node : m_Graph.nodes) {
+        int roomType = node->getType();
+        if (roomType == 997 || roomType == 998 || roomType == 999) {
+            node->SetCleared(true);
+        }
+    }
 
     CreateObjects(); //create new objects
     mHud = new HUD(m_pRenderer, m_pPlayer);
@@ -179,12 +188,22 @@ void CGame::CreateObjects() {
 void CGame::SpawnEnemies() {
     if (!m_pRoom || !m_pObjectManager || !m_pPlayer) return;
 
+    Node* node = m_pPlayer->GetCurrentNode();
+    if (!node) return;
+    
+    // Don't spawn enemies if room has been cleared already
+    if (node->GetCleared()) {
+        m_nEnemyCount = 0;
+        m_bRoomCleared = true;
+        m_bItemsSpawned = true;
+        return;
+    }
+
     const float tile = static_cast<float>(m_pRoom->GetTileSize());
     const float w = static_cast<float>(m_pRoom->GetWidth());
     const float h = static_cast<float>(m_pRoom->GetHeight());
 
-    Node* node = m_pPlayer->GetCurrentNode();
-    const int roomType = node ? node->getType() : 0;
+    const int roomType = node->getType();
 
     // Boss room (type 999): spawn one Ice Bear only
     if (roomType == 999) {
@@ -222,6 +241,7 @@ void CGame::CheckRoomCleared() {
     const int currentEnemies = m_pObjectManager->countEnemies();
     if (currentEnemies == 0 && m_nEnemyCount > 0) {
         m_bRoomCleared = true;
+        m_pPlayer->GetCurrentNode()->SetCleared(true); // Mark node as cleared
         SpawnRandomItems();
         m_bItemsSpawned = true;
     }

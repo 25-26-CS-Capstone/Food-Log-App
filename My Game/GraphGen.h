@@ -37,6 +37,7 @@ private:
     int type;
     int edges = 0;
     bool visited = false; ///< Track if room has been visited
+    bool cleared = false; ///< Track if room enemies are cleared
 public:
     vector<Edge> adj;
 	Vector2 position;
@@ -48,6 +49,8 @@ public:
     int getType();
     bool isVisited() const { return visited; }
     void setVisited(bool v) { visited = v; }
+    bool GetCleared() const { return cleared; }
+    void SetCleared(bool c) { cleared = c; }
 };
 
 class Graph {
