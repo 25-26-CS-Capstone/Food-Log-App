@@ -353,6 +353,9 @@ void CGame::KeyboardHandler() {
     if (m_pKeyboard->TriggerDown('P'))
         m_bDrawGraph = !m_bDrawGraph;//draw the graph for debugging
 
+    if (m_pKeyboard->TriggerDown('U'))
+        m_pPlayer->unstickPlayer();
+
     if (m_pKeyboard->TriggerDown('K'))
 		m_pPlayer->GetCurrentNode()->SetCleared(!m_pPlayer->GetCurrentNode()->GetCleared()); //Invert Cleared
 

@@ -387,3 +387,7 @@ void CPlayer::update(float deltaTime) {
         currentNode->SetCleared(true);
     }
 }
+
+void CPlayer::unstickPlayer() {
+    m_vPos = Vector2(200.0f, 200.0f);
+}

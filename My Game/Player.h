@@ -115,6 +115,7 @@ class CPlayer: public CObject{
     bool getDamageShield() { return damageShield; }
     void setActiveShield(bool x) { activeShield = x; }
     bool getActiveShield() { return activeShield; }
+    void unstickPlayer();
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

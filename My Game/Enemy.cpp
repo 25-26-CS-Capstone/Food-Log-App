@@ -12,6 +12,7 @@ CEnemy::CEnemy(eSprite t, const Vector2& p) : CObject(t, p) {
 		width = 300.0f;
 		height = 300.0f;
 		type = 'e';
+		currentHealth = 10.0f;
 	}
 } //constructor
 
