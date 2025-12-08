@@ -23,7 +23,7 @@ extern int idsNum = 0;
 Node::Node(int id, int type)
     : id(id), type(type)
 {
-    if (type == 997 || type == 998 || type == 0)
+    if (type == 997 || type == 998)
         cleared = true;
 }
 /*void Node::addEdge(Node* to){
@@ -96,7 +96,7 @@ void Graph::graphGen(Node* first, int length, int branchNum, int loopNum, bool b
         direction = pickFreeDirection(pos);
         //loop to move back one if no free direction?
         pos = moveInDirection(pos, direction);
-        current = this->addVertex(++idCounter, (rand() % ROOM_TYPES) + 1, pos);
+        current = this->addVertex(++idCounter, ((int)rand()% ROOM_TYPES-1)+1, pos);
         this->addEdge(prev, current);
         prev = current;
     }
@@ -355,8 +355,6 @@ void Graph::DrawGraph(LSpriteRenderer* m_pRenderer, Node* playerNode) {
             case 2: desc.m_nCurrentFrame = 1; break;
             case 3: desc.m_nCurrentFrame = 1; break;
             case 4: desc.m_nCurrentFrame = 1; break;
-            case 5: desc.m_nCurrentFrame = 1; break;
-            case 6: desc.m_nCurrentFrame = 1; break;
 			case 997: desc.m_nCurrentFrame = 2; break; // shop
 			case 998: desc.m_nCurrentFrame = 3; break; // item room
             case 999: desc.m_nCurrentFrame = 6; break; // boss
