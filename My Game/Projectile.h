@@ -21,6 +21,7 @@ protected:
     char m_cOwnerType = 'p'; ///< Owner type ('p' for player, 'e' for enemy).
     bool m_bTracking = false; ///< Enable player tracking for enemy projectiles.
     float m_fTrackingStrength = 100.0f; ///< Turn speed toward player.
+    CPlayer* m_pPlayer = nullptr; ///< Pointer to player for tracking.
 
 public:
     CProjectile(eSprite t, const Vector2& pos, const Vector2& vel, char ownerType = 'p'); ///< Constructor.
@@ -30,6 +31,7 @@ public:
     virtual void update(float dt) override; ///< Per-frame update hook called by ObjectManager.
     bool IsOutOfBounds() const; ///< Check if projectile is out of screen bounds.
     char GetOwnerType() const { return m_cOwnerType; } ///< Get owner type.
+    void SetPlayer(CPlayer* player) { m_pPlayer = player; } ///< Set player for tracking.
     
     void onCollision(CObject* obj) override; ///< Handle collision with other objects.
 }; //CProjectile

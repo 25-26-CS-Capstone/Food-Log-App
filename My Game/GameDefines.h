@@ -41,6 +41,7 @@ enum class eSprite : UINT {
     IceBear5, IceBear6, IceBear7, IceBear8,
     IceBear128Sheet, IceBearInactive128, IceBearActive128,
     IceBearSheet, IceBearInactive, IceBearActive,
+    StartButton0, StartButton1, ExitButton0, ExitButton1,
   Size  //MUST BE LAST
 }; //eSprite
 

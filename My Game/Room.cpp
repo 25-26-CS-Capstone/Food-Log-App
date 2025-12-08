@@ -238,6 +238,5 @@ void CRoom::Draw(eSprite t, CPlayer* m_pPlayer) {
             m_pRenderer->Draw(&desc); //finally we can draw a tile
         } //for
     } //for
-    //OutputDebugStringA("About to call DrawDoors\n");
     DrawDoors(t, m_pPlayer->GetCurrentNode());
 } //Draw

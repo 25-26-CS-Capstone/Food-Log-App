@@ -10,7 +10,9 @@
 
 // Forward declarations
 class CIceBat;
+class CIceBear;
 class CProjectile;
+class CPlayer;
 
 /// \brief The object manager.
 ///
@@ -19,6 +21,9 @@ class CProjectile;
 class CObjectManager :
     public LBaseObjectManager<CObject>,
     public CCommon {
+private:
+    CPlayer* m_pPlayer = nullptr; ///< Pointer to player for projectile tracking.
+
 public:
     void update(float);
     CObject* create(eSprite, const Vector2&); ///< Create new object.
@@ -26,7 +31,11 @@ public:
     
     // Enemy spawning
     CIceBat* spawnIceBat(const Vector2& pos, const Vector2& patrolStart, const Vector2& patrolEnd);
+    CIceBear* spawnIceBear(const Vector2& pos);
     CProjectile* spawnProjectile(eSprite sprite, const Vector2& pos, const Vector2& velocity, char ownerType);
+    
+    // Player reference for projectile tracking
+    void SetPlayer(CPlayer* player) { m_pPlayer = player; } ///< Set player pointer for tracking.
     
     // Enemy tracking
     int countEnemies() const; ///< Count enemies in the level.

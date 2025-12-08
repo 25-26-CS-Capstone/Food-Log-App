@@ -31,7 +31,7 @@ protected:
     float m_fAnimationTimer;      ///< Timer for animation frame changes
     float m_fRushTimer;           ///< Timer for rush attack
     float m_fRushCooldown;        ///< Cooldown between rushes (3 seconds)
-    EventTimer* m_pFrameEvent = nullptr;  ///< Frame event timer for animation
+    LEventTimer* m_pFrameEvent = nullptr; ///< Frame event timer for animation
     int m_nCurrentFrame = 0;              ///< Current animation frame
     // Hit reaction timing
     float m_fHitTimer = 0.0f;     ///< Timer since entering HIT state

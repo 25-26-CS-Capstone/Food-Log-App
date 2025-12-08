@@ -1,4 +1,4 @@
-/// \file Player.h
+﻿/// \file Player.h
 /// \brief Interface for the player object class CPlayer.
 
 #ifndef __L4RC_GAME_PLAYER_H__
@@ -19,13 +19,15 @@ class CRoom;
 
 class CPlayer: public CObject{
   protected:  
-    EventTimer* m_pFrameEvent = nullptr; ///< Frame event timer.
+    LEventTimer* m_pFrameEvent = nullptr; ///< Frame event timer.
+    LSpriteDesc2D currentSprite;
     CObjectManager* objectmanager;
 
+    int m_nCurrentFrame = 0;  ///< Current animation frame
+    int m_nMaxFrames = 20;    ///< Max frames for current animation
+    float m_fAnimTimer = 0.0f; ///< Animation timer for frame advancement
+
     void UpdateFramenumber(); ///< Update frame number.
-    
-    eSprite currentSprite = eSprite::InuitIdleRight; ///< Current sprite
-    int m_nCurrentFrame = 0; ///< Current animation frame
     
     int playerState = 0;    //states: 0 = normal, 1 = roll, 2 = damaged
     bool isAttacking = false;
@@ -39,7 +41,7 @@ class CPlayer: public CObject{
     int direction = 0;
     int counter = 0;
     char recentInput = 'D';
-    eSprite lastSprite = eSprite::InuitIdleRight;
+    unsigned int lastSprite;
     float maxHealth = 3.0;
 
 
@@ -117,10 +119,6 @@ class CPlayer: public CObject{
     bool getDamageShield() { return damageShield; }
     void setActiveShield(bool x) { activeShield = x; }
     bool getActiveShield() { return activeShield; }
-  // Compatibility methods used by IceBear/Projectile
-  void ApplyKnockback(const Vector2& dir, float strength, float dt);
-  bool GetInvincible() const;
-  void applyHitEffect();
 }; //CPlayer
 
 #endif //__L4RC_GAME_PLAYER_H__

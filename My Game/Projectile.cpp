@@ -14,8 +14,8 @@
 
 CProjectile::CProjectile(eSprite t, const Vector2& pos, const Vector2& vel, char ownerType)
     : CObject(t, pos), m_vVelocity(vel), m_cOwnerType(ownerType) {
-    width = 32.0f;  // Match 32x32 icicle sprite
-    height = 32.0f;
+    width = 64.0f;  // Increased from 32 for better visibility
+    height = 64.0f;
     type = 'a'; // 'a' for attack/projectile
     // Enable tracking for enemy projectiles
     m_bTracking = (ownerType == 'e');

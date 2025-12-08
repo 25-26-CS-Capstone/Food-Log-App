@@ -8,6 +8,7 @@
 #include "Attack.h"
 #include "Item.h"
 #include "IceBat.h"
+#include "IceBear.h"
 #include "Projectile.h"
 
 /// Create an object and put a pointer to it at the back of the object list
@@ -166,6 +167,15 @@ CIceBat* CObjectManager::spawnIceBat(const Vector2& pos, const Vector2& patrolSt
     return bat;
 }
 
+/// Spawn an ice bear enemy.
+/// \param pos Starting position.
+/// \return Pointer to created bear.
+CIceBear* CObjectManager::spawnIceBear(const Vector2& pos) {
+    CIceBear* bear = new CIceBear(pos);
+    m_stdObjectList.push_back(bear);
+    return bear;
+}
+
 /// Spawn a projectile.
 /// \param sprite Sprite type for projectile.
 /// \param pos Starting position.
@@ -174,6 +184,9 @@ CIceBat* CObjectManager::spawnIceBat(const Vector2& pos, const Vector2& patrolSt
 /// \return Pointer to created projectile.
 CProjectile* CObjectManager::spawnProjectile(eSprite sprite, const Vector2& pos, const Vector2& velocity, char ownerType) {
     CProjectile* proj = new CProjectile(sprite, pos, velocity, ownerType);
+    if (m_pPlayer) {
+        proj->SetPlayer(m_pPlayer);  // Set player for tracking
+    }
     m_stdObjectList.push_back(proj);
     return proj;
 }

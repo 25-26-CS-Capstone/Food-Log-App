@@ -266,7 +266,15 @@ void CIceBat::updateHitReaction() {
 /// Draw the bat using LARC sprite system
 void CIceBat::draw() {
     if (!m_pRenderer) return;
-    m_pRenderer->Draw(m_currentSprite, m_vPos);
+    
+    // Create sprite descriptor with current frame and animation state
+    LSpriteDesc2D desc;
+    desc.m_nSpriteIndex = static_cast<int>(m_currentSprite);
+    desc.m_nCurrentFrame = m_currentFrame;  // Set to current animation frame
+    desc.m_vPos = m_vPos;
+    desc.m_f4Tint = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);  // White, full opacity
+    
+    m_pRenderer->Draw(&desc);
 }
 
 /// Shoot a projectile toward the player
@@ -304,9 +312,14 @@ void CIceBat::takeDamage(float damage) {
 void CIceBat::onCollision(CObject* obj) {
     if (!obj) return;
     
-    // Only handle player attack collision, ignore player body collision
-    if (obj->type == 'a') {  // Attack object
-        takeDamage(25.0f);
+    // Only handle PLAYER attack collision, ignore enemy projectiles and player body collision
+    if (obj->type == 'a') {  // Attack object (projectile)
+        // Check if it's a PLAYER projectile (not an enemy one)
+        CProjectile* proj = dynamic_cast<CProjectile*>(obj);
+        if (proj && proj->GetOwnerType() == 'p') {
+            // Only take damage from player projectiles
+            takeDamage(25.0f);
+        }
     }
     // Don't damage the bat on player body collision (type 'p')
 }
