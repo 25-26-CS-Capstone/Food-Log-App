@@ -156,12 +156,16 @@ void CObjectManager::update(float deltaTime) {
     }
 }
 
-<<<<<<< HEAD
+void CObjectManager::deleteShopItems() {
+    for (auto itA = m_stdObjectList.begin(); itA != m_stdObjectList.end(); ++itA) {
+        CObject* A = *itA;
+        if (A->type == 'i') {
+            A->m_bDead = true;
+        }
+    }
+}
+
 /// Spawn an ice bat enemy with patrol behavior.
-/// \param pos Starting position.
-/// \param patrolStart First patrol point.
-/// \param patrolEnd Second patrol point.
-/// \return Pointer to created bat.
 CIceBat* CObjectManager::spawnIceBat(const Vector2& pos, const Vector2& patrolStart, const Vector2& patrolEnd) {
     CIceBat* bat = new CIceBat(pos, patrolStart, patrolEnd);
     m_stdObjectList.push_back(bat);
@@ -169,8 +173,6 @@ CIceBat* CObjectManager::spawnIceBat(const Vector2& pos, const Vector2& patrolSt
 }
 
 /// Spawn an ice bear enemy.
-/// \param pos Starting position.
-/// \return Pointer to created bear.
 CIceBear* CObjectManager::spawnIceBear(const Vector2& pos) {
     CIceBear* bear = new CIceBear(pos);
     m_stdObjectList.push_back(bear);
@@ -178,11 +180,6 @@ CIceBear* CObjectManager::spawnIceBear(const Vector2& pos) {
 }
 
 /// Spawn a projectile.
-/// \param sprite Sprite type for projectile.
-/// \param pos Starting position.
-/// \param velocity Velocity vector.
-/// \param ownerType 'p' for player, 'e' for enemy.
-/// \return Pointer to created projectile.
 CProjectile* CObjectManager::spawnProjectile(eSprite sprite, const Vector2& pos, const Vector2& velocity, char ownerType) {
     CProjectile* proj = new CProjectile(sprite, pos, velocity, ownerType);
     if (m_pPlayer) {
@@ -193,7 +190,6 @@ CProjectile* CObjectManager::spawnProjectile(eSprite sprite, const Vector2& pos,
 }
 
 /// Count the number of enemies in the level.
-/// \return Number of enemies (objects with collision type 'e').
 int CObjectManager::countEnemies() const {
     int count = 0;
     for (const CObject* obj : m_stdObjectList) {
@@ -210,11 +206,9 @@ void CObjectManager::clearEnemies() {
     while (it != m_stdObjectList.end()) {
         CObject* obj = *it;
         if (obj->GetCollisionType() == 'e') {
-            // Enemy object
             delete obj;
             it = m_stdObjectList.erase(it);
         } else {
-            // Check if it's an enemy projectile
             CProjectile* proj = dynamic_cast<CProjectile*>(obj);
             if (proj && proj->GetOwnerType() == 'e') {
                 delete obj;
@@ -222,13 +216,6 @@ void CObjectManager::clearEnemies() {
             } else {
                 ++it;
             }
-=======
-void CObjectManager::deleteShopItems() {
-    for (auto itA = m_stdObjectList.begin(); itA != m_stdObjectList.end(); ++itA) {
-        CObject* A = *itA;
-        if (A->type == 'i') {
-            A->m_bDead = true;
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
         }
     }
 }

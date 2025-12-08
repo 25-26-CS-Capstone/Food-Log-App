@@ -93,26 +93,23 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::MapSheet, "MapSheet");
   m_pRenderer->Load(eSprite::MapRoom, "MapRoom");
   m_pRenderer->Load(eSprite::Connection, "Connection");
-<<<<<<< HEAD
-    // Ice bat sprites
-    m_pRenderer->Load(eSprite::IceBatFlap64Sheet, "IceBatFlap64Sheet");
-    m_pRenderer->Load(eSprite::IceBatFlap, "IceBatFlap");
-    m_pRenderer->Load(eSprite::IceBatAttackFlap, "IceBatAttackFlap");
-    m_pRenderer->Load(eSprite::IceBatProjectile, "IceBatProjectile");
-    // Ice bear sprites (boss) - all 9 frames for animation
-    m_pRenderer->Load(eSprite::IceBear0, "IceBear0");
-    m_pRenderer->Load(eSprite::IceBear1, "IceBear1");
-    m_pRenderer->Load(eSprite::IceBear2, "IceBear2");
-    m_pRenderer->Load(eSprite::IceBear3, "IceBear3");
-    m_pRenderer->Load(eSprite::IceBear4, "IceBear4");
-    m_pRenderer->Load(eSprite::IceBear5, "IceBear5");
-    m_pRenderer->Load(eSprite::IceBear6, "IceBear6");
-    m_pRenderer->Load(eSprite::IceBear7, "IceBear7");
-    m_pRenderer->Load(eSprite::IceBear8, "IceBear8");
-    m_pRenderer->Load(eSprite::IceBearInactive128, "IceBearInactive128");
-    m_pRenderer->Load(eSprite::IceBearActive128, "IceBearActive128");
-=======
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
+        // Ice bat sprites
+        m_pRenderer->Load(eSprite::IceBatFlap64Sheet, "IceBatFlap64Sheet");
+        m_pRenderer->Load(eSprite::IceBatFlap, "IceBatFlap");
+        m_pRenderer->Load(eSprite::IceBatAttackFlap, "IceBatAttackFlap");
+        m_pRenderer->Load(eSprite::IceBatProjectile, "IceBatProjectile");
+        // Ice bear sprites (boss) - all 9 frames for animation
+        m_pRenderer->Load(eSprite::IceBear0, "IceBear0");
+        m_pRenderer->Load(eSprite::IceBear1, "IceBear1");
+        m_pRenderer->Load(eSprite::IceBear2, "IceBear2");
+        m_pRenderer->Load(eSprite::IceBear3, "IceBear3");
+        m_pRenderer->Load(eSprite::IceBear4, "IceBear4");
+        m_pRenderer->Load(eSprite::IceBear5, "IceBear5");
+        m_pRenderer->Load(eSprite::IceBear6, "IceBear6");
+        m_pRenderer->Load(eSprite::IceBear7, "IceBear7");
+        m_pRenderer->Load(eSprite::IceBear8, "IceBear8");
+        m_pRenderer->Load(eSprite::IceBearInactive128, "IceBearInactive128");
+        m_pRenderer->Load(eSprite::IceBearActive128, "IceBearActive128");
   m_pRenderer->Load(eSprite::StartButton0, "StartButton0");
   m_pRenderer->Load(eSprite::StartButton1, "StartButton1");
   m_pRenderer->Load(eSprite::ExitButton0, "ExitButton0");
@@ -141,56 +138,13 @@ void CGame::Release(){
 
 //create the main menu
 void CGame::StartMenu() {
-<<<<<<< HEAD
     // Menu disabled - start game directly
     BeginGame();
-=======
-    m_pObjectManager->clear();
-
-    gameState = 0;
-    currentButton = 0;
-
-    m_pObjectManager->create(eSprite::Background, m_vWinCenter);
-    m_pObjectManager->create(eSprite::StartButton0, Vector2(700, 500.0f));
-    m_pObjectManager->create(eSprite::ExitButton0, Vector2(700, 200.0f));
-
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 }
 
 //handle keyboard input in the main menu
 void CGame::MenuUpdate() {
-<<<<<<< HEAD
     // Menu disabled
-=======
-    m_pKeyboard->GetState();
-
-    if (m_pKeyboard->TriggerDown('W')) {
-        if (currentButton == 1) {
-            currentButton = 0;
-            m_pObjectManager->create(eSprite::StartButton1, Vector2(700, 500.0f));
-            m_pObjectManager->create(eSprite::ExitButton0, Vector2(700, 200.0f));
-        }
-    }
-
-    if (m_pKeyboard->TriggerDown('S')) {
-        if (currentButton == 0) {
-            currentButton = 1;
-            m_pObjectManager->create(eSprite::ExitButton1, Vector2(700, 200.0f));
-            m_pObjectManager->create(eSprite::StartButton0, Vector2(700, 500.0f));
-        }
-    }
-    
-    if (m_pKeyboard->TriggerDown('J')) {
-        if (currentButton == 0) {
-            BeginGame();
-        }
-        else if (currentButton == 1) {
-            //ADD COMMAND TO CLOSE GAME
-        }
-    }
-
-    
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 }
 /// Call this function to start a new game. This should be re-entrant so that
 /// you can restart a new game without having to shut down and restart the
@@ -206,7 +160,7 @@ void CGame::BeginGame(){
     m_Graph.newGraph();
 	m_Graph.assignScreenPositions(Vector2(m_nWinWidth/2.0f, m_nWinHeight/2.0f), 96.f);
 	m_pRoom->LoadRoom(m_Graph.nodes.at(0));
-    m_Graph.nodes.at(0)->setVisited(true); // Mark starting room as visited
+    m_Graph.nodes.at(0)->changeVisited(true); // Mark starting room as visited
     m_Graph.nodes.at(0)->SetCleared(true); // Mark starting room as cleared
     
     // Mark shop and item rooms as cleared (no enemies spawn there)
@@ -433,10 +387,7 @@ void CGame::KeyboardHandler() {
 
     if (m_pKeyboard->TriggerDown(VK_BACK)) //restart game
         StartMenu(); //restart game
-<<<<<<< HEAD
     */
-=======
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 
 } //KeyboardHandler
 
@@ -489,20 +440,13 @@ void CGame::ProcessFrame(){
         KeyboardHandler(); //handle keyboard input
 
     }
-<<<<<<< HEAD
     // m_pAudio->BeginFrame(); //notify audio player that frame has begun (disabled)
-=======
-    m_pAudio->BeginFrame(); //notify audio player that frame has begun
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
     m_pTimer->Tick([&]() { //all time-dependent function calls should go here
         //    const float t = m_pTimer->GetFrameTime(); //frame interval in seconds
         m_pObjectManager->move(); //move all objects
         });
-<<<<<<< HEAD
     
     CheckRoomCleared(); //check if enemies defeated and spawn items
-=======
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 
   RenderFrame(); //render a frame of animation
 } //ProcessFrame
@@ -534,11 +478,8 @@ void CGame::ChangeRoom() {
 
         if (col == doorCol && row == doorRow) {
             // Change room
-<<<<<<< HEAD
             m_pObjectManager->clearEnemies(); // Clear enemies from previous room
-=======
             m_pObjectManager->deleteShopItems();
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
             m_pPlayer->SetCurrentNode(edge.to);
             m_pRoom->LoadRoom(edge.to);
             if (m_pPlayer->GetCurrentNode()->getVisited() == false) {
@@ -568,8 +509,8 @@ void CGame::ChangeRoom() {
             SpawnEnemies(); // Spawn enemies for new room
             
             // Spawn items in the room on first visit
-            if (!edge.to->isVisited()) {
-                edge.to->setVisited(true);
+            if (!edge.to->getVisited()) {
+                edge.to->changeVisited(true);
                 SpawnRandomItems();
             }
             return;

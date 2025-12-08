@@ -28,7 +28,6 @@ public:
     void update(float);
     CObject* create(eSprite, const Vector2&); ///< Create new object.
     CObject* create(eSprite, const Vector2&, bool, int);
-<<<<<<< HEAD
     
     // Enemy spawning
     CIceBat* spawnIceBat(const Vector2& pos, const Vector2& patrolStart, const Vector2& patrolEnd);
@@ -41,9 +40,8 @@ public:
     // Enemy tracking
     int countEnemies() const; ///< Count enemies in the level.
     void clearEnemies(); ///< Remove all enemies and their projectiles.
-=======
+
     void deleteShopItems();
->>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
 }; //CObjectManager
 
 #endif //__L4RC_GAME_OBJECTMANAGER_H__
