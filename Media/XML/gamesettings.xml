@@ -43,6 +43,8 @@
 	<sprite name="StartButton1" file="StartButtonUsed.png"/>
 	<sprite name="ExitButton0" file="ExitButtonNormal.png"/>
 	<sprite name="ExitButton1" file="ExitButtonUsed.png"/>
+	<sprite name="gameOver" file="GameOver.png"/>
+	<sprite name="youWin" file="YouWin.png"/>
 
 	  
 	<sprite name="InuitIdleLeftSheet" file="InuitIdleLeft.png"/>

@@ -98,6 +98,8 @@ void CGame::LoadImages(){
   m_pRenderer->Load(eSprite::StartButton1, "StartButton1");
   m_pRenderer->Load(eSprite::ExitButton0, "ExitButton0");
   m_pRenderer->Load(eSprite::ExitButton1, "ExitButton1");
+  m_pRenderer->Load(eSprite::gameOver, "gameOver");
+  m_pRenderer->Load(eSprite::youWin, "youWin");
 
 
   m_pRenderer->EndResourceUpload();
@@ -173,7 +175,7 @@ void CGame::gameOver() {
     m_pObjectManager->create(eSprite::Background, m_vWinCenter);
     m_pObjectManager->create(eSprite::StartButton0, Vector2(700, 500.0f));
     m_pObjectManager->create(eSprite::ExitButton0, Vector2(700, 200.0f));
-
+    m_pObjectManager->create(eSprite::gameOver, Vector2(700.0f, 650.0f));
 
 }
 
@@ -215,6 +217,7 @@ void CGame::gameWin() {
     m_pObjectManager->create(eSprite::Background, m_vWinCenter);
     m_pObjectManager->create(eSprite::StartButton0, Vector2(700, 500.0f));
     m_pObjectManager->create(eSprite::ExitButton0, Vector2(700, 200.0f));
+    m_pObjectManager->create(eSprite::youWin, Vector2(700.0f, 650.0f));
 
 
 }

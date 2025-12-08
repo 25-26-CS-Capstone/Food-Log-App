@@ -25,7 +25,7 @@ enum class eSprite : UINT {
   InuitRunUp, InuitRunDownSheet, InuitRunDown,InuitIdleUpSheet,
   InuitIdleUp, InuitIdleDownSheet, InuitIdleDown,InuitRollSheet,
   InuitRoll, PlayerAttack, PlayerAttackSheet, TileSheet, Tiles, MapSheet, MapRoom, Connection,
-  StartButton0, StartButton1, ExitButton0, ExitButton1,
+  StartButton0, StartButton1, ExitButton0, ExitButton1, gameOver, youWin,
   Size  //MUST BE LAST
 }; //eSprite
 
