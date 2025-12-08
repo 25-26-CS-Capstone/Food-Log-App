@@ -509,8 +509,8 @@ void CGame::ChangeRoom() {
                     m_pPlayer->GetCurrentNode()->changeEnemyCount(-1);
                 }
                 else if (m_pPlayer->GetCurrentNode()->getType() > 0 && m_pPlayer->GetCurrentNode()->getType() <7 && m_pPlayer->GetCurrentNode()->GetCleared() == false){
-                    m_pObjectManager->create(eSprite::testEnemy, Vector2(500.0f, 380.0f));
-                    m_pObjectManager->create(eSprite::testEnemy, Vector2(900.0f, 380.0f));
+                    m_pObjectManager->create(eSprite::testEnemy, Vector2(600.0f, 380.0f));
+                    m_pObjectManager->create(eSprite::testEnemy, Vector2(800.0f, 380.0f));
                 }
             }
             m_pPlayer->GetCurrentNode()->changeVisited(true);

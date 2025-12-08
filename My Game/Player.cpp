@@ -349,7 +349,7 @@ void CPlayer::UpdateBasedOnTile() {
          
         case 'I': 
             currentSprite.m_f4Tint = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
-            SPEEDDEC = 0.05F;
+            SPEEDDEC = 0.08F;
             break; //ice
         case 'H': 
             currentSprite.m_f4Tint = XMFLOAT4(1.0f, 0.5f, 0.5f, 1.0f);
