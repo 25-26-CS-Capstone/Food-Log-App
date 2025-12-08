@@ -35,8 +35,8 @@ private:
     int id;
     int type;
     int edges = 0;
-    bool visited = false;
-    bool cleared = false;
+    bool visited = false; ///< Track if room has been visited
+    bool cleared = false; ///< Track if room enemies are cleared
 public:
     vector<Edge> adj;
 	Vector2 position;
