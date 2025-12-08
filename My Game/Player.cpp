@@ -26,6 +26,55 @@ CPlayer::~CPlayer(){
   delete m_pFrameEvent;
 } //destructor
 
+// Simple animation helpers - set sprite and frame timer
+void CPlayer::IdleLeft()  { 
+    currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitIdleLeft;  
+    m_nMaxFrames = 20;
+    if (m_fAnimTimer > 0.12f) { m_fAnimTimer = 0.0f; m_nCurrentFrame = (m_nCurrentFrame + 1) % m_nMaxFrames; }
+}
+void CPlayer::IdleRight() { 
+    currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitIdleRight; 
+    m_nMaxFrames = 20;
+    if (m_fAnimTimer > 0.12f) { m_fAnimTimer = 0.0f; m_nCurrentFrame = (m_nCurrentFrame + 1) % m_nMaxFrames; }
+}
+void CPlayer::IdleUp()    { 
+    currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitIdleUp;    
+    m_nMaxFrames = 15;
+    if (m_fAnimTimer > 0.12f) { m_fAnimTimer = 0.0f; m_nCurrentFrame = (m_nCurrentFrame + 1) % m_nMaxFrames; }
+}
+void CPlayer::IdleDown()  { 
+    currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitIdleDown;  
+    m_nMaxFrames = 15;
+    if (m_fAnimTimer > 0.12f) { m_fAnimTimer = 0.0f; m_nCurrentFrame = (m_nCurrentFrame + 1) % m_nMaxFrames; }
+}
+
+void CPlayer::RunLeft()   { 
+    currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitRunLeft;  
+    m_nMaxFrames = 8;
+    if (m_fAnimTimer > 0.07f) { m_fAnimTimer = 0.0f; m_nCurrentFrame = (m_nCurrentFrame + 1) % m_nMaxFrames; }
+}
+void CPlayer::RunRight()  { 
+    currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitRunRight; 
+    m_nMaxFrames = 8;
+    if (m_fAnimTimer > 0.07f) { m_fAnimTimer = 0.0f; m_nCurrentFrame = (m_nCurrentFrame + 1) % m_nMaxFrames; }
+}
+void CPlayer::RunUp()     { 
+    currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitRunUp;    
+    m_nMaxFrames = 8;
+    if (m_fAnimTimer > 0.07f) { m_fAnimTimer = 0.0f; m_nCurrentFrame = (m_nCurrentFrame + 1) % m_nMaxFrames; }
+}
+void CPlayer::RunDown()   { 
+    currentSprite.m_nSpriteIndex = (UINT)eSprite::InuitRunDown;  
+    m_nMaxFrames = 8;
+    if (m_fAnimTimer > 0.07f) { m_fAnimTimer = 0.0f; m_nCurrentFrame = (m_nCurrentFrame + 1) % m_nMaxFrames; }
+}
+
+// Advance frame counter with wrap based on current animation
+void CPlayer::UpdateFramenumber() {
+    // Increment timer - this is called once per frame regardless of input
+    m_fAnimTimer += 0.016f; // ~60fps
+}
+
 /// Move in response to device input. The amount of motion is proportional to
 /// the frame time.
 
@@ -34,30 +83,38 @@ void CPlayer::onCollision(CObject* obj) {
         if (playerState == 0 && activeShield == false) {
             changeHealth(-1.0f);
             playerState = 2;//damaged state
-            counter = 6;//number of frames
-            currentSprite.m_f4Tint = XMFLOAT4(1.0f, 0.2f, 0.2f, 1.0f);//tint the player red
+            counter = 6;//number of frames in red
         }
         else if (activeShield == true) {
             activeShield = false;
             playerState = 2;//damaged state
-            counter = 6;//number of frames
+            counter = 6;//number of frames in red
         }
     }
     if (obj->type == 'i') {
         
     }
 }
-
-
 void CPlayer::move(){
-  //keyboard handler block
-    
-    //split into states for controlling the player
-    if (playerState == 0) { //if player state = 'normal movement'
-        if (m_pKeyboard->TriggerUp('W')) {
-            OutputDebugString("W - up\n");
-            m_pPlayer->IdleUp();
+    // Lightweight movement using raw keyboard polling (no engine keyboard object available)
+    const float step = 4.0f; // pixels per frame; increase if too slow
+
+    bool any = false;
+    if (GetAsyncKeyState('A') & 0x8000) { m_vPos.x -= step; RunLeft();  direction = 3; recentInput = 'A'; any = true; }
+    if (GetAsyncKeyState('D') & 0x8000) { m_vPos.x += step; RunRight(); direction = 1; recentInput = 'D'; any = true; }
+    if (GetAsyncKeyState('W') & 0x8000) { m_vPos.y += step; RunUp();    direction = 0; recentInput = 'W'; any = true; }
+    if (GetAsyncKeyState('S') & 0x8000) { m_vPos.y -= step; RunDown();  direction = 2; recentInput = 'S'; any = true; }
+
+    if (!any) {
+        switch (recentInput) {
+        case 'A': IdleLeft();  direction = 3; break;
+        case 'D': IdleRight(); direction = 1; break;
+        case 'W': IdleUp();    direction = 0; break;
+        case 'S': IdleDown();  direction = 2; break;
+        default:  IdleRight(); direction = 1; break;
         }
+<<<<<<< HEAD
+=======
         if (m_pKeyboard->TriggerUp('A')) {
             OutputDebugString("A - up\n");
             m_pPlayer->IdleLeft();
@@ -283,11 +340,12 @@ void CPlayer::Roll() {
     default:    //dodge right
         xspeed = ROLLSPEED;
         yspeed = 0.0;
+>>>>>>> 1d0061ddd5bea79aeaf7bc01908a98d800e2a272
     }
 
-    playerState = 1;
-    counter = 8;
-}
+    UpdateBasedOnTile();
+    UpdateFramenumber();  // Increment animation timer every frame
+} //move
 
 
 void CPlayer::changeHealth(float f) {
@@ -318,6 +376,14 @@ bool CPlayer::getAttackState() {
 void CPlayer::draw() {
     currentSprite.m_vPos = m_vPos;
     currentSprite.m_nCurrentFrame = m_nCurrentFrame;
+    
+    // Apply red tint only when in damaged state
+    if (playerState == 2) {
+        currentSprite.m_f4Tint = XMFLOAT4(1.0f, 0.2f, 0.2f, 1.0f);  // Red tint
+    } else {
+        currentSprite.m_f4Tint = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);  // Normal white
+    }
+    
     m_pRenderer->Draw(&currentSprite);
 }
 //Room Stuff
@@ -328,7 +394,7 @@ char CPlayer::GetCurrentTileType() {
     return m_pRoom ? m_pRoom->GetTileAt(m_vPos) : '\0';
 }
 void CPlayer::UpdateBasedOnTile() {
-	char newTileType = GetCurrentTileType();
+    const char tile = GetCurrentTileType();
 
 
     /*char buffer[64];
@@ -338,8 +404,8 @@ void CPlayer::UpdateBasedOnTile() {
     OutputDebugString(buffer);
     */
 
-    if (currentTileType != newTileType) {
-        switch (newTileType) {
+    if (currentTileType != tile) {
+        switch (tile) {
         case 'F': break; //floor
         case 'W': break; //wall
         case 'I': break; //ice
@@ -348,7 +414,7 @@ void CPlayer::UpdateBasedOnTile() {
 		}//switch
 	}//if
 
-    currentTileType = newTileType;
+    currentTileType = tile;
 }//UpdateBasedOnTile
 Node* CPlayer::GetCurrentNode() {
 	return currentNode;
@@ -376,6 +442,16 @@ void CPlayer::update(float deltaTime) {
     }
 
     attackCooldown -= deltaTime;
+    
+    // Handle damage state - decrement counter and return to normal when done
+    if (playerState == 2) {
+        counter--;
+        if (counter <= 0) {
+            playerState = 0;  // Return to normal state
+            counter = 0;
+        }
+    }
+    
     if (activeShield == false && damageShield == true) {
         shieldCooldown -= deltaTime;
         if (shieldCooldown <= 0.0f) {
