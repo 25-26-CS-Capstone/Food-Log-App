@@ -1,0 +1,36 @@
+﻿  Attack.cpp
+  Common.cpp
+  Enemy.cpp
+  Game.cpp
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(379,99): warning C4244: 'argument': conversion from '_Rep' to 'unsigned int', possible loss of data
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(379,99): warning C4244:         with
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(379,99): warning C4244:         [
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(379,99): warning C4244:             _Rep=std::chrono::system_clock::rep
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(379,99): warning C4244:         ]
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(396,88): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(397,81): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(407,83): warning C4244: 'argument': conversion from '_Rep' to 'unsigned int', possible loss of data
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(407,83): warning C4244:         with
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(407,83): warning C4244:         [
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(407,83): warning C4244:             _Rep=std::chrono::system_clock::rep
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(407,83): warning C4244:         ]
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(440,83): warning C4244: 'argument': conversion from '_Rep' to 'unsigned int', possible loss of data
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(440,83): warning C4244:         with
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(440,83): warning C4244:         [
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(440,83): warning C4244:             _Rep=std::chrono::system_clock::rep
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Game.cpp(440,83): warning C4244:         ]
+  GraphGen.cpp
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\GraphGen.cpp(34,20): warning C4267: 'return': conversion from 'size_t' to 'int', possible loss of data
+  HUD.cpp
+  Item.cpp
+  Main.cpp
+  Object.cpp
+  ObjectManager.cpp
+  Player.cpp
+  Room.cpp
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Room.cpp(154,60): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+C:\Users\drewd\OneDrive\Documents\GitHub\group-1\My Game\Room.cpp(157,48): warning C4244: 'argument': conversion from 'int' to 'float', possible loss of data
+  Generating code
+  Not all modules are compiled with -Gy (function comdat), build without incremental LTCG.
+  Finished generating code
+  My Game.vcxproj -> C:\Users\drewd\OneDrive\Documents\GitHub\group-1\x64\Release\Game.exe

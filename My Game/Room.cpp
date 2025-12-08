@@ -129,7 +129,7 @@ void CRoom::DrawDoors(eSprite t, Node* node) {
     if (!node || !m_pRenderer) return;
 
     if(!node->GetCleared())
-       return; // Don't draw doors until room is cleared
+       return; // Don't draw doors if room is cleared
 
     LSpriteDesc2D desc;
     desc.m_nSpriteIndex = static_cast<int>(t);
@@ -149,14 +149,6 @@ void CRoom::DrawDoors(eSprite t, Node* node) {
         };
 
     for (const Edge& edge : node->adj) {
-        // Check if the door leads to boss room (999) and make it blue
-        if (edge.to && edge.to->getType() == 999) {
-            desc.m_f4Tint = XMFLOAT4(0.0f, 0.5f, 1.0f, 1.0f); // Blue tint for boss door
-        }
-        else {
-            desc.m_f4Tint = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f); // Normal white tint
-        }
-        
         switch (edge.direction) {
         case NORTH:
             desc.m_vPos = TileToWorld(centerCol, m_nHeight - 1);
@@ -237,7 +229,6 @@ void CRoom::Draw(eSprite t, CPlayer* m_pPlayer) {
             case 'S': desc.m_nCurrentFrame = 3; break; //shop item
             case 'E': desc.m_nCurrentFrame = 4; break; //enemy ice
             case 'C': desc.m_nCurrentFrame = 3; break; //enemy floor
-            case 'D': desc.m_nCurrentFrame = 3; break; //door marker (renders as floor)
             default:  continue; //skip empty/unknown
             } //switch
 
@@ -253,5 +244,6 @@ void CRoom::Draw(eSprite t, CPlayer* m_pPlayer) {
             m_pRenderer->Draw(&desc); //finally we can draw a tile
         } //for
     } //for
+    //OutputDebugStringA("About to call DrawDoors\n");
     DrawDoors(t, m_pPlayer->GetCurrentNode());
 } //Draw
