@@ -8,8 +8,8 @@
 #include "Defines.h"
 
 
-const float screenWidth = 1024.0f;
-const float screenHeight = 768.0f;
+const float screenWidth = 1400.0f;
+const float screenHeight = 760.0f;
 const float kBorderMargin = 20.0f;
 // Projectile balance
 const float kIceBatProjectileSpeed = 200.0f;    // default speed

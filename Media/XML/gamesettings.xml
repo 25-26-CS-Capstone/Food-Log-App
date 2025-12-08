@@ -53,6 +53,9 @@
 		<frame index="3" left="192" top="0" right="256" bottom="64"/>
 	</sprite>
 	<sprite name="IceBatProjectile" file="IceBatProjectile.png"/>
+	<!-- Ice Bear sprites (boss) -->
+	<sprite name="IceBearInactive128" file="icebear_frame_0.png"/>
+	<sprite name="IceBearActive128" file="icebear_frame_4.png"/>
 	<sprite name="StartButton0" file="StartButtonNormal.png"/>
 	<sprite name="StartButton1" file="StartButtonUsed.png"/>
 	<sprite name="ExitButton0" file="ExitButtonNormal.png"/>
