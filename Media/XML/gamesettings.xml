@@ -191,9 +191,9 @@
 
 	  <sprite name="PlayerAttackSheet" file="PlayerAttack.png"/>
 	  <sprite name="PlayerAttack" sheet="PlayerAttackSheet" frames="3">
-		  <frame index="0" left="0"	top="0" right="80"	bottom="20"/>
-		  <frame index="1" left="0"	top="0"	right="80" bottom="40"/>
-		  <frame index="2" left="0" top="0" right="80" bottom="60"/>
+		  <frame index="0" left="0"	top="0" right="80"	bottom="15"/>
+		  <frame index="1" left="0" top="15" right="80" bottom="35"/>
+		  <frame index="2" left="0"	top="35"	right="80" bottom="50"/>
 	  </sprite>
 	<sprite name="TileSheet" file="TileSheet.png"/>
 	<sprite name="Tiles" sheet="TileSheet" frames="6">
