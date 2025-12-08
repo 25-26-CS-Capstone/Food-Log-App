@@ -20,7 +20,12 @@ extern int ITEM_NUM = 2;
 
 extern int idsNum = 0;
 
-Node::Node(int id, int type) : id(id), type(type) {}
+Node::Node(int id, int type)
+    : id(id), type(type)
+{
+    if (type == 997 || type == 998)
+        cleared = true;
+}
 /*void Node::addEdge(Node* to){
     adj.push_back(to);
     edges++;

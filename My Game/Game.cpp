@@ -266,6 +266,9 @@ void CGame::KeyboardHandler() {
     if (m_pKeyboard->TriggerDown('P'))
         m_bDrawGraph = !m_bDrawGraph;//draw the graph for debugging
 
+    if (m_pKeyboard->TriggerDown('K'))
+		m_pPlayer->GetCurrentNode()->SetCleared(!m_pPlayer->GetCurrentNode()->GetCleared()); //Invert Cleared
+
     if (m_pKeyboard->TriggerDown(VK_F1)) //help
         ShellExecute(0, 0, "https://larc.unt.edu/code/physics/blank/", 0, 0, SW_SHOW);
 
@@ -346,6 +349,8 @@ void CGame::ChangeRoom() {
 
     Node* currentNode = m_pPlayer->GetCurrentNode();
     if (!currentNode) return;
+
+    if (!m_pPlayer->GetCurrentNode()->GetCleared()) return;
 
     Vector2 pos = m_pPlayer->m_vPos;
     int col = static_cast<int>(pos.x / m_pRoom->GetTileSize());
