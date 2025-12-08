@@ -151,7 +151,7 @@ void CGame::BeginGame(){
     m_Graph.newGraph();
 	m_Graph.assignScreenPositions(Vector2(m_nWinWidth/2.0f, m_nWinHeight/2.0f), 96.f);
 	m_pRoom->LoadRoom(m_Graph.nodes.at(0));
-    
+    m_Graph.nodes.at(0)->setVisited(true); // Mark starting room as visited
 
     CreateObjects(); //create new objects
     mHud = new HUD(m_pRenderer, m_pPlayer);
@@ -229,6 +229,12 @@ void CGame::CheckRoomCleared() {
 
 /// Spawn 1-3 random reward items near room center.
 void CGame::SpawnRandomItems() {
+    // Don't spawn items in boss, shop, or loot rooms
+    int roomType = m_pPlayer->GetCurrentNode()->getType();
+    if (roomType == 999 || roomType == 997 || roomType == 998) {
+        return;
+    }
+    
     std::random_device rd;
     std::mt19937 rng(rd());
     std::uniform_int_distribution<int> countDist(1, 3);
@@ -443,6 +449,12 @@ void CGame::ChangeRoom() {
             case EAST:  m_pPlayer->m_vPos = (Vector2(m_pRoom->GetTileSize(), pos.y)); break;
             }
             SpawnEnemies(); // Spawn enemies for new room
+            
+            // Spawn items in the room on first visit
+            if (!edge.to->isVisited()) {
+                edge.to->setVisited(true);
+                SpawnRandomItems();
+            }
             return;
         }
     }

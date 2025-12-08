@@ -36,6 +36,7 @@ private:
     int id;
     int type;
     int edges = 0;
+    bool visited = false; ///< Track if room has been visited
 public:
     vector<Edge> adj;
 	Vector2 position;
@@ -45,6 +46,8 @@ public:
     int getNumEdges();
     int getId();
     int getType();
+    bool isVisited() const { return visited; }
+    void setVisited(bool v) { visited = v; }
 };
 
 class Graph {
