@@ -368,10 +368,10 @@ void CPlayer::update(float deltaTime) {
     else if (m_vPos.y < 20.0f) {
         playerState = 3;
     }
-    else if (m_vPos.x > screenWidth + 7.0f) {
+    else if (m_vPos.x > screenWidth + 10.0f) {
         playerState = 3;
     }
-    else if (m_vPos.x < 20.0f) {
+    else if (m_vPos.x < -10.0f) {
         playerState = 3;
     }
 

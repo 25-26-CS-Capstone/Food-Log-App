@@ -35,6 +35,7 @@ private:
     int id;
     int type;
     int edges = 0;
+    bool visited = false;
 public:
     vector<Edge> adj;
 	Vector2 position;
@@ -44,6 +45,8 @@ public:
     int getNumEdges();
     int getId();
     int getType();
+    bool getVisited() { return visited; }
+    void changeVisited(bool x) { visited = x; }
 };
 
 class Graph {

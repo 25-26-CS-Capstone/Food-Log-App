@@ -366,8 +366,27 @@ void CGame::ChangeRoom() {
 
         if (col == doorCol && row == doorRow) {
             // Change room
+            m_pObjectManager->deleteShopItems();
             m_pPlayer->SetCurrentNode(edge.to);
             m_pRoom->LoadRoom(edge.to);
+            if (m_pPlayer->GetCurrentNode()->getVisited() == false) {
+                if (m_pPlayer->GetCurrentNode()->getType() == 998) {
+                    default_random_engine rng(chrono::system_clock::now().time_since_epoch().count());
+                    mt19937 generator(rng);
+                    uniform_int_distribution<> distribution(1, 5);
+                    int randNum = distribution(generator);
+                    spawnCommonItem(Vector2(400.0f, 380.0f), true, randNum);
+                    randNum = distribution(generator);
+                    spawnCommonItem(Vector2(700.0f, 380.0f), true, randNum);
+                    uniform_int_distribution<> distribution2(5, 10);
+                    randNum = distribution2(generator);
+                    spawnRareItem(Vector2(1000.0f, 380.0f), true, randNum);
+                }
+                else if (m_pPlayer->GetCurrentNode()->getType() == 997) {
+                    spawnRareItem(Vector2(700.0f, 380.0f), false, 0);
+                }
+            }
+            m_pPlayer->GetCurrentNode()->changeVisited(true);
             switch (edge.direction) {
             case NORTH: m_pPlayer->m_vPos = (Vector2(pos.x, (m_pRoom->GetHeight() - 2) * m_pRoom->GetTileSize())); break;
             case SOUTH: m_pPlayer->m_vPos = (Vector2(pos.x, m_pRoom->GetTileSize())); break;

@@ -152,3 +152,12 @@ void CObjectManager::update(float deltaTime) {
         }
     }
 }
+
+void CObjectManager::deleteShopItems() {
+    for (auto itA = m_stdObjectList.begin(); itA != m_stdObjectList.end(); ++itA) {
+        CObject* A = *itA;
+        if (A->type == 'i') {
+            A->m_bDead = true;
+        }
+    }
+}

@@ -22,7 +22,6 @@ class CRoom : public CCommon, public LSettings
 private:
     int m_nWidth = 0; ///< Number of tiles wide.
     int m_nHeight = 0; ///< Number of tiles high.
-
     float m_fTileSize; ///< tile width and height.
     Vector2 m_vTileRadius; ///< til radius.
 
@@ -49,7 +48,6 @@ public:
 	int GetWidth() const { return m_nWidth; } ///< Get width in tiles.
 	int GetHeight() const { return m_nHeight; } ///< Get height in tiles.
 	int GetTileSize() const { return (int)m_fTileSize; } ///< Get tile size.
-
     //void DrawBoundingBoxes(eSprite t); ///< Draw the bounding boxes.
 
     //bool Visible(const Vector2& v0, const Vector2& v1, float radius); ///< Check visibility.
