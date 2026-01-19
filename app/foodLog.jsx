@@ -15,6 +15,7 @@ import {
 import { useRouter } from 'expo-router';
 import { saveFoodEntry } from '../utils/storage';
 import { searchFood, getFoodDetails, formatFoodSearchResult } from '../utils/usdaAPI';
+import BarcodeScannerModal from './barcodeScanner';
 
 const FoodLog = () => {
   const router = useRouter();
@@ -28,6 +29,9 @@ const FoodLog = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [selectedFood, setSelectedFood] = useState(null);
+  
+  // Barcode scanner state
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
 
   const handleLogFood = async () => {
     if (!foodName.trim()) {
@@ -140,7 +144,29 @@ const FoodLog = () => {
       if (text === foodName) { // Only search if text hasn't changed
         handleFoodSearch(text);
       }
-    }, 500);
+    }, 400);
+  };
+
+  const handleBarcodeDetected = (foodData) => {
+    setFoodName(foodData.name);
+    setCalories(foodData.calories?.toString() || '');
+    
+    // Create selected food object similar to USDA search results
+    const barcodeFood = {
+      fdcId: foodData.code,
+      displayName: foodData.name,
+      brandName: foodData.brands,
+      calories: foodData.calories,
+      protein: foodData.protein,
+      carbs: foodData.carbs,
+      fat: foodData.fat,
+      barcode: foodData.barcode,
+      source: foodData.source,
+      allergens: foodData.allergens || [],
+    };
+    
+    setSelectedFood(barcodeFood);
+    setShowBarcodeScanner(false);
   };
 
   return (
@@ -153,7 +179,15 @@ const FoodLog = () => {
         
         <View style={styles.form}>
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Food Name *</Text>
+            <View style={styles.labelRow}>
+              <Text style={styles.label}>Food Name *</Text>
+              <TouchableOpacity
+                style={styles.barcodeButton}
+                onPress={() => setShowBarcodeScanner(true)}
+              >
+                <Text style={styles.barcodeButtonText}>📷 Scan</Text>
+              </TouchableOpacity>
+            </View>
             <TextInput
               style={styles.input}
               placeholder="Search for food (e.g., Apple, Chicken Sandwich)"
@@ -265,6 +299,12 @@ const FoodLog = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      
+      <BarcodeScannerModal
+        visible={showBarcodeScanner}
+        onClose={() => setShowBarcodeScanner(false)}
+        onBarcodeDetected={handleBarcodeDetected}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -301,11 +341,27 @@ const styles = StyleSheet.create({
   inputGroup: {
     marginBottom: 20,
   },
+  labelRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
   label: {
     fontSize: 16,
     fontWeight: '600',
     color: '#333',
-    marginBottom: 8,
+  },
+  barcodeButton: {
+    backgroundColor: '#4ECDC4',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  barcodeButtonText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#fff',
   },
   input: {
     borderWidth: 1,
