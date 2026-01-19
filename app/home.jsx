@@ -145,6 +145,10 @@ const home = () => {
     router.push('/symptomAnalysis')
   }
 
+  const navigateToReportGenerator = () => {
+    router.push('/reportGenerator')
+  }
+
   const navigateToSettings = () => {
     router.push('/settings')
   }
@@ -286,6 +290,11 @@ const home = () => {
         <TouchableOpacity style={styles.analysisButton} onPress={navigateToSymptomAnalysis}>
           <Text style={styles.analysisButtonText}>🔬 Symptom Analysis</Text>
           <Text style={styles.buttonDescription}>Find potential food allergies</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.reportButton} onPress={navigateToReportGenerator}>
+          <Text style={styles.reportButtonText}>📊 Generate Report</Text>
+          <Text style={styles.buttonDescription}>View food & symptom patterns</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.testButton} onPress={addTestData}>
@@ -601,6 +610,26 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   analysisButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  reportButton: {
+    backgroundColor: '#8E4EC6',
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  reportButtonText: {
     color: '#fff',
     fontSize: 20,
     fontWeight: '600',
