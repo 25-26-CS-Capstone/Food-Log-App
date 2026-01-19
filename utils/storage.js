@@ -5,6 +5,7 @@ const SYMPTOMS_LOG_KEY = '@symptoms_log';
 const USER_KEY = '@user_data';
 const USER_LOGIN_DATES_KEY = '@user_login_dates';
 const UI_WELCOME_BANNER_DISMISSED_DATE = '@ui_welcome_banner_dismissed_date';
+const FLAGGED_FOODS_KEY = '@flagged_foods'; // Foods marked as allergens or important
 
 // Food Log Functions
 export const saveFoodEntry = async (foodEntry) => {
@@ -29,6 +30,35 @@ export const getFoodLogs = async () => {
   }
 };
 
+export const updateFoodEntry = async (entryId, updatedEntry) => {
+  try {
+    const existingLogs = await getFoodLogs();
+    const index = existingLogs.findIndex(log => log.id === entryId);
+    
+    if (index >= 0) {
+      existingLogs[index] = { ...existingLogs[index], ...updatedEntry, timestamp: existingLogs[index].timestamp };
+      await AsyncStorage.setItem(FOOD_LOG_KEY, JSON.stringify(existingLogs));
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Error updating food entry:', error);
+    return false;
+  }
+};
+
+export const deleteFoodEntry = async (entryId) => {
+  try {
+    const existingLogs = await getFoodLogs();
+    const filtered = existingLogs.filter(log => log.id !== entryId);
+    await AsyncStorage.setItem(FOOD_LOG_KEY, JSON.stringify(filtered));
+    return true;
+  } catch (error) {
+    console.error('Error deleting food entry:', error);
+    return false;
+  }
+};
+
 // Symptom Log Functions
 export const saveSymptomEntry = async (symptomEntry) => {
   try {
@@ -49,6 +79,35 @@ export const getSymptomLogs = async () => {
   } catch (error) {
     console.error('Error getting symptom logs:', error);
     return [];
+  }
+};
+
+export const updateSymptomEntry = async (entryId, updatedEntry) => {
+  try {
+    const existingLogs = await getSymptomLogs();
+    const index = existingLogs.findIndex(log => log.id === entryId);
+    
+    if (index >= 0) {
+      existingLogs[index] = { ...existingLogs[index], ...updatedEntry, timestamp: existingLogs[index].timestamp };
+      await AsyncStorage.setItem(SYMPTOMS_LOG_KEY, JSON.stringify(existingLogs));
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Error updating symptom entry:', error);
+    return false;
+  }
+};
+
+export const deleteSymptomEntry = async (entryId) => {
+  try {
+    const existingLogs = await getSymptomLogs();
+    const filtered = existingLogs.filter(log => log.id !== entryId);
+    await AsyncStorage.setItem(SYMPTOMS_LOG_KEY, JSON.stringify(filtered));
+    return true;
+  } catch (error) {
+    console.error('Error deleting symptom entry:', error);
+    return false;
   }
 };
 
@@ -317,6 +376,89 @@ export const setWelcomeBannerDismissedToday = async () => {
     return true;
   } catch (error) {
     console.error('Error setting banner dismissed date:', error);
+    return false;
+  }
+};
+
+// Food Flagging Functions - Mark foods as allergens or problematic
+export const flagFood = async (foodName, reason = 'allergen', severity = 'medium') => {
+  try {
+    const flaggedFoods = await getFlaggedFoods();
+    const existingIndex = flaggedFoods.findIndex(f => f.foodName.toLowerCase() === foodName.toLowerCase());
+    
+    const flagEntry = {
+      foodName,
+      reason, // 'allergen', 'trigger', 'dislike', 'intolerance'
+      severity, // 'low', 'medium', 'high'
+      dateAdded: new Date().toISOString(),
+      lastUpdated: new Date().toISOString()
+    };
+    
+    if (existingIndex >= 0) {
+      // Update existing flag
+      flaggedFoods[existingIndex] = { ...flaggedFoods[existingIndex], ...flagEntry, dateAdded: flaggedFoods[existingIndex].dateAdded };
+    } else {
+      // Add new flag
+      flaggedFoods.push(flagEntry);
+    }
+    
+    await AsyncStorage.setItem(FLAGGED_FOODS_KEY, JSON.stringify(flaggedFoods));
+    return true;
+  } catch (error) {
+    console.error('Error flagging food:', error);
+    return false;
+  }
+};
+
+export const unflagFood = async (foodName) => {
+  try {
+    const flaggedFoods = await getFlaggedFoods();
+    const filtered = flaggedFoods.filter(f => f.foodName.toLowerCase() !== foodName.toLowerCase());
+    await AsyncStorage.setItem(FLAGGED_FOODS_KEY, JSON.stringify(filtered));
+    return true;
+  } catch (error) {
+    console.error('Error unflagging food:', error);
+    return false;
+  }
+};
+
+export const getFlaggedFoods = async () => {
+  try {
+    const flaggedFoods = await AsyncStorage.getItem(FLAGGED_FOODS_KEY);
+    return flaggedFoods ? JSON.parse(flaggedFoods) : [];
+  } catch (error) {
+    console.error('Error getting flagged foods:', error);
+    return [];
+  }
+};
+
+export const isFoodFlagged = async (foodName) => {
+  try {
+    const flaggedFoods = await getFlaggedFoods();
+    return flaggedFoods.find(f => f.foodName.toLowerCase() === foodName.toLowerCase()) || null;
+  } catch (error) {
+    console.error('Error checking if food is flagged:', error);
+    return null;
+  }
+};
+
+export const updateFoodFlag = async (foodName, updates) => {
+  try {
+    const flaggedFoods = await getFlaggedFoods();
+    const index = flaggedFoods.findIndex(f => f.foodName.toLowerCase() === foodName.toLowerCase());
+    
+    if (index >= 0) {
+      flaggedFoods[index] = { 
+        ...flaggedFoods[index], 
+        ...updates, 
+        lastUpdated: new Date().toISOString() 
+      };
+      await AsyncStorage.setItem(FLAGGED_FOODS_KEY, JSON.stringify(flaggedFoods));
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error('Error updating food flag:', error);
     return false;
   }
 };
