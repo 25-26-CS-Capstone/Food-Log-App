@@ -133,6 +133,32 @@ const ViewLogs = () => {
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const getSeverityColor = (severity) => {
+    switch (severity?.toLowerCase()) {
+      case 'mild':
+        return { backgroundColor: '#4CAF50' };
+      case 'moderate':
+        return { backgroundColor: '#FF9800' };
+      case 'severe':
+        return { backgroundColor: '#F44336' };
+      default:
+        return { backgroundColor: '#999' };
+    }
+  };
+
+  const getSeverityPercentage = (severity) => {
+    switch (severity?.toLowerCase()) {
+      case 'mild':
+        return '33%';
+      case 'moderate':
+        return '66%';
+      case 'severe':
+        return '100%';
+      default:
+        return '0%';
+    }
+  };
+
   const renderLogEntry = (entry, index) => {
     const isFood = entry.type === 'food';
     const highlight = highlightLatest && index === 0;
@@ -181,9 +207,20 @@ const ViewLogs = () => {
           )}
           
           {!isFood && (
-            <Text style={[styles.entryDetail, styles.severityText]}>
-              Severity: {entry.severity}
-            </Text>
+            <View>
+              <Text style={[styles.entryDetail, styles.severityText]}>
+                Severity: {entry.severity}
+              </Text>
+              <View style={styles.severityBar}>
+                <View
+                  style={[
+                    styles.severityIndicator,
+                    getSeverityColor(entry.severity),
+                    { width: getSeverityPercentage(entry.severity) }
+                  ]}
+                />
+              </View>
+            </View>
           )}
           
           {entry.notes && (
@@ -470,6 +507,21 @@ const styles = StyleSheet.create({
     color: '#777',
     fontStyle: 'italic',
     marginTop: 2,
+  },
+  severityText: {
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  severityBar: {
+    height: 8,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginVertical: 6,
+  },
+  severityIndicator: {
+    height: '100%',
+    borderRadius: 4,
   },
 });
 
