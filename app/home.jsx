@@ -153,6 +153,10 @@ const home = () => {
     router.push('/symptomSearch')
   }
 
+  const navigateToDietRecommendations = () => {
+    router.push('/dietRecommendations')
+  }
+
   const navigateToSettings = () => {
     router.push('/settings')
   }
@@ -304,6 +308,11 @@ const home = () => {
         <TouchableOpacity style={styles.searchButton} onPress={navigateToSymptomSearch}>
           <Text style={styles.searchButtonText}>🔍 Search Symptoms</Text>
           <Text style={styles.buttonDescription}>Find & analyze symptom patterns</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.dietButton} onPress={navigateToDietRecommendations}>
+          <Text style={styles.dietButtonText}>🍽️ Diet Recommendations</Text>
+          <Text style={styles.buttonDescription}>Get food alternatives & tips</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.testButton} onPress={addTestData}>
@@ -659,6 +668,26 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   searchButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  dietButton: {
+    backgroundColor: '#00BCD4',
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  dietButtonText: {
     color: '#fff',
     fontSize: 20,
     fontWeight: '600',
