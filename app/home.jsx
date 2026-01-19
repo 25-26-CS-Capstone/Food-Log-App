@@ -165,6 +165,10 @@ const home = () => {
     router.push('/userProfile')
   }
 
+  const navigateToCalendarView = () => {
+    router.push('/calendarView')
+  }
+
   const addTestData = async () => {
     console.log('Adding test data...')
     await addSampleData()
@@ -322,6 +326,11 @@ const home = () => {
         <TouchableOpacity style={styles.profileButton} onPress={navigateToUserProfile}>
           <Text style={styles.profileButtonText}>👤 My Profile</Text>
           <Text style={styles.buttonDescription}>View & edit your profile</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.calendarButton} onPress={navigateToCalendarView}>
+          <Text style={styles.calendarButtonText}>📅 Calendar View</Text>
+          <Text style={styles.buttonDescription}>Browse logs by date</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.testButton} onPress={addTestData}>
@@ -717,6 +726,26 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   profileButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  calendarButton: {
+    backgroundColor: '#FF6B6B',
+    padding: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  calendarButtonText: {
     color: '#fff',
     fontSize: 20,
     fontWeight: '600',
