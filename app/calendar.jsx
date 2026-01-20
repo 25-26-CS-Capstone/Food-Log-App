@@ -1,369 +1,283 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  RefreshControl,
-} from 'react-native';
-import { useRouter } from 'expo-router';
-import { Calendar } from 'react-native-calendars';
-import { getFoodLogs, getSymptomLogs } from '../utils/storage';
+import React, { useMemo, useState, useEffect } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
+import { useRouter, useFocusEffect } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const CalendarScreen = () => {
+// Meal dot colors (still used for display; logs won't contain meal type yet)
+const MEAL_COLORS = {
+  breakfast: "#fbc02d",
+  lunch: "#ff8f00",
+  dinner: "#e53935",
+  snack: "#00bcd4"
+};
+
+const DAILY_GOAL_CAL = 2000;
+
+const pad = (n) => (n < 10 ? `0${n}` : `${n}`);
+function ymd(d) {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+// Build 6x7 matrix for calendar
+function monthMatrix(year, monthIndex) {
+  const first = new Date(year, monthIndex, 1);
+  const startIdx = (first.getDay() + 6) % 7;
+  const start = new Date(year, monthIndex, 1 - startIdx);
+  const days = [];
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    days.push(d);
+  }
+  return days;
+}
+
+// Sum nutrient totals for the day
+function aggregateDay(entries = []) {
+  return entries.reduce(
+    (acc, e) => {
+      const p = e.product || {};
+
+      acc.calories += p.calories || 0;
+      acc.protein += p.protein || 0;
+      acc.carbs += p.carbs || 0;
+      acc.fat += p.fat || 0;
+
+      if (e.mealType && e.color) {
+        acc.meals.add(JSON.stringify({ type: e.mealType, color: e.color }));
+      }
+
+      // Optional allergen indicator
+      if (p.allergens?.length) {
+        acc.hasAllergen = true;
+      }
+
+      return acc;
+    },
+    {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      meals: new Set(),
+      hasAllergen: false
+    }
+  );
+}
+
+export default function CalendarPage() {
   const router = useRouter();
-  const [selectedDate, setSelectedDate] = useState('');
-  const [markedDates, setMarkedDates] = useState({});
-  const [dayEntries, setDayEntries] = useState([]);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const today = useMemo(() => new Date(), []);
+  const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  const [selected, setSelected] = useState(ymd(today));
 
-  useEffect(() => {
-    loadCalendarData();
-  }, []);
+  const [logsByDate, setLogsByDate] = useState({}); // <-- REPLACES DEMO_LOGS
 
-  const loadCalendarData = async () => {
+  const year = cursor.getFullYear();
+  const monthIndex = cursor.getMonth();
+  const monthName = cursor.toLocaleString(undefined, { month: "long", year: "numeric" });
+
+  const cells = useMemo(() => monthMatrix(year, monthIndex), [year, monthIndex]);
+
+  // Load logs from AsyncStorage
+  const loadLogs = async () => {
     try {
-      const foodLogs = await getFoodLogs();
-      const symptomLogs = await getSymptomLogs();
-      
-      const allEntries = [
-        ...foodLogs.map(entry => ({ ...entry, type: 'food' })),
-        ...symptomLogs.map(entry => ({ ...entry, type: 'symptom' }))
-      ];
+      const stored = await AsyncStorage.getItem("foodLog");
+      if (!stored) {
+        setLogsByDate({});
+        return;
+      }
 
-      // Create marked dates object
-      const marked = {};
-      allEntries.forEach(entry => {
-        const date = new Date(entry.timestamp).toISOString().split('T')[0];
-        if (!marked[date]) {
-          marked[date] = {
-            marked: true,
-            dotColor: '#007AFF',
-            entries: []
-          };
-        }
-        marked[date].entries.push(entry);
+      const list = JSON.parse(stored);
+
+      // Group by YYYY-MM-DD
+      const grouped = {};
+      list.forEach((item) => {
+        const key = ymd(new Date(item.date));
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(item);
       });
 
-      setMarkedDates(marked);
-    } catch (error) {
-      console.error('Error loading calendar data:', error);
-      Alert.alert('Error', 'Failed to load calendar data');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
+      setLogsByDate(grouped);
+    } catch (err) {
+      console.error("Error loading logs:", err);
     }
   };
 
-  const onDayPress = (day) => {
-    const dateString = day.dateString;
-    setSelectedDate(dateString);
-    
-    // Get entries for selected date
-    const entriesForDay = markedDates[dateString]?.entries || [];
-    setDayEntries(entriesForDay);
-  };
+  // Reload when returning from FoodLog page
+  useFocusEffect(
+    React.useCallback(() => {
+      loadLogs();
+    }, [])
+  );
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const formatTime = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const renderDayEntry = (entry, index) => {
-    const isFood = entry.type === 'food';
-    
-    return (
-      <View key={`${entry.type}-${entry.id}-${index}`} style={styles.entryCard}>
-        <View style={styles.entryHeader}>
-          <Text style={[styles.entryType, { color: isFood ? '#FF6B35' : '#007AFF' }]}>
-            {isFood ? '🍎 Food' : '🩺 Symptom'}
-          </Text>
-          <Text style={styles.entryTime}>{formatTime(entry.timestamp)}</Text>
-        </View>
-        
-        <Text style={styles.entryTitle}>
-          {isFood ? entry.foodName : entry.symptomType}
-        </Text>
-        
-        {isFood && entry.calories && (
-          <Text style={styles.entryDetail}>Calories: {entry.calories}</Text>
-        )}
-        
-        {!isFood && (
-          <Text style={styles.entryDetail}>Severity: {entry.severity}</Text>
-        )}
-        
-        {entry.notes && (
-          <Text style={styles.entryNotes}>{entry.notes}</Text>
-        )}
-      </View>
-    );
-  };
-
-  const onRefresh = () => {
-    setRefreshing(true);
-    loadCalendarData();
-  };
+  const selectedEntries = logsByDate[selected] || [];
+  const totals = aggregateDay(selectedEntries);
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.page}>
+      {/* Header navigation */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton} 
-          onPress={() => router.back()}
-        >
-          <Text style={styles.backButtonText}>← Back</Text>
+        <TouchableOpacity onPress={() => setCursor(new Date(year, monthIndex - 1, 1))} style={styles.navBtn}>
+          <Text style={styles.navBtnText}>‹</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>Food Calendar</Text>
-        <View style={styles.placeholder} />
+
+        <Text style={styles.headerTitle}>{monthName}</Text>
+
+        <TouchableOpacity onPress={() => setCursor(new Date(year, monthIndex + 1, 1))} style={styles.navBtn}>
+          <Text style={styles.navBtnText}>›</Text>
+        </TouchableOpacity>
       </View>
 
-      <ScrollView 
-        style={styles.scrollView}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        <Calendar
-          style={styles.calendar}
-          theme={{
-            backgroundColor: '#ffffff',
-            calendarBackground: '#ffffff',
-            textSectionTitleColor: '#b6c1cd',
-            selectedDayBackgroundColor: '#007AFF',
-            selectedDayTextColor: '#ffffff',
-            todayTextColor: '#007AFF',
-            dayTextColor: '#2d4150',
-            textDisabledColor: '#d9e1e8',
-            dotColor: '#00adf5',
-            selectedDotColor: '#ffffff',
-            arrowColor: '#007AFF',
-            disabledArrowColor: '#d9e1e8',
-            monthTextColor: '#2d4150',
-            indicatorColor: '#007AFF',
-            textDayFontWeight: '500',
-            textMonthFontWeight: 'bold',
-            textDayHeaderFontWeight: '500',
-            textDayFontSize: 16,
-            textMonthFontSize: 18,
-            textDayHeaderFontSize: 13
+      <View style={styles.headerRow}>
+        <TouchableOpacity
+          onPress={() => {
+            const t = new Date();
+            setCursor(new Date(t.getFullYear(), t.getMonth(), 1));
+            setSelected(ymd(t));
           }}
-          markedDates={{
-            ...markedDates,
-            [selectedDate]: {
-              ...markedDates[selectedDate],
-              selected: true,
-              selectedColor: '#007AFF'
-            }
-          }}
-          onDayPress={onDayPress}
-        />
+          style={styles.todayBtn}
+        >
+          <Text style={styles.todayText}>Today</Text>
+        </TouchableOpacity>
+      </View>
 
-        {selectedDate && (
-          <View style={styles.selectedDateSection}>
-            <Text style={styles.selectedDateTitle}>
-              {formatDate(selectedDate)}
-            </Text>
-            
-            {dayEntries.length > 0 ? (
-              <View style={styles.entriesContainer}>
-                <Text style={styles.entriesHeader}>
-                  {dayEntries.length} {dayEntries.length === 1 ? 'Entry' : 'Entries'}
+      {/* Weekdays */}
+      <View style={styles.weekRow}>
+        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+          <Text key={d} style={styles.weekCell}>{d}</Text>
+        ))}
+      </View>
+
+      {/* Calendar Grid */}
+      <View style={styles.grid}>
+        {cells.map((d, i) => {
+          const key = ymd(d);
+          const inMonth = d.getMonth() === monthIndex;
+          const isToday = key === ymd(today);
+          const isSelected = key === selected;
+
+          const dayData = aggregateDay(logsByDate[key] || []);
+          const pct = Math.min(1, dayData.calories / DAILY_GOAL_CAL);
+
+          return (
+            <TouchableOpacity
+              key={key + i}
+              style={[
+                styles.cell,
+                !inMonth && styles.cellFaded,
+                isSelected && styles.cellSelected,
+                isToday && styles.cellTodayBorder
+              ]}
+              onPress={() => setSelected(key)}
+            >
+              <Text style={[styles.dateNum, !inMonth && styles.fadedText]}>{d.getDate()}</Text>
+
+              {/* Meal dots (won’t show unless meals exist in logs) */}
+              <View style={styles.dotRow}>
+                {Array.from(dayData.meals).map((m, idx) => {
+                  const meal = JSON.parse(m);
+                  return <View key={idx} style={[styles.dot, { backgroundColor: meal.color }]} />;
+                })}
+              </View>
+
+              {/* Progress bar */}
+              <View style={styles.progressTrack}>
+                <View style={[styles.progressFill, { width: `${pct * 100}%` }]} />
+              </View>
+
+              {/* Allergy icon */}
+              {dayData.hasAllergen && <Text style={styles.allergen}>⚠</Text>}
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      {/* Daily Details Panel */}
+      <View style={styles.detailCard}>
+        <View style={styles.detailHeader}>
+          <Text style={styles.detailDate}>{new Date(selected).toDateString()}</Text>
+
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={() => router.push({ pathname: "/food_log", params: { date: selected } })}
+          >
+            <Text style={styles.addBtnText}>+ Add Entry</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Totals */}
+        <View style={styles.totalsRow}>
+          <TotalBox label="Calories" value={totals.calories} />
+          <TotalBox label="Protein" value={`${totals.protein} g`} />
+          <TotalBox label="Carbs" value={`${totals.carbs} g`} />
+          <TotalBox label="Fat" value={`${totals.fat} g`} />
+        </View>
+
+        {/* Entries List */}
+        {selectedEntries.length ? (
+          <View style={{ marginTop: 10 }}>
+            {selectedEntries.map((entry) => (
+              <View key={entry.id} style={styles.entryRow}>
+                <Text style={styles.entryName}>{entry.foodName}</Text>
+                <Text style={styles.entryMeta}>
+                  {new Date(entry.date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </Text>
-                {dayEntries.map((entry, index) => renderDayEntry(entry, index))}
               </View>
-            ) : (
-              <View style={styles.noEntriesContainer}>
-                <Text style={styles.noEntriesText}>No entries for this date</Text>
-                <TouchableOpacity 
-                  style={styles.addEntryButton}
-                  onPress={() => router.push('/foodLog')}
-                >
-                  <Text style={styles.addEntryButtonText}>Add Food Entry</Text>
-                </TouchableOpacity>
-              </View>
-            )}
+            ))}
           </View>
+        ) : (
+          <Text style={styles.noLogs}>No logs for this date.</Text>
         )}
+      </View>
+    </ScrollView>
+  );
+}
 
-        {!selectedDate && (
-          <View style={styles.instructionsContainer}>
-            <Text style={styles.instructionsTitle}>📅 Your Food Calendar</Text>
-            <Text style={styles.instructionsText}>
-              • Tap on any date to see your food and symptom entries{'\n'}
-              • Dates with entries are marked with a blue dot{'\n'}
-              • Track your eating patterns over time
-            </Text>
-          </View>
-        )}
-      </ScrollView>
+function TotalBox({ label, value }) {
+  return (
+    <View style={styles.totalBox}>
+      <Text style={styles.totalLabel}>{label}</Text>
+      <Text style={styles.totalValue}>{value}</Text>
     </View>
   );
-};
+}
 
+/* Styles (unchanged except simplified legend removed) */
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e1e5e9',
-  },
-  backButton: {
-    padding: 8,
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '600',
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  placeholder: {
-    width: 60,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  calendar: {
-    marginBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e1e5e9',
-  },
-  selectedDateSection: {
-    backgroundColor: '#fff',
-    margin: 16,
-    borderRadius: 12,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  selectedDateTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  entriesContainer: {
-    gap: 12,
-  },
-  entriesHeader: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 8,
-  },
-  entryCard: {
-    backgroundColor: '#f8f9fa',
-    padding: 12,
-    borderRadius: 8,
-    borderLeftWidth: 4,
-    borderLeftColor: '#007AFF',
-  },
-  entryHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  entryType: {
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  entryTime: {
-    fontSize: 12,
-    color: '#666',
-  },
-  entryTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
-  },
-  entryDetail: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 2,
-  },
-  entryNotes: {
-    fontSize: 14,
-    color: '#888',
-    fontStyle: 'italic',
-    marginTop: 4,
-  },
-  noEntriesContainer: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  noEntriesText: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 16,
-  },
-  addEntryButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  addEntryButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  instructionsContainer: {
-    backgroundColor: '#fff',
-    margin: 16,
-    padding: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  instructionsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 12,
-  },
-  instructionsText: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 20,
-  },
+  page: { padding: 16, backgroundColor: "#f8fbff" },
+  header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 8 },
+  headerTitle: { fontSize: 22, fontWeight: "800", color: "#0f172a" },
+  navBtn: { padding: 8, backgroundColor: "#e2e8f0", borderRadius: 10 },
+  navBtnText: { fontSize: 18, fontWeight: "800", color: "#0f172a" },
+  headerRow: { marginTop: 10, marginBottom: 6, flexDirection: "row" },
+  todayBtn: { backgroundColor: "#22c55e", paddingVertical: 6, paddingHorizontal: 12, borderRadius: 10 },
+  todayText: { color: "white", fontWeight: "700" },
+  weekRow: { flexDirection: "row", marginTop: 10 },
+  weekCell: { flex: 1, textAlign: "center", color: "#475569", fontWeight: "700" },
+  grid: { flexDirection: "row", flexWrap: "wrap", borderRadius: 12, overflow: "hidden", backgroundColor: "#ffffff", marginTop: 6 },
+  cell: { width: `${100 / 7}%`, paddingVertical: 10, paddingHorizontal: 6, borderRightWidth: 1, borderRightColor: "#eef2f7", borderBottomWidth: 1, borderBottomColor: "#eef2f7", minHeight: 76 },
+  cellFaded: { backgroundColor: "#fafafa" },
+  cellSelected: { backgroundColor: "#ecfdf5" },
+  cellTodayBorder: { borderColor: "#22c55e", borderWidth: 2 },
+  dateNum: { fontWeight: "800", color: "#0f172a" },
+  fadedText: { color: "#94a3b8" },
+  dotRow: { flexDirection: "row", marginTop: 6, gap: 4, flexWrap: "wrap" },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  progressTrack: { marginTop: 6, height: 5, backgroundColor: "#e5e7eb", borderRadius: 3, overflow: "hidden" },
+  progressFill: { height: 5, backgroundColor: "#22c55e" },
+  allergen: { position: "absolute", top: 6, right: 6, color: "#e11d48", fontWeight: "900" },
+  detailCard: { backgroundColor: "white", borderRadius: 12, padding: 16, marginTop: 6, marginBottom: 40, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 6, elevation: 2 },
+  detailHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  detailDate: { fontSize: 18, fontWeight: "800", color: "#0f172a" },
+  addBtn: { backgroundColor: "#2563eb", paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10 },
+  addBtnText: { color: "white", fontWeight: "700" },
+  totalsRow: { flexDirection: "row", marginTop: 12, gap: 8 },
+  totalBox: { flex: 1, backgroundColor: "#f1f5f9", padding: 10, borderRadius: 10, alignItems: "center" },
+  totalLabel: { color: "#475569", fontWeight: "700" },
+  totalValue: { color: "#0f172a", fontSize: 16, fontWeight: "800", marginTop: 2 },
+  entryRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: "#f1f5f9" },
+  entryName: { fontWeight: "700", color: "#0f172a" },
+  entryMeta: { color: "#475569", marginTop: 2 },
+  noLogs: { color: "#6b7280", fontStyle: "italic", marginTop: 10 }
 });
-
-export default CalendarScreen;

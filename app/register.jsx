@@ -1,21 +1,47 @@
-import { StyleSheet, Text, View, TextInput } from 'react-native'
-import React from 'react'
-import { Link } from 'expo-router'
+import { StyleSheet, Text, View, TextInput, Alert, Button, Platform } from 'react-native'
+import React, { useState } from 'react'
+import { supabase } from '../lib/supabase'
 
-const register = () => {
+const Register = () => {
+  const [email, setEmail] = useState('')  
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  async function signUpWithEmail () {
+    if (email.trim() === '' || password.trim() === '') {
+      if (Platform.OS === 'web') {
+        window.alert('Please enter both email and password.')
+          return
+      }
+      Alert.alert('Error', 'Please enter both email and password.');
+      return
+    }
+    setLoading(true)
+
+    const {error} = await supabase.auth.signUp({ email, password })
+
+    if (Platform.OS === 'web') {
+        if (error) window.alert(error.message)
+    }
+    if (error) Alert.alert(error.message) 
+  
+    setLoading(false)
+  }
+
   return (
     <View style={{margin:20}}>
       <Text style={{paddingBottom:5}}>Enter email</Text>
-      <TextInput placeholder="Email" style={styles.input}/>
+      <TextInput value={email} onChangeText={setEmail} placeholder="Email" placeholderTextColor="gray" style={styles.input}/>
 
       <Text style={{paddingBottom:5}}>Enter password</Text>
-      <TextInput placeholder="Password" style={styles.input}/>
-      <Link href="/home" style={styles.link}>Submit</Link>
+      <TextInput value={password} onChangeText={setPassword} placeholder="Password" placeholderTextColor="gray" style={styles.input} secureTextEntry/>
+  
+      <Button title="Submit" onPress={signUpWithEmail} disabled={loading} />
     </View>
   )
 }
 
-export default register
+export default Register
 
 const styles = StyleSheet.create({
     input: {
@@ -23,12 +49,5 @@ const styles = StyleSheet.create({
       padding: 20,
       borderColor: '#000',
       borderWidth: 1
-    },
-    link: {
-      marginVertical: 10,
-      padding: 10,
-      color: 'white',
-      textAlign: 'center',
-      backgroundColor: 'darkgrey'
     }
 })

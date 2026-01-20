@@ -1,78 +1,46 @@
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native'
+import { StyleSheet, Text, View, TextInput, Alert, Button, Platform } from 'react-native'
 import React, { useState } from 'react'
-import { useRouter } from 'expo-router'
-import { saveUserData, recordTodayLoginDay } from '../utils/storage'
-import { sendLoginNotification } from '../utils/notifications'
+import { supabase } from '../lib/supabase'
 
-const login = () => {
-  const router = useRouter()
-  const [email, setEmail] = useState('')
+const Login = () => {
+  const [email, setEmail] = useState('')  
   const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleLogin = async () => {
-    // Basic validation
-    if (!email.trim()) {
-      Alert.alert('Error', 'Please enter your email')
+  async function signInWithEmail () {
+    if (email.trim() === '' || password.trim() === '') {
+      if (Platform.OS === 'web') {
+          window.alert('Please enter both email and password.')
+          return
+      }
+      Alert.alert('Error', 'Please enter both email and password.');
       return
     }
+
+    setLoading(true)
+
+    const {error} = await supabase.auth.signInWithPassword({ email, password })
     
-    if (!password.trim()) {
-      Alert.alert('Error', 'Please enter your password')
-      return
+    if (Platform.OS === 'web') {
+        if (error) window.alert(error.message)
     }
+    if (error) Alert.alert(error.message)
 
-    try {
-      // Extract username from email (part before @)
-      const username = email.split('@')[0]
-      
-      // Save user data
-      await saveUserData({
-        email: email,
-        username: username,
-        lastLogin: new Date().toISOString()
-      })
-
-      // Send welcome back notification
-      await sendLoginNotification(username)
-
-  // Record unique login day
-  await recordTodayLoginDay()
-
-      // Navigate to home
-      router.push('/home')
-    } catch (error) {
-      console.error('Login error:', error)
-      Alert.alert('Error', 'Failed to login. Please try again.')
-    }
+    setLoading(false)
   }
 
   return (
     <View style={{margin:20}}>
       <Text style={{paddingBottom:5}}>Enter email</Text>
-      <TextInput 
-        placeholder="Email" 
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
+      <TextInput value={email} onChangeText={setEmail} placeholder="Email" placeholderTextColor="gray" style={styles.input}/>
       <Text style={{paddingBottom:5}}>Enter password</Text>
-      <TextInput 
-        placeholder="Password" 
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <TouchableOpacity style={styles.button} onPress={handleLogin}>
-        <Text style={styles.buttonText}>Submit</Text>
-      </TouchableOpacity>
+      <TextInput value={password} onChangeText={setPassword} placeholder="Password" placeholderTextColor="gray" style={styles.input} secureTextEntry/>
+      <Button title="Login" onPress={signInWithEmail} disabled={loading} />
     </View>
   )
 }
 
-export default login
+export default Login
 
 const styles = StyleSheet.create({
     input: {
@@ -80,17 +48,5 @@ const styles = StyleSheet.create({
       padding: 20,
       borderColor: '#000',
       borderWidth: 1
-    },
-    button: {
-      marginVertical: 10,
-      padding: 15,
-      backgroundColor: '#007AFF',
-      borderRadius: 8,
-      alignItems: 'center'
-    },
-    buttonText: {
-      color: 'white',
-      fontSize: 16,
-      fontWeight: '600'
     }
 })

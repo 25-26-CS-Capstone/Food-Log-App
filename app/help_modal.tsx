@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Platform, StyleSheet, Pressable, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';  // Import useRouter
 
-export default function modal() {
+export default function help_modal() {
   const router = useRouter();  // Get router instance
 
   return (
@@ -12,11 +12,15 @@ export default function modal() {
       <Text style={styles.content}>
         How to use the Food Log App:
         {'\n'}{'\n'}
-        (1) Welcome Screen - Press [Continue] to proceed{'\n'}
-        (2) Account Entry - Login or Register an account{'\n'}
-        {'\t'} (2.1) Login - Enter your credentials to access your account{'\n'}
-        {'\t'} (2.2) Register - Create a new account by providing necessary details{'\n'}
-        (3) Home Screen - {'\n'}
+        (1) Welcome Screen - Press [Login] or [Register] to proceed.{'\n'}
+        {'\t'} (1.1) Login - Enter your credentials to access your account.{'\n'}
+        {'\t'} (1.2) Register - Create a new account by providing necessary details.{'\n\n'}
+
+        (2) Home Screen - Access different features of the app.{'\n'}
+        {'\t'} (2.1) View Food Calendar - See your logged meals in a calendar view.{'\n'}
+        {'\t'} (2.2) View Previous Food Log - See your logged meals.{'\n\n'}
+
+        (3) Settings - Customize your app preferences and logout.{'\n'}
       </Text>
 
       <Pressable

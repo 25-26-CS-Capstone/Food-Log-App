@@ -1,12 +1,20 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React from 'react'
-import { Stack } from 'expo-router'
-import { Link } from 'expo-router'
-import { Pressable } from 'react-native'
-import { useColorScheme } from 'react-native';
+import { StyleSheet, Text, Pressable, useColorScheme } from 'react-native'
+import React, { useEffect } from 'react'
+import { Stack, Link, useRouter } from 'expo-router'
+import { AuthProvider, useAuth } from './AuthContext'
+import { supabase } from '../lib/supabase'
+
+
+const _layout = ()=>{
+  return (
+      <AuthProvider>
+        <RootLayout/>
+      </AuthProvider>
+  )
+}
 
 const helpButton = (colorScheme) => (
-  <Link href="/modal" asChild>
+  <Link href="/help_modal" asChild>
     <Pressable style={({ pressed }) => [{ marginRight: 150, opacity: pressed ? 0.5 : 1 }]}>
       <Text style={{ fontSize: 18, color: colorScheme === 'white' ? 'dark' : 'blue' }}>
         Help
@@ -16,20 +24,40 @@ const helpButton = (colorScheme) => (
 );
 
 const RootLayout = () => {
+  const {setAuth} = useAuth()
+  const router = useRouter()
   const colorScheme = useColorScheme();
+
+  useEffect(()=>{
+    supabase.auth.onAuthStateChange((_event, session) => { 
+
+      if(session){
+        setAuth(session?.user)
+        router.replace('/home')
+      } else {
+        setAuth(null)
+        router.replace('/welcome')
+      }
+    })
+  },[])
 
   return (
       <Stack>
-        <Stack.Screen name="index" options={{ headerShown: true, title: '', headerRight: () => helpButton(colorScheme)}} />
-        <Stack.Screen name="accountEntry" options={{ headerShown: false }}/>
+        <Stack.Screen name="welcome" options={{ headerShown: true, title: '', headerLeft: () => null, headerBackVisible: false, headerRight: () => helpButton(colorScheme)}} />
         <Stack.Screen name="login" options={{title: 'Login'}} />
         <Stack.Screen name="register" options={{title: 'Register'}} />
-        <Stack.Screen name="home" options={{headerShown: false}} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Help' }} />
+        <Stack.Screen name="help_modal" options={{ presentation: 'modal', title: 'Help' }} />
+        <Stack.Screen name="(tabs)" options={{title: 'Home', headerShown: false}}/>
+        <Stack.Screen name="calendar" options={{title: 'Calendar'}} />
+        <Stack.Screen name="food_log" options={{title: 'Food Log'}} />
+        <Stack.Screen name="symptom_log" options={{title: 'Symptom Log'}} />
+        <Stack.Screen name="previous_logs" options={{title: 'Previous Logs'}} />
+        <Stack.Screen name="history" options={{ title: "History" }} />
+        <Stack.Screen name="index" options={{headerShown: false}}/>
       </Stack>
   )
 }
 
-export default RootLayout
+export default _layout
 
 const styles = StyleSheet.create({})

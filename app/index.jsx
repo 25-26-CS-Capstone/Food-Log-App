@@ -1,31 +1,14 @@
-import React from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { StyleSheet, Text, View } from 'react-native'
+import React from 'react'
 
 const index = () => {
-  const router = useRouter();
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Welcome to the Food Log App!</Text>
-      <Button
-        title="Continue to Login"
-        onPress={() => router.push('/accountEntry')}
-      />
+    <View>
+      <Text>index</Text>
     </View>
-  );
-};
+  )
+}
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  text: {
-    fontSize: 24,
-    marginBottom: 20,
-  },
-});
+export default index
 
-export default index;
+const styles = StyleSheet.create({})
