@@ -36,18 +36,32 @@ function monthMatrix(year, monthIndex) {
 function aggregateDay(entries = []) {
   return entries.reduce(
     (acc, e) => {
-      acc.calories += e.calories || 0;
-      acc.protein += e.protein || 0;
-      acc.carbs += e.carbs || 0;
-      acc.fat += e.fat || 0;
+      const p = e.product || {};
+
+      acc.calories += p.calories || 0;
+      acc.protein += p.protein || 0;
+      acc.carbs += p.carbs || 0;
+      acc.fat += p.fat || 0;
 
       if (e.mealType && e.color) {
         acc.meals.add(JSON.stringify({ type: e.mealType, color: e.color }));
       }
 
+      // Optional allergen indicator
+      if (p.allergens?.length) {
+        acc.hasAllergen = true;
+      }
+
       return acc;
     },
-    { calories: 0, protein: 0, carbs: 0, fat: 0, meals: new Set() }
+    {
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      meals: new Set(),
+      hasAllergen: false
+    }
   );
 }
 

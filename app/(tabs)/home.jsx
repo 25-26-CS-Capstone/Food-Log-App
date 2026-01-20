@@ -12,16 +12,13 @@ const home = () => {
       </View>
 
       <View style={styles.buttonWrapper}>
-        <Button title="View Previous Food Log(s)" onPress={() => navigate('../previous_logs')} />
+        <Button title="View History (Food + Symptoms)" onPress={() => navigate('../history')} />
       </View>
 
       <View style={styles.buttonWrapper}>
         <Button title="View Food Calendar" onPress={() => navigate('../calendar')} />
       </View>
 
-      <View style={styles.buttonWrapper}>
-        <Button title="View History (Food + Symptoms)" onPress={() => navigate('../history')} />
-      </View>
     </View>
   );
 };

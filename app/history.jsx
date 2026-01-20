@@ -147,7 +147,7 @@ export default function History() {
 
         return (
           <View key={food.id} style={styles.card}>
-            <Text style={styles.foodTitle}>🍔 {food.foodName}</Text>
+            <Text style={styles.foodTitle}>{food.foodName}</Text>
 
             {food.brand ? (
               <Text style={styles.detail}>Brand: {food.brand}</Text>
@@ -155,20 +155,20 @@ export default function History() {
 
             <Text style={styles.subHeader}>Calories:</Text>
             <Text style={styles.detail}>
-              {food.calories != null ? food.calories : "Unknown"}
+              {food.product?.calories != null ? food.product.calories: "Unknown"}
             </Text>
 
             <Text style={styles.subHeader}>Ingredients:</Text>
             <Text style={styles.detail}>
-              {food.ingredients || "Not provided"}
+              {food.product?.ingredients || "Not provided"}
             </Text>
 
             <Text style={styles.subHeader}>Allergens:</Text>
             <Text style={styles.detail}>
-              {food.allergens?.length
-                ? food.allergens.join(", ")
-                : "No allergens detected"}
+              {food.product?.allergens?.length
+                ? food.product.allergens.join(", ") : "No allergens detected"}
             </Text>
+
 
             <Text style={styles.subHeader}>Symptoms:</Text>
 
@@ -176,7 +176,7 @@ export default function History() {
             {!hasSymptoms && (
               <>
                 <Text style={styles.noSymptom}>
-                  😊 No symptoms logged for this food.
+                  No symptoms logged for this food.
                 </Text>
 
                 {/* ADD SYMPTOM */}
@@ -192,7 +192,7 @@ export default function History() {
             {hasSymptoms &&
               symptoms.map((s) => (
                 <View key={s.id} style={styles.symptomBox}>
-                  <Text style={styles.symptom}>🤒 {s.symptom}</Text>
+                  <Text style={styles.symptom}>{s.symptom}</Text>
 
                   <TouchableOpacity
                     style={styles.smallBtn}
