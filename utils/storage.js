@@ -47,18 +47,6 @@ export const updateFoodEntry = async (entryId, updatedEntry) => {
   }
 };
 
-export const deleteFoodEntry = async (entryId) => {
-  try {
-    const existingLogs = await getFoodLogs();
-    const filtered = existingLogs.filter(log => log.id !== entryId);
-    await AsyncStorage.setItem(FOOD_LOG_KEY, JSON.stringify(filtered));
-    return true;
-  } catch (error) {
-    console.error('Error deleting food entry:', error);
-    return false;
-  }
-};
-
 // Symptom Log Functions
 export const saveSymptomEntry = async (symptomEntry) => {
   try {
@@ -101,9 +89,17 @@ export const updateSymptomEntry = async (entryId, updatedEntry) => {
 
 export const deleteSymptomEntry = async (entryId) => {
   try {
-    const existingLogs = await getSymptomLogs();
-    const filtered = existingLogs.filter(log => log.id !== entryId);
-    await AsyncStorage.setItem(SYMPTOMS_LOG_KEY, JSON.stringify(filtered));
+    const logs = await getSymptomLogs();
+
+    // Convert both to strings to ensure comparison works
+    const entryIdStr = String(entryId);
+    const updatedLogs = logs.filter(log => String(log.id) !== entryIdStr);
+
+    if (logs.length === updatedLogs.length) {
+      return false; // No entries were removed - ID not found
+    }
+
+    await AsyncStorage.setItem(SYMPTOMS_LOG_KEY, JSON.stringify(updatedLogs));
     return true;
   } catch (error) {
     console.error('Error deleting symptom entry:', error);
@@ -179,26 +175,6 @@ export const deleteFoodEntry = async (entryId) => {
     return true;
   } catch (error) {
     console.error('Error deleting food entry:', error);
-    return false;
-  }
-};
-
-export const deleteSymptomEntry = async (entryId) => {
-  try {
-    const logs = await getSymptomLogs();
-    
-    // Convert both to strings to ensure comparison works
-    const entryIdStr = String(entryId);
-    const updatedLogs = logs.filter(log => String(log.id) !== entryIdStr);
-    
-    if (logs.length === updatedLogs.length) {
-      return false; // No entries were removed - ID not found
-    }
-    
-    await AsyncStorage.setItem(SYMPTOMS_LOG_KEY, JSON.stringify(updatedLogs));
-    return true;
-  } catch (error) {
-    console.error('Error deleting symptom entry:', error);
     return false;
   }
 };

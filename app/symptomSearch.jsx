@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getSymptomLogs } from '../utils/storage';
+import { SEVERITY_OPTIONS, DATE_RANGE_OPTIONS } from './constants';
 
 const SymptomSearch = () => {
   const router = useRouter();
@@ -162,7 +163,7 @@ const SymptomSearch = () => {
       <View style={styles.filterSection}>
         <Text style={styles.filterTitle}>Filter by Severity:</Text>
         <View style={styles.filterButtons}>
-          {['Mild', 'Moderate', 'Severe'].map(severity => (
+          {SEVERITY_OPTIONS.map((severity) => (
             <TouchableOpacity
               key={severity}
               style={[
@@ -188,7 +189,7 @@ const SymptomSearch = () => {
       <View style={styles.filterSection}>
         <Text style={styles.filterTitle}>Date Range:</Text>
         <View style={styles.dateRangeButtons}>
-          {['today', 'week', 'month', 'all'].map(range => (
+          {DATE_RANGE_OPTIONS.map((range) => (
             <TouchableOpacity
               key={range}
               style={[
@@ -221,18 +222,17 @@ const SymptomSearch = () => {
                 <Text style={styles.statCount}>{data.count}x</Text>
               </View>
               <View style={styles.severityDistribution}>
-                {['Mild', 'Moderate', 'Severe'].map(severity => {
-                  const count = data.severity.filter(s => s === severity).length;
+                {SEVERITY_OPTIONS.map((severity) => {
+                  const count = data.severity.filter((s) => s === severity).length;
                   const percentage = count > 0 ? Math.round((count / data.count) * 100) : 0;
                   return (
                     <View
-                      key={severity}
                       style={[
                         styles.severityBar,
-                        { 
+                        {
                           width: `${percentage}%`,
-                          backgroundColor: getSeverityColor(severity)
-                        }
+                          backgroundColor: getSeverityColor(severity),
+                        },
                       ]}
                     >
                       {percentage > 10 && (

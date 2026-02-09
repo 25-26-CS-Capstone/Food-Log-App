@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { searchFood as searchUSDA, getFoodDetails as getUSDADetails, formatFoodSearchResult as formatUSDA } from '../utils/usdaAPI';
 import { searchFood as searchOFF, getFoodDetails as getOFFDetails, formatFoodSearchResult as formatOFF } from '../utils/openFoodFactsAPI';
+import { NO_INGREDIENTS_LISTED, NO_KNOWN_ALLERGENS } from './constants';
 
 const FoodInfo = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -181,7 +182,7 @@ const FoodInfo = () => {
             <Text style={styles.brandName}>Brand: {selectedFood.brandName}</Text>
           )}
           
-          {selectedFood.allergens && selectedFood.allergens !== 'No known allergens listed' && (
+          {selectedFood.allergens && selectedFood.allergens !== NO_KNOWN_ALLERGENS && (
             <View style={styles.allergenSection}>
               <Text style={styles.allergenTitle}>⚠️ Allergens</Text>
               <Text style={styles.allergenText}>{selectedFood.allergens}</Text>
@@ -256,7 +257,7 @@ const FoodInfo = () => {
             )}
           </View>
 
-          {selectedFood.ingredients && selectedFood.ingredients !== 'No ingredients listed' && (
+          {selectedFood.ingredients && selectedFood.ingredients !== NO_INGREDIENTS_LISTED && (
             <View style={styles.ingredientsSection}>
               <Text style={styles.sectionTitle}>🥄 Ingredients</Text>
               <Text style={styles.ingredientsText}>{selectedFood.ingredients}</Text>

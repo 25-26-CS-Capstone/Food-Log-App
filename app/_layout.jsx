@@ -1,9 +1,7 @@
 import { StyleSheet, Text, Pressable, useColorScheme } from 'react-native'
-import React, { useEffect } from 'react'
-import { Stack, Link, useRouter } from 'expo-router'
-import { AuthProvider, useAuth } from './AuthContext'
-import { supabase } from '../lib/supabase'
-
+import React from 'react'
+import { Stack, Link } from 'expo-router'
+import { AuthProvider } from './AuthContext'
 
 const _layout = ()=>{
   return (
@@ -24,25 +22,11 @@ const helpButton = (colorScheme) => (
 );
 
 const RootLayout = () => {
-  const {setAuth} = useAuth()
-  const router = useRouter()
   const colorScheme = useColorScheme();
-
-  useEffect(()=>{
-    supabase.auth.onAuthStateChange((_event, session) => { 
-
-      if(session){
-        setAuth(session?.user)
-        router.replace('/home')
-      } else {
-        setAuth(null)
-        router.replace('/welcome')
-      }
-    })
-  },[])
 
   return (
       <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="welcome" options={{ headerShown: true, title: '', headerLeft: () => null, headerBackVisible: false, headerRight: () => helpButton(colorScheme)}} />
         <Stack.Screen name="login" options={{title: 'Login'}} />
         <Stack.Screen name="register" options={{title: 'Register'}} />
@@ -53,7 +37,6 @@ const RootLayout = () => {
         <Stack.Screen name="symptom_log" options={{title: 'Symptom Log'}} />
         <Stack.Screen name="previous_logs" options={{title: 'Previous Logs'}} />
         <Stack.Screen name="history" options={{ title: "History" }} />
-        <Stack.Screen name="index" options={{headerShown: false}}/>
       </Stack>
   )
 }

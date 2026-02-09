@@ -1,12 +1,12 @@
 import { StyleSheet, View, Button, Text } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { navigate } from 'expo-router/build/global-state/routing'
 import { useRouter } from "expo-router";
 import { useAuth } from '../AuthContext';
 import { supabase } from '../../lib/supabase';
 
 const home = () => {
   const { user } = useAuth();
+  const router = useRouter();
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
 
@@ -36,15 +36,15 @@ const home = () => {
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         
         <View style={styles.buttonWrapper}>
-          <Button title="Add New Food Log(s)" onPress={() => navigate('../food_log')} />
+          <Button title="Add New Food Log(s)" onPress={() => router.push('../food_log')} />
         </View>
 
         <View style={styles.buttonWrapper}>
-          <Button title="View History (Food + Symptoms)" onPress={() => navigate('../history')} />
+          <Button title="View History (Food + Symptoms)" onPress={() => router.push('../history')} />
         </View>
 
         <View style={styles.buttonWrapper}>
-          <Button title="View Food Calendar" onPress={() => navigate('../calendar')} />
+          <Button title="View Food Calendar" onPress={() => router.push('../calendar')} />
         </View>
       </View>
     </View>
