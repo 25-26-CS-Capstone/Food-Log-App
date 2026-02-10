@@ -19,13 +19,13 @@ class NotificationService {
   }
 
   // Initialize notification system
-  async init() {
+  async init(navigationCallback) {
     try {
       // Register for push notifications
       await this.registerForPushNotificationsAsync();
       
-      // Set up notification listeners
-      this.setupNotificationListeners();
+      // Set up notification listeners with navigation callback
+      this.setupNotificationListeners(navigationCallback);
       
       console.log('Notification service initialized successfully');
     } catch (error) {
@@ -77,7 +77,7 @@ class NotificationService {
   }
 
   // Set up notification event listeners
-  setupNotificationListeners() {
+  setupNotificationListeners(navigationCallback) {
     // Listener for notifications received while app is foregrounded
     this.notificationListener = Notifications.addNotificationReceivedListener(notification => {
       console.log('Notification received:', notification);
@@ -86,7 +86,23 @@ class NotificationService {
     // Listener for when user taps on notification
     this.responseListener = Notifications.addNotificationResponseReceivedListener(response => {
       console.log('Notification response:', response);
+      
+      // Handle deep linking when user taps notification
+      const data = response.notification.request.content.data;
+      if (data && navigationCallback) {
+        navigationCallback(data);
+      }
     });
+  }
+
+  // Set navigation callback for handling notification taps
+  setNavigationCallback(callback) {
+    this.navigationCallback = callback;
+    // Re-setup listeners with new callback if already initialized
+    if (this.notificationListener && this.responseListener) {
+      this.cleanup();
+      this.setupNotificationListeners(callback);
+    }
   }
 
   // Send app open notification
@@ -117,26 +133,50 @@ class NotificationService {
     }
   }
 
-  // Send login welcome back notification
-  async sendLoginNotification(username) {
+  // Send login welcome back notification with deep link to logs
+  async sendWelcomeWithLogsLink(username) {
     try {
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: '👋 Welcome Back!',
-          body: `Welcome back ${username}!`,
+          title: `👋 Welcome Back, ${username}!`,
+          body: 'Tap to continue logging your food and track your progress.',
           sound: 'default',
           data: {
-            type: 'login',
-            timestamp: new Date().toISOString(),
+            type: 'welcome_with_logs',
             username: username,
+            route: 'history', // Deep link to history/logs page
+            timestamp: new Date().toISOString(),
           },
         },
         trigger: null, // Send immediately
       });
 
-      console.log('Login notification sent for user:', username);
+      console.log('Welcome with logs link notification sent for user:', username);
     } catch (error) {
-      console.error('Error sending login notification:', error);
+      console.error('Error sending welcome with logs link notification:', error);
+    }
+  }
+
+  // Send custom notification with deep link
+  async sendNotificationWithDeepLink(title, body, route, data = {}) {
+    try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title,
+          body,
+          sound: 'default',
+          data: {
+            ...data,
+            route: route,
+            timestamp: new Date().toISOString(),
+          },
+        },
+        trigger: null, // Send immediately
+      });
+
+      console.log('Notification with deep link sent:', title);
+    } catch (error) {
+      console.error('Error sending notification with deep link:', error);
     }
   }
 
@@ -303,9 +343,11 @@ class NotificationService {
 export const notificationService = new NotificationService();
 
 // Helper functions for easy access
-export const initNotifications = () => notificationService.init();
+export const initNotifications = (navigationCallback) => notificationService.init(navigationCallback);
 export const sendAppOpenNotification = () => notificationService.sendAppOpenNotification();
-export const sendLoginNotification = (username) => notificationService.sendLoginNotification(username);
+export const sendWelcomeWithLogsLink = (username) => notificationService.sendWelcomeWithLogsLink(username);
+export const sendNotificationWithDeepLink = (title, body, route, data) => 
+  notificationService.sendNotificationWithDeepLink(title, body, route, data);
 export const sendDailyReminder = () => notificationService.sendDailyReminder();
 export const scheduleMealReminders = () => notificationService.scheduleMealReminders();
 export const sendSymptomReminder = () => notificationService.sendSymptomReminder();
@@ -313,5 +355,7 @@ export const cancelAllNotifications = () => notificationService.cancelAllNotific
 export const getScheduledNotifications = () => notificationService.getScheduledNotifications();
 export const sendCustomNotification = (title, body, data) => 
   notificationService.sendCustomNotification(title, body, data);
+export const setNotificationNavigationCallback = (callback) => 
+  notificationService.setNavigationCallback(callback);
 
 export default notificationService;
