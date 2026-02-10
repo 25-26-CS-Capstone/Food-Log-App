@@ -19,6 +19,9 @@ const settings = () => {
   return (
     <View style={[{justifyContent: 'center'}, {alignItems: 'center'}, {flex:1}]}>
       <View style={styles.buttonWrapper}>
+        <Button title = "Export Data" onPress={() => {}}/>
+      </View>
+      <View style={styles.buttonWrapper}>
         <Button title="Logout" onPress={onLogout}/>
       </View>
     </View>
@@ -29,6 +32,7 @@ export default settings
 
 const styles = StyleSheet.create({
   buttonWrapper: {
-    width: 250
+    width: 250,
+    marginVertical: 6,
   }
 })
