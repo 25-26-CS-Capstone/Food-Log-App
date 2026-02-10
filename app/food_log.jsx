@@ -1,6 +1,6 @@
 // app/food_log.jsx
 import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, FlatList, StyleSheet, Text, TouchableOpacity, Alert, } from 'react-native';
+import { View, TextInput, Button, FlatList, StyleSheet, Text, TouchableOpacity, Alert, Pressable, } from 'react-native';
 
 import { Picker } from '@react-native-picker/picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -13,6 +13,8 @@ import {
   detectAllergensFromIngredients,
   mergeAllergens,
 } from '../lib/allergens';
+
+import { useLocalSearchParams } from 'expo-router';
 
 /* ---------------- CONSTANTS ---------------- */
 
@@ -39,6 +41,8 @@ const FoodLog = () => {
 
   const [log, setLog] = useState([]);
 
+  const params = useLocalSearchParams();
+
   /* ---------------- LOAD SAVED LOGS ---------------- */
 
   useEffect(() => {
@@ -52,6 +56,12 @@ const FoodLog = () => {
     };
     loadLogs();
   }, []);
+
+  useEffect(() => {
+  if (params?.scannedName) {
+    setFoodName(String(params.scannedName));
+  }
+}, [params?.scannedName]);
 
   /* ---------------- SEARCH FOOD ---------------- */
 
@@ -157,6 +167,8 @@ const FoodLog = () => {
       />
 
       <Button title="Search Food" onPress={handleSearch} />
+      <Button title="Scan Barcode" onPress={() => router.push('/barcode_scanner')} />
+
 
       <FlatList
         data={searchResults}
@@ -197,27 +209,35 @@ const FoodLog = () => {
         </View>
       )}
 
-      <Text style={styles.label}>Meal Type</Text>
-      <Picker
-        selectedValue={mealType}
-        onValueChange={setMealType}
-      >
-        <Picker.Item label="Breakfast" value="breakfast" />
-        <Picker.Item label="Lunch" value="lunch" />
-        <Picker.Item label="Dinner" value="dinner" />
-        <Picker.Item label="Snack" value="snack" />
-      </Picker>
+      {selectedProduct && (
+        <>
+          <Text style={styles.label}>Meal Type</Text>
+          <Picker
+            selectedValue={mealType}
+            onValueChange={setMealType}
+          >
+            <Picker.Item label="Breakfast" value="breakfast" />
+            <Picker.Item label="Lunch" value="lunch" />
+            <Picker.Item label="Dinner" value="dinner" />
+            <Picker.Item label="Snack" value="snack" />
+          </Picker>
 
-      <Button
-        title={
-          selectedDateTime
-            ? moment(selectedDateTime).format('MMMM Do YYYY, h:mm a')
-            : 'Pick Date & Time'
-        }
-        onPress={() => setDatePickerVisible(true)}
-      />
+          <Button
+            title={
+              selectedDateTime
+                ? moment(selectedDateTime).format('MMMM Do YYYY, h:mm a')
+                : 'Pick Date & Time'
+            }
+            onPress={() => setDatePickerVisible(true)}
+          />
+        </>
+      )}
 
-      <Button title="Submit Log" onPress={handleSubmit} />
+      {selectedProduct && selectedDateTime && (
+        <Button title="Submit Log" onPress={handleSubmit} />
+      )}
+
+      <Text style={[styles.label, { marginTop: 20 }]}>Recent Logs:</Text>
 
       <FlatList
         data={log}
@@ -229,17 +249,22 @@ const FoodLog = () => {
             <Button title="Delete" onPress={() => deleteLog(item.id)} />
           </View>
         )}
-      />
-
-      <Button
-        title="Go to Symptom Log"
-        onPress={() =>
-          router.push({
-            pathname: '/symptom_log',
-            params: { foodLogData: JSON.stringify(log) },
-          })
+        ListEmptyComponent={
+          <Text style={{ textAlign: 'center', marginVertical: 20, color: '#999' }}>No logs yet</Text>
         }
       />
+
+      <Pressable
+          style={[styles.button, { borderRadius:15, backgroundColor: 'midnightblue', padding: 10, marginTop: 30, marginBottom:10, width: 200, alignItems: 'center' }]}
+          onPress={() =>
+            router.push({
+              pathname: '/symptom_log',
+              params: { foodLogData: JSON.stringify(log) },
+            })
+          }
+        >
+          <Text style={{ color: 'white', fontWeight: 'bold' }}>Go to Symptom Log</Text>
+      </Pressable>
 
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
@@ -288,6 +313,9 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ddd',
+  },
+  button: {
+    alignSelf: 'center',
   },
 });
 
