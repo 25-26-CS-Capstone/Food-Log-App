@@ -62,7 +62,7 @@ class NotificationService {
       
       try {
         token = await Notifications.getExpoPushTokenAsync({
-          projectId: 'your-project-id', // Replace with actual project ID if needed
+          projectId: '87fcdbd5-d87a-455e-81f9-01557571fdda',
         });
         console.log('Push token:', token);
       } catch (e) {
