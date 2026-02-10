@@ -14,6 +14,8 @@ import {
   mergeAllergens,
 } from '../lib/allergens';
 
+import { useLocalSearchParams } from 'expo-router';
+
 /* ---------------- CONSTANTS ---------------- */
 
 const MEAL_COLORS = {
@@ -39,6 +41,8 @@ const FoodLog = () => {
 
   const [log, setLog] = useState([]);
 
+  const params = useLocalSearchParams();
+
   /* ---------------- LOAD SAVED LOGS ---------------- */
 
   useEffect(() => {
@@ -52,6 +56,12 @@ const FoodLog = () => {
     };
     loadLogs();
   }, []);
+
+  useEffect(() => {
+  if (params?.scannedName) {
+    setFoodName(String(params.scannedName));
+  }
+}, [params?.scannedName]);
 
   /* ---------------- SEARCH FOOD ---------------- */
 
@@ -157,6 +167,8 @@ const FoodLog = () => {
       />
 
       <Button title="Search Food" onPress={handleSearch} />
+      <Button title="Scan Barcode" onPress={() => router.push('/barcode_scanner')} />
+
 
       <FlatList
         data={searchResults}
