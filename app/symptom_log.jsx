@@ -1,119 +1,185 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TextInput, Button, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TextInput, Button, StyleSheet, TouchableOpacity, Alert, } from 'react-native';
 import moment from 'moment';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { evaluateAllergyRisk } from "../utils/risk_engine";
+
+/* ---------------- COMPONENT ---------------- */
+
 const SymptomLog = () => {
-  const router = useRouter();
   const params = useLocalSearchParams();
 
+  const [foodLog, setFoodLog] = useState([]);
   const [selectedFood, setSelectedFood] = useState(null);
   const [symptom, setSymptom] = useState('');
   const [symptomLog, setSymptomLog] = useState([]);
 
-  // Load selected food from route params
-  useEffect(() => {
-    if (params.selectedFood && params.selectedDate && params.selectedTime) {
-      try {
-        const food = JSON.parse(params.selectedFood);
-        const date = new Date(params.selectedDate); // Parse the date string back to a Date object
-        const time = new Date(params.selectedTime); // Parse the time string back to a Date object
+  /* ---------------- LOAD FOOD LOG ---------------- */
 
-        setSelectedFood(food);
-        setSelectedDate(date);
-        setSelectedTime(time);
+  useEffect(() => {
+    if (params.foodLogData) {
+      try {
+        setFoodLog(JSON.parse(params.foodLogData));
       } catch (err) {
-        console.log("Failed to parse selected data:", err);
+        console.error('Failed to parse food log:', err);
       }
     }
-  }, [params.selectedFood, params.selectedDate, params.selectedTime]);
+  }, [params.foodLogData]);
 
+  /* ---------------- LOAD SYMPTOMS ---------------- */
 
-  // Load saved symptom logs
   useEffect(() => {
-    const loadSymptomLog = async () => {
-      try {
-        const stored = await AsyncStorage.getItem('symptomLog');
-        if (stored) setSymptomLog(JSON.parse(stored));
-      } catch (error) {
-        console.error('Error loading symptom log:', error);
-      }
+    const loadSymptoms = async () => {
+      const stored = await AsyncStorage.getItem('symptomLog');
+      if (stored) setSymptomLog(JSON.parse(stored));
     };
-
-    loadSymptomLog();
+    loadSymptoms();
   }, []);
 
-  const handleSymptomSubmit = async () => {
-    if (!symptom || !selectedFood || !selectedDate || !selectedTime) {
-      alert('Please select a food and enter a symptom.');
+  /* ---------------- SUBMIT SYMPTOM ---------------- */
+
+  const handleSubmit = async () => {
+    if (!selectedFood || !symptom.trim()) {
+      Alert.alert('Error', 'Please select a food and enter a symptom.');
       return;
     }
 
-    const newLog = {
-      id: Date.now().toString(),
-      food: selectedFood.foodName,
-      symptom,
-      time: moment(selectedTime).format('MMMM Do YYYY, h:mm a'), // format time for the symptom log
-      date: moment(selectedDate).format('MMMM Do YYYY'), // format date for display
+    // Temporary user profile (later replace with real profile screen)
+    const userProfile = {
+      familyHistory: 'No',
+      previousReaction: 'None',
+      severityScore: 3,
     };
 
-    const updatedLog = [...symptomLog, newLog];
-    setSymptomLog(updatedLog);
+    const risk = evaluateAllergyRisk({
+      symptoms: [symptom],
+      allergens: selectedFood.product?.allergens || [],
+      previousReaction: userProfile.previousReaction,
+      familyHistory: userProfile.familyHistory,
+      severityScore: userProfile.severityScore,
+    });
 
-    try {
-      await AsyncStorage.setItem('symptomLog', JSON.stringify(updatedLog));
-    } catch (error) {
-      console.error('Error saving symptom log:', error);
-    }
+    const newEntry = {
+      id: Date.now().toString(),
+      foodName: selectedFood.foodName,
+      mealType: selectedFood.mealType,
+      symptom,
+      riskLevel: risk.level,
+      riskScore: risk.score,
+      foodDate: selectedFood.date,
+      symptomDate: new Date().toISOString(),
+    };
 
-    setSymptom(''); // Clear symptom input
+    const updated = [...symptomLog, newEntry];
+    setSymptomLog(updated);
+    await AsyncStorage.setItem('symptomLog', JSON.stringify(updated));
+
+    Alert.alert(
+      'Symptom log has been saved.',
+    );
+
+    setSymptom('');
+    setSelectedFood(null);
   };
 
+  /* ---------------- RENDER ---------------- */
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Selected Food</Text>
+      <Text style={styles.header}>Select Food</Text>
 
-      <Text style={styles.selectedFoodText}>
-        {selectedFood
-          ? `${selectedFood.foodName} — ${moment(selectedFood.date).format(
-              'MMMM Do YYYY, h:mm a'
-            )}`
-          : 'No food selected'}
-      </Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Enter symptom"
-        value={symptom}
-        onChangeText={setSymptom}
-      />
-
-      <Button title="Submit Symptom" onPress={handleSymptomSubmit} />
-
-      <Text style={styles.header}>Logged Symptoms</Text>
       <FlatList
-        data={symptomLog}
+        data={foodLog}
         keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 20 }}
         renderItem={({ item }) => (
-          <View style={styles.logItem}>
-            <Text>{item.food}</Text>
-            <Text>{item.symptom}</Text>
-            <Text>{item.time}</Text>
-          </View>
+          <TouchableOpacity
+            style={[
+              styles.foodItem,
+              selectedFood?.id === item.id && styles.selected,
+            ]}
+            onPress={() => setSelectedFood(item)}
+          >
+            <Text style={styles.foodName}>{item.foodName}</Text>
+            <Text style={styles.foodSub}>
+              {moment(item.date).format('MMM D, h:mm a')} · {item.mealType}
+            </Text>
+          </TouchableOpacity>
         )}
       />
+
+        {selectedFood && (
+          <View style={styles.inputSection}>
+            <TextInput
+              style={styles.input}
+              placeholder="Describe symptoms (e.g. hives, nausea)"
+              value={symptom}
+              onChangeText={setSymptom}
+              multiline
+            />
+
+            <View style={styles.buttonWrapper}>
+              <Button title="Submit Symptom" onPress={handleSubmit} />
+            </View>
+          </View>
+        )}
+
+
     </View>
   );
 };
 
+/* ---------------- STYLES ---------------- */
+
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20 },
-  header: { fontSize: 20, fontWeight: 'bold', marginVertical: 10 },
-  selectedFoodText: { fontSize: 16, marginBottom: 10, color: 'gray' },
-  input: { borderWidth: 1, padding: 10, marginVertical: 10 },
-  logItem: { borderBottomWidth: 1, paddingVertical: 10 },
+  container: { flex: 1, padding: 20, backgroundColor: '#f9f9f9' },
+  header: { fontSize: 18, fontWeight: '700', marginVertical: 10 },
+  foodItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  selected: { backgroundColor: '#e0f4ff' },
+  foodName: { fontWeight: '600' },
+  foodSub: { fontSize: 12, color: 'gray' },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    padding: 10,
+    marginVertical: 10,
+    backgroundColor: 'white',
+  },
+  logItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+  },
+  logFood: { fontWeight: '600' },
+  logSub: { fontSize: 12, color: 'gray' },
+
+  inputSection: {
+  marginTop: 15,
+  paddingTop: 10,
+  borderTopWidth: 1,
+  borderTopColor: '#ddd',
+},
+
+input: {
+  borderWidth: 1,
+  borderColor: '#ccc',
+  padding: 12,
+  borderRadius: 6,
+  backgroundColor: 'white',
+  minHeight: 60,
+  textAlignVertical: 'top',
+},
+
+buttonWrapper: {
+  marginTop: 10,
+},
+
 });
 
 export default SymptomLog;
