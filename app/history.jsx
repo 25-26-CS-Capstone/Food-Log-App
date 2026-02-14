@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Button } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Button, Pressable } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function History() {
   const [foodLogs, setFoodLogs] = useState([]);
@@ -156,15 +157,54 @@ export default function History() {
     setDeleteFoodModal(false);
   };
 
+  const getFilteredAndSortedLogs = () => {
+    let filtered = foodLogs;
+
+    if (searchQuery.trim()) {
+      if (searchType === "food") {
+        filtered = filtered.filter((food) =>
+          food.foodName.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      } else {
+        const matchingFoods = new Set();
+        symptomLogs.forEach((s) => {
+          if (s.symptom.toLowerCase().includes(searchQuery.toLowerCase())) {
+            matchingFoods.add(s.food);
+          }
+        });
+        filtered = filtered.filter((food) => matchingFoods.has(food.foodName));
+      }
+    }
+
+    if (sortBy === "date") {
+      filtered.sort((a, b) => moment(b.date).diff(moment(a.date)));
+    } else if (sortBy === "alpha-asc") {
+      filtered.sort((a, b) => a.foodName.localeCompare(b.foodName));
+    } else if (sortBy === "alpha-desc") {
+      filtered.sort((a, b) => b.foodName.localeCompare(a.foodName));
+    }
+
+    return filtered;
+  };
+
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>History</Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.title}>History</Text>
+        <Pressable
+          style={[styles.button, { padding: 10, marginLeft: 'auto' }]}
+          onPress={() => setFilterModalVisible(true)}
+        >
+          <Ionicons name="funnel" size={30} color="black" />
+        </Pressable>
+      </View>
+    
 
       {foodLogs.length === 0 && (
         <Text style={styles.empty}>No food has been logged yet.</Text>
       )}
 
-      {foodLogs.map((food) => {
+      {getFilteredAndSortedLogs().map((food) => {
         const symptoms = getSymptomsForFood(food.foodName);
         const hasSymptoms = symptoms.length > 0;
 
@@ -287,6 +327,89 @@ export default function History() {
           </View>
         );
       })}
+
+      {/* Filter Modal */}
+      <Modal visible={filterModalVisible} transparent animationType="fade">
+        <View style={styles.modalBG}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Filter & Sort</Text>
+
+            {/* Search Type Buttons */}
+            <Text style={styles.label}>Search by:</Text>
+            <View style={styles.buttonRow}>
+              <Pressable
+                style={[
+                  styles.toggleBtn,
+                  searchType === "food" && styles.toggleBtnActive,
+                ]}
+                onPress={() => setSearchType("food")}
+              >
+                <Text style={styles.toggleBtnText}>Food</Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.toggleBtn,
+                  searchType === "symptom" && styles.toggleBtnActive,
+                ]}
+                onPress={() => setSearchType("symptom")}
+              >
+                <Text style={styles.toggleBtnText}>Symptom</Text>
+              </Pressable>
+            </View>
+
+            <TextInput
+              style={styles.input}
+              placeholder={`Search by ${searchType}...`}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+
+            <Text style={styles.label}>Sort by:</Text>
+            <View style={styles.dropdownContainer}>
+              <Pressable
+                style={[
+                  styles.sortOption,
+                  sortBy === "date" && styles.sortOptionActive,
+                ]}
+                onPress={() => setSortBy("date")}
+              >
+                <Text>Date (Newest)</Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.sortOption,
+                  sortBy === "alpha-asc" && styles.sortOptionActive,
+                ]}
+                onPress={() => setSortBy("alpha-asc")}
+              >
+                <Text>A - Z</Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.sortOption,
+                  sortBy === "alpha-desc" && styles.sortOptionActive,
+                ]}
+                onPress={() => setSortBy("alpha-desc")}
+              >
+                <Text>Z - A</Text>
+              </Pressable>
+            </View>
+            <Button
+              title="Clear Filters"
+              onPress={() => {
+                setSearchQuery("");
+                setSortBy("date");
+                setSearchType("food");
+              }}
+            />
+            <Button
+              title="Close"
+              onPress={() => setFilterModalVisible(false)}
+              color="#666"
+            />
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={symptomModal} transparent animationType="slide">
         <View style={styles.modalBG}>

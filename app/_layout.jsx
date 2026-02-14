@@ -1,11 +1,40 @@
-import { StyleSheet, Text, Pressable, useColorScheme } from 'react-native'
+import { StyleSheet, Text, Pressable, useColorScheme, Platform } from 'react-native'
 import React, { useEffect } from 'react'
 import { Stack, Link, useRouter } from 'expo-router'
-import { AuthProvider, useAuth } from './AuthContext'
-import { supabase } from '../lib/supabase'
-
+import { AuthProvider } from './AuthContext'
+import { initNotifications, setNotificationNavigationCallback } from '../utils/notifications'
 
 const _layout = ()=>{
+  const router = useRouter()
+  
+  useEffect(() => {
+    // Initialize notifications with navigation callback
+    const navigationCallback = (data) => {
+      console.log('Notification navigation data:', data)
+      
+      // Handle different notification types
+      if (data.route) {
+        router.push(`/${data.route}`)
+      } else if (data.type === 'welcome_with_logs') {
+        router.push('/history')
+      } else if (data.type === 'meal_reminder') {
+        router.push('/food_log')
+      } else if (data.type === 'symptom_reminder') {
+        router.push('/symptom_log')
+      }
+    }
+    
+    // Initialize notification system (only on native platforms)
+    if (Platform.OS !== 'web') {
+      try {
+        initNotifications(navigationCallback)
+        setNotificationNavigationCallback(navigationCallback)
+      } catch (error) {
+        console.log('Notification service not available:', error)
+      }
+    }
+  }, [router])
+
   return (
       <AuthProvider>
         <RootLayout/>
@@ -24,25 +53,11 @@ const helpButton = (colorScheme) => (
 );
 
 const RootLayout = () => {
-  const {setAuth} = useAuth()
-  const router = useRouter()
   const colorScheme = useColorScheme();
-
-  useEffect(()=>{
-    supabase.auth.onAuthStateChange((_event, session) => { 
-
-      if(session){
-        setAuth(session?.user)
-        router.replace('/home')
-      } else {
-        setAuth(null)
-        router.replace('/welcome')
-      }
-    })
-  },[])
 
   return (
       <Stack>
+        <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="welcome" options={{ headerShown: true, title: '', headerLeft: () => null, headerBackVisible: false, headerRight: () => helpButton(colorScheme)}} />
         <Stack.Screen name="login" options={{title: 'Login'}} />
         <Stack.Screen name="register" options={{title: 'Register'}} />
@@ -53,7 +68,6 @@ const RootLayout = () => {
         <Stack.Screen name="symptom_log" options={{title: 'Symptom Log'}} />
         <Stack.Screen name="previous_logs" options={{title: 'Previous Logs'}} />
         <Stack.Screen name="history" options={{ title: "History" }} />
-        <Stack.Screen name="index" options={{headerShown: false}}/>
       </Stack>
   )
 }

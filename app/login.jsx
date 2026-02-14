@@ -1,11 +1,14 @@
 import { StyleSheet, Text, View, TextInput, Alert, Button, Platform } from 'react-native'
 import React, { useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { sendWelcomeWithLogsLink } from '../utils/notifications'
+import { useAuth } from './AuthContext'
 
 const Login = () => {
   const [email, setEmail] = useState('')  
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const { setAuth } = useAuth()
 
   async function signInWithEmail () {
     if (email.trim() === '' || password.trim() === '') {
@@ -19,12 +22,29 @@ const Login = () => {
 
     setLoading(true)
 
-    const {error} = await supabase.auth.signInWithPassword({ email, password })
+    const {data, error} = await supabase.auth.signInWithPassword({ email, password })
     
     if (Platform.OS === 'web') {
         if (error) window.alert(error.message)
     }
-    if (error) Alert.alert(error.message)
+    if (error) {
+      Alert.alert(error.message)
+    } else {
+      // Login successful - set auth and send welcome notification
+      if (data?.user) {
+        setAuth(data.user)
+        // Get user's name from metadata or email
+        const userName = data.user.user_metadata?.name || email.split('@')[0] || 'User'
+        // Send welcome notification with deep link to logs (only on native)
+        if (Platform.OS !== 'web') {
+          try {
+            await sendWelcomeWithLogsLink(userName)
+          } catch (error) {
+            console.log('Notification not available:', error)
+          }
+        }
+      }
+    }
 
     setLoading(false)
   }
