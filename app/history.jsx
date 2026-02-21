@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Button } from "react-native";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Button, Pressable } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function History() {
   const [foodLogs, setFoodLogs] = useState([]);
@@ -22,9 +23,13 @@ export default function History() {
 
   const [pickerVisible, setPickerVisible] = useState(false);
 
+  const [evaluationHistory, setEvaluationHistory] = useState([]);
+
+
   useEffect(() => {
     loadFoodLogs();
     loadSymptomLogs();
+    loadEvaluationHistory();
   }, []);
 
   const loadFoodLogs = async () => {
@@ -37,9 +42,23 @@ export default function History() {
     setSymptomLogs(saved ? JSON.parse(saved) : []);
   };
 
-  const getSymptomsForFood = (foodName) => {
-    return symptomLogs.filter((s) => s.food === foodName);
+  const loadEvaluationHistory = async () => {
+    const saved = await AsyncStorage.getItem("evaluationHistory");
+    setEvaluationHistory(saved ? JSON.parse(saved) : []);
   };
+
+  const getSymptomsForFood = (foodName) => {
+    return symptomLogs.filter((s) => s.foodName  === foodName);
+  };
+
+  const getEvaluationForSymptom = (symptomObj) => {
+  return evaluationHistory.find(
+    (e) =>
+      e.symptom === symptomObj.symptom &&
+      e.foodName === symptomObj.foodName
+  );
+};
+
 
   const addSymptom = (foodName) => {
     setEditingSymptom(null);
@@ -53,12 +72,17 @@ export default function History() {
 
   const openEditSymptom = (symptomObj) => {
     setEditingSymptom(symptomObj);
-    setSymptomFoodName(symptomObj.food);
+    setSymptomFoodName(symptomObj.foodName);
     setSymptomFields({
       symptom: symptomObj.symptom,
-      time: moment(symptomObj.time, "MMMM Do YYYY, h:mm a").toDate(),
+      time: new Date(symptomObj.symptomDate),
     });
-    setSymptomModal(true);
+  };
+
+  const handleDeleteSymptom = async (symptom) => {
+    const updated = symptomLogs.filter((s) => s.id !== symptom.id);
+    setSymptomLogs(updated);
+    await AsyncStorage.setItem("symptomLog", JSON.stringify(updated));
   };
 
   const saveSymptom = async () => {
@@ -70,7 +94,7 @@ export default function History() {
           ? {
               ...s,
               symptom: symptomFields.symptom,
-              time: moment(symptomFields.time).format("MMMM Do YYYY, h:mm a"),
+              symptomDate: symptomFields.time.toISOString(),
             }
           : s
       );
@@ -79,7 +103,7 @@ export default function History() {
         id: Date.now().toString(),
         food: symptomFoodName,
         symptom: symptomFields.symptom,
-        time: moment(symptomFields.time).format("MMMM Do YYYY, h:mm a"),
+        symptomDate: symptomFields.time.toISOString(),
       };
 
       updated = [...symptomLogs, newSymptom];
@@ -133,15 +157,54 @@ export default function History() {
     setDeleteFoodModal(false);
   };
 
+  const getFilteredAndSortedLogs = () => {
+    let filtered = foodLogs;
+
+    if (searchQuery.trim()) {
+      if (searchType === "food") {
+        filtered = filtered.filter((food) =>
+          food.foodName.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      } else {
+        const matchingFoods = new Set();
+        symptomLogs.forEach((s) => {
+          if (s.symptom.toLowerCase().includes(searchQuery.toLowerCase())) {
+            matchingFoods.add(s.food);
+          }
+        });
+        filtered = filtered.filter((food) => matchingFoods.has(food.foodName));
+      }
+    }
+
+    if (sortBy === "date") {
+      filtered.sort((a, b) => moment(b.date).diff(moment(a.date)));
+    } else if (sortBy === "alpha-asc") {
+      filtered.sort((a, b) => a.foodName.localeCompare(b.foodName));
+    } else if (sortBy === "alpha-desc") {
+      filtered.sort((a, b) => b.foodName.localeCompare(a.foodName));
+    }
+
+    return filtered;
+  };
+
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>History</Text>
+      <View style={styles.headerContainer}>
+        <Text style={styles.title}>History</Text>
+        <Pressable
+          style={[styles.button, { padding: 10, marginLeft: 'auto' }]}
+          onPress={() => setFilterModalVisible(true)}
+        >
+          <Ionicons name="funnel" size={30} color="black" />
+        </Pressable>
+      </View>
+    
 
       {foodLogs.length === 0 && (
         <Text style={styles.empty}>No food has been logged yet.</Text>
       )}
 
-      {foodLogs.map((food) => {
+      {getFilteredAndSortedLogs().map((food) => {
         const symptoms = getSymptomsForFood(food.foodName);
         const hasSymptoms = symptoms.length > 0;
 
@@ -178,38 +241,60 @@ export default function History() {
                 <Text style={styles.noSymptom}>
                   No symptoms logged for this food.
                 </Text>
-
-                {/* ADD SYMPTOM */}
+{/*                
+                {/* ADD SYMPTOM *}
                 <TouchableOpacity
                   style={styles.addBtn}
                   onPress={() => addSymptom(food.foodName)}
                 >
                   <Text style={styles.addText}>Add Symptom</Text>
                 </TouchableOpacity>
+*/}
               </>
             )}
 
-            {hasSymptoms &&
-              symptoms.map((s) => (
-                <View key={s.id} style={styles.symptomBox}>
-                  <Text style={styles.symptom}>{s.symptom}</Text>
+{hasSymptoms &&
+  symptoms.map((s) => {
+    const evaluation = getEvaluationForSymptom(s);
 
-                  <TouchableOpacity
-                    style={styles.smallBtn}
-                    onPress={() => openEditSymptom(s)}
-                  >
-                    <Text style={styles.smallBtnText}>Edit</Text>
-                  </TouchableOpacity>
+    return (
+      <View key={s.id} style={styles.symptomBox}>
+        <Text style={styles.symptom}>{s.symptom}</Text>
 
-                  <TouchableOpacity
-                    style={styles.smallBtnDelete}
-                    onPress={() => openEditSymptom(s)}
-                  >
-                    <Text style={styles.smallBtnText}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
+        {evaluation && (
+          <View style={styles.evaluationBox}>
+            <Text style={styles.riskText}>
+              Risk: {evaluation.risk}
+            </Text>
+            <Text style={styles.confidenceText}>
+              Confidence: {evaluation.confidence}
+            </Text>
+            <Text style={styles.evalDate}>
+              Evaluated {moment(evaluation.evaluatedAt).format(
+                "MMM D, h:mm a"
+              )}
+            </Text>
+          </View>
+        )}
 
+        <TouchableOpacity
+          style={styles.smallBtn}
+          onPress={() => openEditSymptom(s)}
+        >
+          <Text style={styles.smallBtnText}>Edit</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.smallBtnDelete}
+          onPress={() => handleDeleteSymptom(s)}
+        >
+          <Text style={styles.smallBtnText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  })}
+
+            {/*
             {hasSymptoms && (
               <TouchableOpacity
                 style={styles.addBtn}
@@ -218,6 +303,7 @@ export default function History() {
                 <Text style={styles.addText}>Add Symptom</Text>
               </TouchableOpacity>
             )}
+            */}
 
             <Text style={styles.detail}>
               Logged: {moment(food.date).format("MMMM Do YYYY, h:mm a")}
@@ -241,6 +327,89 @@ export default function History() {
           </View>
         );
       })}
+
+      {/* Filter Modal */}
+      <Modal visible={filterModalVisible} transparent animationType="fade">
+        <View style={styles.modalBG}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Filter & Sort</Text>
+
+            {/* Search Type Buttons */}
+            <Text style={styles.label}>Search by:</Text>
+            <View style={styles.buttonRow}>
+              <Pressable
+                style={[
+                  styles.toggleBtn,
+                  searchType === "food" && styles.toggleBtnActive,
+                ]}
+                onPress={() => setSearchType("food")}
+              >
+                <Text style={styles.toggleBtnText}>Food</Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.toggleBtn,
+                  searchType === "symptom" && styles.toggleBtnActive,
+                ]}
+                onPress={() => setSearchType("symptom")}
+              >
+                <Text style={styles.toggleBtnText}>Symptom</Text>
+              </Pressable>
+            </View>
+
+            <TextInput
+              style={styles.input}
+              placeholder={`Search by ${searchType}...`}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+
+            <Text style={styles.label}>Sort by:</Text>
+            <View style={styles.dropdownContainer}>
+              <Pressable
+                style={[
+                  styles.sortOption,
+                  sortBy === "date" && styles.sortOptionActive,
+                ]}
+                onPress={() => setSortBy("date")}
+              >
+                <Text>Date (Newest)</Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.sortOption,
+                  sortBy === "alpha-asc" && styles.sortOptionActive,
+                ]}
+                onPress={() => setSortBy("alpha-asc")}
+              >
+                <Text>A - Z</Text>
+              </Pressable>
+              <Pressable
+                style={[
+                  styles.sortOption,
+                  sortBy === "alpha-desc" && styles.sortOptionActive,
+                ]}
+                onPress={() => setSortBy("alpha-desc")}
+              >
+                <Text>Z - A</Text>
+              </Pressable>
+            </View>
+            <Button
+              title="Clear Filters"
+              onPress={() => {
+                setSearchQuery("");
+                setSortBy("date");
+                setSearchType("food");
+              }}
+            />
+            <Button
+              title="Close"
+              onPress={() => setFilterModalVisible(false)}
+              color="#666"
+            />
+          </View>
+        </View>
+      </Modal>
 
       <Modal visible={symptomModal} transparent animationType="slide">
         <View style={styles.modalBG}>
@@ -435,5 +604,26 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 12,
+  },
+  evaluationBox: {
+  marginTop: 6,
+  padding: 8,
+  backgroundColor: "#fff5f5",
+  borderRadius: 8,
+  },
+
+  riskText: {
+    fontWeight: "700",
+    color: "#b00020",
+  },
+
+  confidenceText: {
+    fontSize: 13,
+  },
+
+  evalDate: {
+    fontSize: 11,
+    color: "#777",
+    marginTop: 4,
   },
 });

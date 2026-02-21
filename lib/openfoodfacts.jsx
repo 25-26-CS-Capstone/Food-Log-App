@@ -14,3 +14,18 @@ export async function offSearch(query) {
   }
 }
 
+export async function offGetProductByBarcode(barcode) {
+  const url = `https://world.openfoodfacts.net/api/v2/product/${encodeURIComponent(barcode)}`;
+
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data || data.status === 0 || !data.product) return null;
+
+    return data.product;
+  } catch (err) {
+    console.error("OpenFoodFacts barcode error:", err);
+    return null;
+  }
+}
