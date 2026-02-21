@@ -23,14 +23,13 @@ export default function History() {
 
   const [pickerVisible, setPickerVisible] = useState(false);
 
-  const [filterModalVisible, setFilterModalVisible] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchType, setSearchType] = useState("food"); 
-  const [sortBy, setSortBy] = useState("date"); 
+  const [evaluationHistory, setEvaluationHistory] = useState([]);
+
 
   useEffect(() => {
     loadFoodLogs();
     loadSymptomLogs();
+    loadEvaluationHistory();
   }, []);
 
   const loadFoodLogs = async () => {
@@ -43,9 +42,23 @@ export default function History() {
     setSymptomLogs(saved ? JSON.parse(saved) : []);
   };
 
-  const getSymptomsForFood = (foodName) => {
-    return symptomLogs.filter((s) => s.food === foodName);
+  const loadEvaluationHistory = async () => {
+    const saved = await AsyncStorage.getItem("evaluationHistory");
+    setEvaluationHistory(saved ? JSON.parse(saved) : []);
   };
+
+  const getSymptomsForFood = (foodName) => {
+    return symptomLogs.filter((s) => s.foodName  === foodName);
+  };
+
+  const getEvaluationForSymptom = (symptomObj) => {
+  return evaluationHistory.find(
+    (e) =>
+      e.symptom === symptomObj.symptom &&
+      e.foodName === symptomObj.foodName
+  );
+};
+
 
   const addSymptom = (foodName) => {
     setEditingSymptom(null);
@@ -59,12 +72,17 @@ export default function History() {
 
   const openEditSymptom = (symptomObj) => {
     setEditingSymptom(symptomObj);
-    setSymptomFoodName(symptomObj.food);
+    setSymptomFoodName(symptomObj.foodName);
     setSymptomFields({
       symptom: symptomObj.symptom,
-      time: moment(symptomObj.time, "MMMM Do YYYY, h:mm a").toDate(),
+      time: new Date(symptomObj.symptomDate),
     });
-    setSymptomModal(true);
+  };
+
+  const handleDeleteSymptom = async (symptom) => {
+    const updated = symptomLogs.filter((s) => s.id !== symptom.id);
+    setSymptomLogs(updated);
+    await AsyncStorage.setItem("symptomLog", JSON.stringify(updated));
   };
 
   const saveSymptom = async () => {
@@ -76,7 +94,7 @@ export default function History() {
           ? {
               ...s,
               symptom: symptomFields.symptom,
-              time: moment(symptomFields.time).format("MMMM Do YYYY, h:mm a"),
+              symptomDate: symptomFields.time.toISOString(),
             }
           : s
       );
@@ -85,7 +103,7 @@ export default function History() {
         id: Date.now().toString(),
         food: symptomFoodName,
         symptom: symptomFields.symptom,
-        time: moment(symptomFields.time).format("MMMM Do YYYY, h:mm a"),
+        symptomDate: symptomFields.time.toISOString(),
       };
 
       updated = [...symptomLogs, newSymptom];
@@ -223,38 +241,60 @@ export default function History() {
                 <Text style={styles.noSymptom}>
                   No symptoms logged for this food.
                 </Text>
-
-                {/* ADD SYMPTOM */}
+{/*                
+                {/* ADD SYMPTOM *}
                 <TouchableOpacity
                   style={styles.addBtn}
                   onPress={() => addSymptom(food.foodName)}
                 >
                   <Text style={styles.addText}>Add Symptom</Text>
                 </TouchableOpacity>
+*/}
               </>
             )}
 
-            {hasSymptoms &&
-              symptoms.map((s) => (
-                <View key={s.id} style={styles.symptomBox}>
-                  <Text style={styles.symptom}>{s.symptom}</Text>
+{hasSymptoms &&
+  symptoms.map((s) => {
+    const evaluation = getEvaluationForSymptom(s);
 
-                  <TouchableOpacity
-                    style={styles.smallBtn}
-                    onPress={() => openEditSymptom(s)}
-                  >
-                    <Text style={styles.smallBtnText}>Edit</Text>
-                  </TouchableOpacity>
+    return (
+      <View key={s.id} style={styles.symptomBox}>
+        <Text style={styles.symptom}>{s.symptom}</Text>
 
-                  <TouchableOpacity
-                    style={styles.smallBtnDelete}
-                    onPress={() => openEditSymptom(s)}
-                  >
-                    <Text style={styles.smallBtnText}>Delete</Text>
-                  </TouchableOpacity>
-                </View>
-              ))}
+        {evaluation && (
+          <View style={styles.evaluationBox}>
+            <Text style={styles.riskText}>
+              Risk: {evaluation.risk}
+            </Text>
+            <Text style={styles.confidenceText}>
+              Confidence: {evaluation.confidence}
+            </Text>
+            <Text style={styles.evalDate}>
+              Evaluated {moment(evaluation.evaluatedAt).format(
+                "MMM D, h:mm a"
+              )}
+            </Text>
+          </View>
+        )}
 
+        <TouchableOpacity
+          style={styles.smallBtn}
+          onPress={() => openEditSymptom(s)}
+        >
+          <Text style={styles.smallBtnText}>Edit</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.smallBtnDelete}
+          onPress={() => handleDeleteSymptom(s)}
+        >
+          <Text style={styles.smallBtnText}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  })}
+
+            {/*
             {hasSymptoms && (
               <TouchableOpacity
                 style={styles.addBtn}
@@ -263,6 +303,7 @@ export default function History() {
                 <Text style={styles.addText}>Add Symptom</Text>
               </TouchableOpacity>
             )}
+            */}
 
             <Text style={styles.detail}>
               Logged: {moment(food.date).format("MMMM Do YYYY, h:mm a")}
@@ -564,51 +605,25 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginTop: 12,
   },
-  headerContainer: {
-    flexDirection: 'row', 
-    padding: 10,
+  evaluationBox: {
+  marginTop: 6,
+  padding: 8,
+  backgroundColor: "#fff5f5",
+  borderRadius: 8,
   },
-  label: {
-    fontSize: 14,
-    fontWeight: "600",
-    marginTop: 12,
-    marginBottom: 6,
+
+  riskText: {
+    fontWeight: "700",
+    color: "#b00020",
   },
-  buttonRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 10,
+
+  confidenceText: {
+    fontSize: 13,
   },
-  toggleBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    backgroundColor: "#f0f0f0",
-  },
-  toggleBtnActive: {
-    backgroundColor: "#0077FF",
-    borderColor: "#0077FF",
-  },
-  toggleBtnText: {
-    fontWeight: "600",
-    color: "#333",
-  },
-  dropdownContainer: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 6,
-    overflow: "hidden",
-  },
-  sortOption: {
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-    backgroundColor: "#fff",
-  },
-  sortOptionActive: {
-    backgroundColor: "#e3f2fd",
+
+  evalDate: {
+    fontSize: 11,
+    color: "#777",
+    marginTop: 4,
   },
 });

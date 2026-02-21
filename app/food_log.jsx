@@ -146,14 +146,6 @@ const FoodLog = () => {
     setSelectedDateTime(null);
   };
 
-  /* ---------------- DELETE LOG ---------------- */
-
-  const deleteLog = async (id) => {
-    const updated = log.filter((item) => item.id !== id);
-    setLog(updated);
-    await AsyncStorage.setItem('foodLog', JSON.stringify(updated));
-  };
-
   /* ---------------- RENDER ---------------- */
 
   return (
@@ -239,18 +231,13 @@ const FoodLog = () => {
 
       <Text style={[styles.label, { marginTop: 20 }]}>Recent Logs:</Text>
 
-      <FlatList
-        data={log}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.logItem}>
-            <Text>{item.foodName}</Text>
-            <Text>{moment(item.date).format('MMMM Do YYYY, h:mm a')}</Text>
-            <Button title="Delete" onPress={() => deleteLog(item.id)} />
-          </View>
-        )}
-        ListEmptyComponent={
-          <Text style={{ textAlign: 'center', marginVertical: 20, color: '#999' }}>No logs yet</Text>
+      <Button
+        title="Log Symptom(s)"
+        onPress={() =>
+          router.push({
+            pathname: '/symptom_log',
+            params: { foodLogData: JSON.stringify(log) },
+          })
         }
       />
 

@@ -24,6 +24,14 @@ const home = () => {
         </Pressable>
 
         <Pressable
+          style={[styles.card, styles.allergy]}
+          onPress={() => navigate("../evaluate")}
+        >
+          <Text style={styles.cardIcon}>🩺</Text>
+          <Text style={styles.cardText}>Evaluate Symptoms</Text>
+        </Pressable>
+
+        <Pressable
           style={[styles.card, styles.history]}
           onPress={() => navigate("../history")}
         >
@@ -104,6 +112,9 @@ const styles = StyleSheet.create({
   /* 🔵 CARD COLORS */
   food: {
     backgroundColor: "#22c55e",
+  },
+  allergy: {
+    backgroundColor: "#f40756",
   },
   history: {
     backgroundColor: "#0ea5e9",

@@ -82,27 +82,37 @@ export default function CalendarPage() {
   // Load logs from AsyncStorage
   const loadLogs = async () => {
     try {
-      const stored = await AsyncStorage.getItem("foodLog");
-      if (!stored) {
+      const storedFood = await AsyncStorage.getItem("foodLog");
+      const storedSymptoms = await AsyncStorage.getItem("symptomLog");
+
+      // ---- FOOD LOGS ----
+      if (storedFood) {
+        const list = JSON.parse(storedFood);
+
+        const grouped = {};
+        list.forEach((item) => {
+          const key = ymd(new Date(item.date));
+          if (!grouped[key]) grouped[key] = [];
+          grouped[key].push(item);
+        });
+
+        setLogsByDate(grouped);
+      } else {
         setLogsByDate({});
-        return;
       }
 
-      const list = JSON.parse(stored);
+      // ---- SYMPTOM LOGS ----
+      if (storedSymptoms) {
+        setSymptomLogs(JSON.parse(storedSymptoms));
+      } else {
+        setSymptomLogs([]);
+      }
 
-      // Group by YYYY-MM-DD
-      const grouped = {};
-      list.forEach((item) => {
-        const key = ymd(new Date(item.date));
-        if (!grouped[key]) grouped[key] = [];
-        grouped[key].push(item);
-      });
-
-      setLogsByDate(grouped);
     } catch (err) {
       console.error("Error loading logs:", err);
     }
   };
+
 
   // Reload when returning from FoodLog page
   useFocusEffect(
@@ -113,6 +123,7 @@ export default function CalendarPage() {
 
   const selectedEntries = logsByDate[selected] || [];
   const totals = aggregateDay(selectedEntries);
+  const [symptomLogs, setSymptomLogs] = useState([]);
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
@@ -215,19 +226,56 @@ export default function CalendarPage() {
         </View>
 
         {/* Entries List */}
-        {selectedEntries.length ? (
-          <View style={{ marginTop: 10 }}>
-            {selectedEntries.map((entry) => (
-              <View key={entry.id} style={styles.entryRow}>
-                <Text style={styles.entryName}>{entry.foodName}</Text>
-                <Text style={styles.entryMeta}>
-                  {new Date(entry.date).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </Text>
-              </View>
-            ))}
+ {selectedEntries.length ? (
+  <View style={{ marginTop: 10 }}>
+    {selectedEntries.map((entry, index) => {
+
+      // ✅ Match symptoms to this food entry
+      const matchedSymptoms = symptomLogs.filter(
+        (s) =>
+          s.foodName === entry.foodName &&
+          new Date(s.foodDate).toISOString() === new Date(entry.date).toISOString()
+      );
+
+      return (
+        <View key={entry.id || index} style={{ marginBottom: 12 }}>
+
+          {/* Food Row */}
+          <View style={styles.entryRow}>
+            <Text style={styles.entryName}>{entry.foodName}</Text>
+            <Text style={styles.entryMeta}>
+              {new Date(entry.date).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
+            </Text>
           </View>
-        ) : (
-          <Text style={styles.noLogs}>No logs for this date.</Text>
+
+          {/* ✅ Display Symptoms From symptomLog.jsx */}
+          {matchedSymptoms.length > 0 && (
+            <View style={{ marginTop: 4, paddingLeft: 8 }}>
+              <Text style={{ fontSize: 12, fontWeight: "600", color: "#b91c1c" }}>
+                Symptoms:
+              </Text>
+
+              {matchedSymptoms.map((sym, i) => (
+                <Text
+                  key={sym.id || i}
+                  style={{ fontSize: 12, color: "#7f1d1d" }}
+                >
+                  • {sym.symptom}
+                </Text>
+              ))}
+            </View>
+          )}
+
+        </View>
+      );
+    })}
+  </View>
+) : (
+  <Text style={styles.noLogs}>No logs for this date.</Text>
+
         )}
       </View>
     </ScrollView>
