@@ -15,6 +15,13 @@ jest.mock('../lib/supabase', () => ({
 // Mock React Native modules using the mocks from __mocks__/react-native.js
 jest.mock('react-native')
 
+// Mock auth context used by Login
+jest.mock('../app/AuthContext', () => ({
+  useAuth: () => ({
+    setAuth: jest.fn()
+  })
+}))
+
 describe('Login Component', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -302,8 +309,9 @@ describe('Login Component', () => {
     })
 
     test('should disable login button during loading', async () => {
+      let resolveSignIn
       supabase.auth.signInWithPassword.mockImplementation(() => new Promise(resolve => {
-        setTimeout(() => resolve({ data: null, error: null }), 1000)
+        resolveSignIn = resolve
       }))
 
       render(<Login />)
@@ -320,6 +328,11 @@ describe('Login Component', () => {
       await waitFor(() => {
         expect(loginButton.props.disabled).toBe(true)
       }, { timeout: 100 })
+
+      resolveSignIn({ data: null, error: null })
+      await waitFor(() => {
+        expect(loginButton.props.disabled).toBe(false)
+      })
     })
 
     test('should trim whitespace from email and password', async () => {

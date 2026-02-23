@@ -361,8 +361,9 @@ describe('Register Component', () => {
     })
 
     test('should disable submit button during loading', async () => {
+      let resolveSignUp
       supabase.auth.signUp.mockImplementation(() => new Promise(resolve => {
-        setTimeout(() => resolve({ data: null, error: null }), 1000)
+        resolveSignUp = resolve
       }))
 
       render(<Register />)
@@ -379,6 +380,11 @@ describe('Register Component', () => {
       await waitFor(() => {
         expect(submitButton.props.disabled).toBe(true)
       }, { timeout: 100 })
+
+      resolveSignUp({ data: null, error: null })
+      await waitFor(() => {
+        expect(submitButton.props.disabled).toBe(false)
+      })
     })
 
     test('should trim whitespace from email and password', async () => {
