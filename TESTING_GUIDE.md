@@ -1,5 +1,20 @@
 # Testing Guide: Notification Feature
 
+## Automated Full Test Run (Jest)
+
+Run this from the project root:
+
+```bash
+npm test -- --runInBand --detectOpenHandles
+```
+
+Expected clean result:
+- `Test Suites: 2 passed, 2 total`
+- `Tests: 30 passed, 30 total`
+- No `Jest has detected open handles` warning
+
+Use this command before pushing changes to `sebastest` to confirm the suite exits cleanly.
+
 ## Quick Test (5 minutes)
 
 ### Test Case 1: Welcome Notification on Login
