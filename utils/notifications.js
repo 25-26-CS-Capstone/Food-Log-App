@@ -2,14 +2,18 @@ import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 
+const isWeb = Platform.OS === 'web';
+
 // Set notification behavior
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-  }),
-});
+if (!isWeb) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+}
 
 class NotificationService {
   constructor() {
@@ -21,6 +25,12 @@ class NotificationService {
   // Initialize notification system
   async init(navigationCallback) {
     try {
+      if (isWeb) {
+        this.navigationCallback = navigationCallback;
+        console.log('Notification service initialized for web');
+        return;
+      }
+
       // Register for push notifications
       await this.registerForPushNotificationsAsync();
       
@@ -35,6 +45,10 @@ class NotificationService {
 
   // Register for push notifications
   async registerForPushNotificationsAsync() {
+    if (isWeb) {
+      return null;
+    }
+
     let token;
 
     if (Platform.OS === 'android') {
@@ -78,6 +92,10 @@ class NotificationService {
 
   // Set up notification event listeners
   setupNotificationListeners(navigationCallback) {
+    if (isWeb) {
+      return;
+    }
+
     // Listener for notifications received while app is foregrounded
     this.notificationListener = Notifications.addNotificationReceivedListener(notification => {
       console.log('Notification received:', notification);
@@ -136,6 +154,31 @@ class NotificationService {
   // Send login welcome back notification with deep link to logs
   async sendWelcomeWithLogsLink(username) {
     try {
+      if (isWeb) {
+        const title = `👋 Welcome Back, ${username}!`;
+        const body = 'You are logged in. Continue tracking your food and symptoms.';
+
+        if (typeof window !== 'undefined' && 'Notification' in window) {
+          if (window.Notification.permission === 'granted') {
+            new window.Notification(title, { body });
+          } else if (window.Notification.permission !== 'denied') {
+            const permission = await window.Notification.requestPermission();
+            if (permission === 'granted') {
+              new window.Notification(title, { body });
+            } else {
+              window.alert(`${title}\n${body}`);
+            }
+          } else {
+            window.alert(`${title}\n${body}`);
+          }
+        } else if (typeof window !== 'undefined') {
+          window.alert(`${title}\n${body}`);
+        }
+
+        console.log('Web login notification sent for user:', username);
+        return;
+      }
+
       await Notifications.scheduleNotificationAsync({
         content: {
           title: `👋 Welcome Back, ${username}!`,

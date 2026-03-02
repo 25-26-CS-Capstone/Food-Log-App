@@ -31,6 +31,21 @@ Overall, the Food Log App serves as a step toward a smart nutrition and lifestyl
 1. Clone repo
 2. Install Expo in project directory (npm install expo)
 3. Install Expo Go (https://expo.dev/go)
-4. Run Expo in project directory (npx expo start)
-5. Press s on keyboard to switch to Expo Go
-6. Scan QR code using Expo Go
+4. Install dependencies (npm install)
+5. Run on your target platform:
+	 - iOS: `npm run ios`
+	 - Android: `npm run android`
+	 - Web browser: `npm run web`
+6. For a multi-platform dev menu with QR code, use: `npm start`
+
+---
+
+## Authentication + Notifications
+
+- User auth is handled by Supabase and session persistence is enabled across iOS, Android, and web.
+- Register stores user profile data (name/email) and login uses that data for personalized experience.
+- Login events persist user info such as last login and login-day count.
+- Login notifications are sent on every successful login:
+	- iOS/Android: local push notification via Expo Notifications.
+	- Web: browser notification (or browser alert fallback when notifications are blocked/unavailable).
+- For security, raw passwords are used only for authentication and are not stored locally in app data.

@@ -13,7 +13,7 @@ export const AuthProvider = ({children})=>{
     }
 
     const setUserData = userData =>{
-        setUser({...user, ...userData})
+        setUser((currentUser) => ({ ...(currentUser || {}), ...userData }))
     }
 
     // Initialize auth state on mount
