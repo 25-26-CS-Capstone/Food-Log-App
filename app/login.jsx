@@ -56,6 +56,12 @@ const Login = () => {
         } catch (error) {
           console.log('Notification not available:', error)
         }
+
+        if (Platform.OS === 'web') {
+          window.alert(`Login successful. Welcome back, ${userName}!`)
+        } else {
+          Alert.alert('Login successful', `Welcome back, ${userName}!`)
+        }
       }
     }
 
