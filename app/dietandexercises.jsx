@@ -1,81 +1,142 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
-import { Stack } from 'expo-router';
+import React, { useState, useEffect } from "react";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { Stack } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function DietAndExercises() {
-  // 🔹 Mock data (pretend this came from logs)
-  const foodLogsCount = 6;
-  const symptomCount = 3;
-  const waterIntake = 4; // glasses per day
-  const activityLevel = "Low"; // Low | Medium | High
 
-  // 🔹 Risk evaluation
-  const riskLevel =
-    symptomCount >= 3 ? "High" : symptomCount === 2 ? "Medium" : "Low";
+  const [foodLogs, setFoodLogs] = useState([]);
+  const [symptomLogs, setSymptomLogs] = useState([]);
 
-  // 🔹 Diet logic
-  const dietRecommendation =
-    riskLevel === "High"
-      ? "Soft, non-spicy foods. Increase water intake. Avoid fried and processed food."
-      : riskLevel === "Medium"
-      ? "Balanced meals with vegetables, fruits, and lean protein."
-      : "Normal diet with portion control and regular meal timings.";
+  useEffect(() => {
+    const loadData = async () => {
+      const storedFood = await AsyncStorage.getItem("foodLog");
+      const storedSymptoms = await AsyncStorage.getItem("symptomLog");
 
-  // 🔹 Exercise logic
-  const exerciseRecommendation =
-    riskLevel === "High"
-      ? "Yoga, breathing exercises, light stretching (15–20 minutes)."
-      : activityLevel === "Low"
-      ? "Brisk walking or light cardio for 30 minutes."
-      : "Strength training or cardio for 45 minutes.";
+      if (storedFood) setFoodLogs(JSON.parse(storedFood));
+      if (storedSymptoms) setSymptomLogs(JSON.parse(storedSymptoms));
+    };
+
+    loadData();
+  }, []);
+
+  // ---- REAL DATA CALCULATIONS ----
+  const foodLogsCount = foodLogs.length;
+  const symptomCount = symptomLogs.length;
+
+  const highRiskCount = symptomLogs.filter(s => s.riskLevel === "High").length;
+  const moderateRiskCount = symptomLogs.filter(s => s.riskLevel === "Moderate").length;
+
+  let riskLevel = "Low";
+
+  if (highRiskCount >= 1) riskLevel = "High";
+  else if (moderateRiskCount >= 2) riskLevel = "Medium";
+
+  // ---- DIET LOGIC ----
+  let dietRecommendation = "";
+
+  if (riskLevel === "High") {
+    dietRecommendation =
+      "• Soft, non-spicy foods\n" +
+      "• Avoid dairy, fried and processed food\n" +
+      "• Increase water intake (8–10 glasses/day)\n" +
+      "• Include boiled vegetables and soups";
+  } else if (riskLevel === "Medium") {
+    dietRecommendation =
+      "• Balanced meals with vegetables and fruits\n" +
+      "• Lean protein (chicken, fish, legumes)\n" +
+      "• Reduce sugar and spicy food\n" +
+      "• Drink at least 6–8 glasses of water";
+  } else {
+    dietRecommendation =
+      "• Maintain portion control\n" +
+      "• Regular meal timings\n" +
+      "• Include whole grains and protein\n" +
+      "• Stay hydrated";
+  }
+
+  // ---- EXERCISE LOGIC ----
+  let exerciseRecommendation = "";
+
+  if (riskLevel === "High") {
+    exerciseRecommendation =
+      "• Light yoga (15–20 minutes)\n" +
+      "• Breathing exercises\n" +
+      "• Gentle stretching\n" +
+      "• Avoid intense workouts";
+  } else if (riskLevel === "Medium") {
+    exerciseRecommendation =
+      "• Brisk walking (30 minutes)\n" +
+      "• Light cardio\n" +
+      "• Basic strength exercises";
+  } else {
+    exerciseRecommendation =
+      "• Cardio (30–45 minutes)\n" +
+      "• Strength training\n" +
+      "• Regular stretching\n" +
+      "• Maintain active lifestyle";
+  }
 
   return (
-    <View style={styles.container}>
-
-      <Stack.Screen 
+    <ScrollView style={styles.container}>
+      <Stack.Screen
         options={{
-          title: 'Diet & Exercises',
+          title: "Diet & Exercises",
           headerStyle: { backgroundColor: "#ef4444" },
-          headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: 'bold' },
-        }} 
+          headerTintColor: "#fff",
+          headerTitleStyle: { fontWeight: "bold" },
+        }}
       />
 
       <Text style={styles.title}>Diet & Exercise Analysis</Text>
 
-      {/* 🔹 Summary */}
+      {/* SUMMARY */}
       <View style={styles.summaryCard}>
         <Text style={styles.summaryText}>Food Logs: {foodLogsCount}</Text>
         <Text style={styles.summaryText}>Symptoms Reported: {symptomCount}</Text>
-        <Text style={styles.summaryText}>Water Intake: {waterIntake} glasses/day</Text>
-        <Text style={styles.summaryText}>Activity Level: {activityLevel}</Text>
+        <Text style={styles.summaryText}>
+          High Risk Symptoms: {highRiskCount}
+        </Text>
+
         <Text style={styles.risk}>
-          Health Risk Level: <Text style={styles.riskValue}>{riskLevel}</Text>
+          Health Risk Level:{" "}
+          <Text
+            style={[
+              styles.riskValue,
+              riskLevel === "High"
+                ? { color: "red" }
+                : riskLevel === "Medium"
+                ? { color: "orange" }
+                : { color: "green" },
+            ]}
+          >
+            {riskLevel}
+          </Text>
         </Text>
       </View>
 
-      {/* 🔹 Diet */}
+      {/* DIET */}
       <View style={styles.card}>
         <Text style={styles.heading}>🥗 Diet Recommendation</Text>
-        <Text>{dietRecommendation}</Text>
+        <Text style={styles.bodyText}>{dietRecommendation}</Text>
       </View>
 
-      {/* 🔹 Exercise */}
+      {/* EXERCISE */}
       <View style={styles.card}>
         <Text style={styles.heading}>🏃 Exercise Recommendation</Text>
-        <Text>{exerciseRecommendation}</Text>
+        <Text style={styles.bodyText}>{exerciseRecommendation}</Text>
       </View>
 
-      {/* 🔹 Explanation */}
+      {/* EXPLANATION */}
       <View style={styles.explainCard}>
         <Text style={styles.explainTitle}>Why this plan?</Text>
         <Text style={styles.explainText}>
-          Recommendations are generated based on the number of food logs,
-          reported symptoms, hydration level, and activity level. Higher
-          symptoms trigger lighter diets and low-impact exercises.
+          Recommendations are dynamically generated based on your logged
+          symptoms and risk levels. Higher risk symptoms result in lighter
+          diet plans and low-impact exercises.
         </Text>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -105,7 +166,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   riskValue: {
-    color: "red",
+    fontWeight: "bold",
   },
   card: {
     padding: 15,
@@ -117,6 +178,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 5,
+  },
+  bodyText: {
+    lineHeight: 20,
   },
   explainCard: {
     padding: 15,
