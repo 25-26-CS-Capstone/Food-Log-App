@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../AuthContext'
+import { router } from 'expo-router'
 
 const settings = () => {
   const { setAuth } = useAuth()
@@ -13,7 +14,11 @@ const settings = () => {
     if (Platform.OS === 'web') {
         if (error) window.alert('Error signing out')
     }
-    if (error) Alert.alert('Error signing out')
+    if (error) { 
+      Alert.alert('Error signing out')
+    } else {
+      router.replace('/welcome')
+    }
   }
 
   const removeUserData = async () => {
@@ -51,7 +56,7 @@ const settings = () => {
   return (
     <View style={[{justifyContent: 'center'}, {alignItems: 'center'}, {flex:1}]}>
       <View style={styles.buttonWrapper}>
-        <Button title = "Export Data" onPress={() => {}}/>
+        <Button title = "Export Data" onPress={() => router.push("../dataExport")}/>
       </View>
       <View style={styles.buttonWrapper}>
         <Button title="Logout" onPress={onLogout}/>
