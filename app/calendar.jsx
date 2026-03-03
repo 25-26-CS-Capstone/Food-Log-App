@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-nati
 import { useRouter, useFocusEffect, Stack } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Meal dot colors (still used for display; logs won't contain meal type yet)
 const MEAL_COLORS = {
   breakfast: "#fbc02d",
   lunch: "#ff8f00",
@@ -18,7 +17,6 @@ function ymd(d) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
 
-// Build 6x7 matrix for calendar
 function monthMatrix(year, monthIndex) {
   const first = new Date(year, monthIndex, 1);
   const startIdx = (first.getDay() + 6) % 7;
@@ -32,24 +30,18 @@ function monthMatrix(year, monthIndex) {
   return days;
 }
 
-// Sum nutrient totals for the day
-// Sum nutrient totals for the day with Quantity support
 function aggregateDay(entries = []) {
   return entries.reduce(
     (acc, e) => {
       const p = e.product || {};
 
-      // ✅ Use stored totalCalories first
       if (e.totalCalories) {
         acc.calories += Number(e.totalCalories);
-      } 
-      // Fallback for older logs
-      else if (p.calories) {
+      } else if (p.calories) {
         const servings = e.servings || 1;
         acc.calories += p.calories * servings;
       }
 
-      // Optional macros (if you later add them properly)
       if (p.protein) acc.protein += p.protein * (e.servings || 1);
       if (p.carbs) acc.carbs += p.carbs * (e.servings || 1);
       if (p.fat) acc.fat += p.fat * (e.servings || 1);
@@ -73,38 +65,32 @@ export default function CalendarPage() {
   const today = useMemo(() => new Date(), []);
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selected, setSelected] = useState(ymd(today));
-
-  const [logsByDate, setLogsByDate] = useState({}); // <-- REPLACES DEMO_LOGS
+  const [logsByDate, setLogsByDate] = useState({});
+  const [symptomLogs, setSymptomLogs] = useState([]);
 
   const year = cursor.getFullYear();
   const monthIndex = cursor.getMonth();
   const monthName = cursor.toLocaleString(undefined, { month: "long", year: "numeric" });
-
   const cells = useMemo(() => monthMatrix(year, monthIndex), [year, monthIndex]);
 
-  // Load logs from AsyncStorage
   const loadLogs = async () => {
     try {
       const storedFood = await AsyncStorage.getItem("foodLog");
       const storedSymptoms = await AsyncStorage.getItem("symptomLog");
 
-      // ---- FOOD LOGS ----
       if (storedFood) {
         const list = JSON.parse(storedFood);
-
         const grouped = {};
         list.forEach((item) => {
           const key = ymd(new Date(item.date));
           if (!grouped[key]) grouped[key] = [];
           grouped[key].push(item);
         });
-
         setLogsByDate(grouped);
       } else {
         setLogsByDate({});
       }
 
-      // ---- SYMPTOM LOGS ----
       if (storedSymptoms) {
         setSymptomLogs(JSON.parse(storedSymptoms));
       } else {
@@ -116,8 +102,6 @@ export default function CalendarPage() {
     }
   };
 
-
-  // Reload when returning from FoodLog page
   useFocusEffect(
     React.useCallback(() => {
       loadLogs();
@@ -126,21 +110,37 @@ export default function CalendarPage() {
 
   const selectedEntries = logsByDate[selected] || [];
   const totals = aggregateDay(selectedEntries);
-  const [symptomLogs, setSymptomLogs] = useState([]);
+
+  const selectedSymptoms = symptomLogs.filter(
+    (s) => ymd(new Date(s.foodDate)) === selected
+  );
+
+  let healthScore = 100;
+
+  selectedSymptoms.forEach((s) => {
+    if (s.riskLevel === "High") healthScore -= 40;
+    else if (s.riskLevel === "Moderate") healthScore -= 25;
+    else if (s.riskLevel === "Low") healthScore -= 10;
+  });
+
+  if (totals.calories > DAILY_GOAL_CAL) healthScore -= 10;
+  healthScore = Math.max(0, healthScore);
+
+  const totalFoodEntries = Object.values(logsByDate).flat().length;
+  const totalSymptomEntries = symptomLogs.length;
+  const highRiskDays = symptomLogs.filter(s => s.riskLevel === "High").length;
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
-
-      <Stack.Screen 
+      <Stack.Screen
         options={{
           title: 'Calendar',
           headerStyle: { backgroundColor: "#f59e0b"},
           headerTintColor: '#fff',
           headerTitleStyle: { fontWeight: 'bold' },
-        }} 
+        }}
       />
 
-      {/* Header navigation */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => setCursor(new Date(year, monthIndex - 1, 1))} style={styles.navBtn}>
           <Text style={styles.navBtnText}>‹</Text>
@@ -153,27 +153,12 @@ export default function CalendarPage() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.headerRow}>
-        <TouchableOpacity
-          onPress={() => {
-            const t = new Date();
-            setCursor(new Date(t.getFullYear(), t.getMonth(), 1));
-            setSelected(ymd(t));
-          }}
-          style={styles.todayBtn}
-        >
-          <Text style={styles.todayText}>Today</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Weekdays */}
       <View style={styles.weekRow}>
         {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
           <Text key={d} style={styles.weekCell}>{d}</Text>
         ))}
       </View>
 
-      {/* Calendar Grid */}
       <View style={styles.grid}>
         {cells.map((d, i) => {
           const key = ymd(d);
@@ -184,6 +169,10 @@ export default function CalendarPage() {
           const dayData = aggregateDay(logsByDate[key] || []);
           const pct = Math.min(1, dayData.calories / DAILY_GOAL_CAL);
 
+          const severeDay = symptomLogs.some(
+            s => ymd(new Date(s.foodDate)) === key && s.riskLevel === "High"
+          );
+
           return (
             <TouchableOpacity
               key={key + i}
@@ -191,13 +180,13 @@ export default function CalendarPage() {
                 styles.cell,
                 !inMonth && styles.cellFaded,
                 isSelected && styles.cellSelected,
-                isToday && styles.cellTodayBorder
+                isToday && styles.cellTodayBorder,
+                severeDay && { backgroundColor: "#fee2e2" }
               ]}
               onPress={() => setSelected(key)}
             >
               <Text style={[styles.dateNum, !inMonth && styles.fadedText]}>{d.getDate()}</Text>
 
-              {/* Meal dots (won’t show unless meals exist in logs) */}
               <View style={styles.dotRow}>
                 {Array.from(dayData.meals).map((m, idx) => {
                   const meal = JSON.parse(m);
@@ -205,22 +194,25 @@ export default function CalendarPage() {
                 })}
               </View>
 
-              {/* Progress bar */}
               <View style={styles.progressTrack}>
                 <View style={[styles.progressFill, { width: `${pct * 100}%` }]} />
               </View>
 
-              {/* Allergy icon */}
               {dayData.hasAllergen && <Text style={styles.allergen}>⚠</Text>}
             </TouchableOpacity>
           );
         })}
       </View>
 
-      {/* Daily Details Panel */}
       <View style={styles.detailCard}>
         <View style={styles.detailHeader}>
-          <Text style={styles.detailDate}>{new Date(selected).toDateString()}</Text>
+          <Text style={styles.detailDate}>
+  {new Date(
+    selected.split("-")[0],
+    selected.split("-")[1] - 1,
+    selected.split("-")[2]
+  ).toDateString()}
+</Text>
 
           <TouchableOpacity
             style={styles.addBtn}
@@ -230,7 +222,6 @@ export default function CalendarPage() {
           </TouchableOpacity>
         </View>
 
-        {/* Totals */}
         <View style={styles.totalsRow}>
           <TotalBox label="Calories" value={totals.calories} />
           <TotalBox label="Protein" value={`${totals.protein} g`} />
@@ -238,58 +229,76 @@ export default function CalendarPage() {
           <TotalBox label="Fat" value={`${totals.fat} g`} />
         </View>
 
-        {/* Entries List */}
- {selectedEntries.length ? (
-  <View style={{ marginTop: 10 }}>
-    {selectedEntries.map((entry, index) => {
+        {/* Health Score */}
+        <Text style={{ marginTop: 12, fontWeight: "800", fontSize: 16 }}>
+          Health Score: {healthScore}%
+        </Text>
 
-      // ✅ Match symptoms to this food entry
-      const matchedSymptoms = symptomLogs.filter(
-        (s) =>
-          s.foodName === entry.foodName &&
-          new Date(s.foodDate).toISOString() === new Date(entry.date).toISOString()
-      );
-
-      return (
-        <View key={entry.id || index} style={{ marginBottom: 12 }}>
-
-          {/* Food Row */}
-          <View style={styles.entryRow}>
-            <Text style={styles.entryName}>{entry.foodName}</Text>
-            <Text style={styles.entryMeta}>
-              {new Date(entry.date).toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+        {/* Symptom Summary */}
+        {selectedSymptoms.length > 0 && (
+          <View style={{ marginTop: 10 }}>
+            <Text style={{ fontWeight: "700", color: "#b91c1c" }}>
+              Symptoms Summary:
             </Text>
-          </View>
-
-          {/* ✅ Display Symptoms From symptomLog.jsx */}
-          {matchedSymptoms.length > 0 && (
-            <View style={{ marginTop: 4, paddingLeft: 8 }}>
-              <Text style={{ fontSize: 12, fontWeight: "600", color: "#b91c1c" }}>
-                Symptoms:
+            {selectedSymptoms.map((s, i) => (
+              <Text key={i} style={{ color: "#7f1d1d", fontSize: 13 }}>
+                • {s.symptom} ({s.riskLevel})
               </Text>
-
-              {matchedSymptoms.map((sym, i) => (
-                <Text
-                  key={sym.id || i}
-                  style={{ fontSize: 12, color: "#7f1d1d" }}
-                >
-                  • {sym.symptom}
-                </Text>
-              ))}
-            </View>
-          )}
-
-        </View>
-      );
-    })}
-  </View>
-) : (
-  <Text style={styles.noLogs}>No logs for this date.</Text>
-
+            ))}
+          </View>
         )}
+
+        {/* Entries List (YOUR ORIGINAL LOGIC KEPT) */}
+        {selectedEntries.length ? (
+          <View style={{ marginTop: 10 }}>
+            {selectedEntries.map((entry, index) => {
+              const matchedSymptoms = symptomLogs.filter(
+                (s) =>
+                  s.foodName === entry.foodName &&
+                  new Date(s.foodDate).toISOString() === new Date(entry.date).toISOString()
+              );
+
+              return (
+                <View key={entry.id || index} style={{ marginBottom: 12 }}>
+                  <View style={styles.entryRow}>
+                    <Text style={styles.entryName}>{entry.foodName}</Text>
+                    <Text style={styles.entryMeta}>
+                      {new Date(entry.date).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </Text>
+                  </View>
+
+                  {matchedSymptoms.length > 0 && (
+                    <View style={{ marginTop: 4, paddingLeft: 8 }}>
+                      <Text style={{ fontSize: 12, fontWeight: "600", color: "#b91c1c" }}>
+                        Symptoms:
+                      </Text>
+                      {matchedSymptoms.map((sym, i) => (
+                        <Text key={sym.id || i} style={{ fontSize: 12, color: "#7f1d1d" }}>
+                          • {sym.symptom}
+                        </Text>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        ) : (
+          <Text style={styles.noLogs}>No logs for this date.</Text>
+        )}
+      </View>
+
+      {/* Weekly Summary */}
+      <View style={styles.detailCard}>
+        <Text style={{ fontSize: 18, fontWeight: "800", marginBottom: 8 }}>
+          Weekly Summary
+        </Text>
+        <Text>Total Food Entries: {totalFoodEntries}</Text>
+        <Text>Total Symptom Logs: {totalSymptomEntries}</Text>
+        <Text>High Risk Days: {highRiskDays}</Text>
       </View>
     </ScrollView>
   );
@@ -304,16 +313,12 @@ function TotalBox({ label, value }) {
   );
 }
 
-/* Styles (unchanged except simplified legend removed) */
 const styles = StyleSheet.create({
   page: { padding: 16, backgroundColor: "#eef2ff" },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 8 },
   headerTitle: { fontSize: 22, fontWeight: "800", color: "#0f172a" },
   navBtn: { padding: 8, backgroundColor: "#e2e8f0", borderRadius: 10 },
   navBtnText: { fontSize: 18, fontWeight: "800", color: "#0f172a" },
-  headerRow: { marginTop: 10, marginBottom: 6, flexDirection: "row" },
-  todayBtn: { backgroundColor: "#22c55e", paddingVertical: 6, paddingHorizontal: 12, borderRadius: 10 },
-  todayText: { color: "white", fontWeight: "700" },
   weekRow: { flexDirection: "row", marginTop: 10 },
   weekCell: { flex: 1, textAlign: "center", color: "#475569", fontWeight: "700" },
   grid: { flexDirection: "row", flexWrap: "wrap", borderRadius: 12, overflow: "hidden", backgroundColor: "#ffffff", marginTop: 6 },
@@ -328,7 +333,7 @@ const styles = StyleSheet.create({
   progressTrack: { marginTop: 6, height: 5, backgroundColor: "#e5e7eb", borderRadius: 3, overflow: "hidden" },
   progressFill: { height: 5, backgroundColor: "#22c55e" },
   allergen: { position: "absolute", top: 6, right: 6, color: "#e11d48", fontWeight: "900" },
-  detailCard: { backgroundColor: "white", borderRadius: 12, padding: 16, marginTop: 6, marginBottom: 40, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 6, elevation: 2 },
+  detailCard: { backgroundColor: "white", borderRadius: 12, padding: 16, marginTop: 6, marginBottom: 40 },
   detailHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   detailDate: { fontSize: 18, fontWeight: "800", color: "#0f172a" },
   addBtn: { backgroundColor: "#2563eb", paddingVertical: 8, paddingHorizontal: 12, borderRadius: 10 },
