@@ -117,15 +117,17 @@ const FoodLog = () => {
   /* ---------------- SUBMIT LOG ---------------- */
 
   const handleSubmit = async () => {
-    if (!foodName || !selectedDateTime) {
-      Alert.alert('Error', 'Please choose a food and date/time.');
-      return;
-    }
+    if (!foodName) {
+  Alert.alert('Error', 'Please choose a food.');
+  return;
+}
+
+const finalDate = selectedDateTime || new Date();
 
     const newEntry = {
       id: Date.now().toString(),
       foodName: selectedProduct?.name || foodName,
-      date: selectedDateTime,
+      date: finalDate,
       mealType,
       servings,
       totalCalories:
@@ -273,9 +275,9 @@ const FoodLog = () => {
             </>
           )}
 
-          {selectedProduct && selectedDateTime && (
-            <Button title="Submit Log" onPress={handleSubmit} />
-          )}
+          {selectedProduct && (
+  <Button title="Submit Log" onPress={handleSubmit} />
+)}
 
           <Pressable
             style={styles.navButton}
