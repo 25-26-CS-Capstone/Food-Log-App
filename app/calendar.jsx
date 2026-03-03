@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
-import { useRouter, useFocusEffect } from "expo-router";
+import { useRouter, useFocusEffect, Stack } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Meal dot colors (still used for display; logs won't contain meal type yet)
@@ -33,35 +33,38 @@ function monthMatrix(year, monthIndex) {
 }
 
 // Sum nutrient totals for the day
+// Sum nutrient totals for the day with Quantity support
 function aggregateDay(entries = []) {
   return entries.reduce(
     (acc, e) => {
       const p = e.product || {};
 
-      acc.calories += p.calories || 0;
-      acc.protein += p.protein || 0;
-      acc.carbs += p.carbs || 0;
-      acc.fat += p.fat || 0;
+      // ✅ Use stored totalCalories first
+      if (e.totalCalories) {
+        acc.calories += Number(e.totalCalories);
+      } 
+      // Fallback for older logs
+      else if (p.calories) {
+        const servings = e.servings || 1;
+        acc.calories += p.calories * servings;
+      }
+
+      // Optional macros (if you later add them properly)
+      if (p.protein) acc.protein += p.protein * (e.servings || 1);
+      if (p.carbs) acc.carbs += p.carbs * (e.servings || 1);
+      if (p.fat) acc.fat += p.fat * (e.servings || 1);
 
       if (e.mealType && e.color) {
         acc.meals.add(JSON.stringify({ type: e.mealType, color: e.color }));
       }
 
-      // Optional allergen indicator
       if (p.allergens?.length) {
         acc.hasAllergen = true;
       }
 
       return acc;
     },
-    {
-      calories: 0,
-      protein: 0,
-      carbs: 0,
-      fat: 0,
-      meals: new Set(),
-      hasAllergen: false
-    }
+    { calories: 0, protein: 0, carbs: 0, fat: 0, meals: new Set(), hasAllergen: false }
   );
 }
 
@@ -127,6 +130,16 @@ export default function CalendarPage() {
 
   return (
     <ScrollView contentContainerStyle={styles.page}>
+
+      <Stack.Screen 
+        options={{
+          title: 'Calendar',
+          headerStyle: { backgroundColor: "#f59e0b"},
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }} 
+      />
+
       {/* Header navigation */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => setCursor(new Date(year, monthIndex - 1, 1))} style={styles.navBtn}>
@@ -293,7 +306,7 @@ function TotalBox({ label, value }) {
 
 /* Styles (unchanged except simplified legend removed) */
 const styles = StyleSheet.create({
-  page: { padding: 16, backgroundColor: "#f8fbff" },
+  page: { padding: 16, backgroundColor: "#eef2ff" },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: 8 },
   headerTitle: { fontSize: 22, fontWeight: "800", color: "#0f172a" },
   navBtn: { padding: 8, backgroundColor: "#e2e8f0", borderRadius: 10 },
