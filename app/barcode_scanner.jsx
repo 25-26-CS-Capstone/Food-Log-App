@@ -13,7 +13,7 @@ import {
   Platform,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 
 import { offGetProductByBarcode } from '../lib/openfoodfacts';
 
@@ -85,61 +85,64 @@ const BarcodeScanner = () => {
   }
 
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 120 : 0}
-      >
-        {/* Camera */}
-        <View style={styles.cameraWrap}>
-          <CameraView
-            style={styles.camera}
-            onBarcodeScanned={canScan ? onBarcodeScanned : undefined}
-            barcodeScannerSettings={{
-              barcodeTypes: ['upc_a', 'upc_e', 'ean13', 'ean8'],
-            }}
-          />
-        </View>
+    <>
+      <Stack.Screen options={{ title: 'Scan Barcode' }} />
 
-        {/* Manual barcode entry */}
-        <View style={styles.panel}>
-          <Text style={styles.panelTitle}>Enter barcode manually</Text>
-
-          <TextInput
-            style={styles.input}
-            value={manualCode}
-            onChangeText={(t) => setManualCode(t.replace(/[^\d]/g, ''))}
-            keyboardType="number-pad"
-            placeholder="Enter barcode digits"
-            placeholderTextColor="#777"
-          />
-
-          <View style={styles.row}>
-            <View style={styles.btn}>
-              <Button title="Search" onPress={() => handleLookup(manualCode)} />
-            </View>
-
-            <View style={styles.btn}>
-              <Button
-                title="Rescan"
-                onPress={() => {
-                  setScanned(false);
-                  setManualCode('');
-                }}
-              />
-            </View>
-
-            <View style={styles.btn}>
-              <Button title="Back" onPress={() => router.back()} />
-            </View>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+        >
+          {/* Camera */}
+          <View style={styles.cameraWrap}>
+            <CameraView
+              style={styles.camera}
+              onBarcodeScanned={canScan ? onBarcodeScanned : undefined}
+              barcodeScannerSettings={{
+                barcodeTypes: ['upc_a', 'upc_e', 'ean13', 'ean8'],
+              }}
+            />
           </View>
 
-          {loading ? <ActivityIndicator style={{ marginTop: 8 }} /> : null}
-        </View>
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+          {/* Manual entry panel */}
+          <View style={styles.panel}>
+            <Text style={styles.panelTitle}>Enter barcode manually</Text>
+
+            <TextInput
+              style={styles.input}
+              value={manualCode}
+              onChangeText={(t) => setManualCode(t.replace(/[^\d]/g, ''))}
+              keyboardType="number-pad"
+              placeholder="Enter barcode digits"
+              placeholderTextColor="#777"
+            />
+
+            <View style={styles.row}>
+              <View style={styles.btn}>
+                <Button title="Search" onPress={() => handleLookup(manualCode)} />
+              </View>
+
+              <View style={styles.btn}>
+                <Button
+                  title="Rescan"
+                  onPress={() => {
+                    setScanned(false);
+                    setManualCode('');
+                  }}
+                />
+              </View>
+
+              <View style={styles.btn}>
+                <Button title="Back" onPress={() => router.back()} />
+              </View>
+            </View>
+
+            {loading ? <ActivityIndicator style={{ marginTop: 8 }} /> : null}
+          </View>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
+    </>
   );
 };
 
