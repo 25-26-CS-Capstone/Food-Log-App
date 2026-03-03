@@ -1,20 +1,31 @@
-import { StyleSheet, Text, View, Pressable, Platform, Alert } from 'react-native'; // Changed Button to Pressable
+import { StyleSheet, Text, View, Pressable, Button, Platform, Alert } from 'react-native'; // Changed Button to Pressable
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React from 'react';
-import { supabase } from '../../lib/supabase';
-import { useAuth } from '../AuthContext';
+import React from 'react'
+import { supabase } from '../../lib/supabase'
+import { useAuth } from '../AuthContext'
+import { router } from 'expo-router'
 
 const settings = () => {
   const { setAuth } = useAuth();
 
-  const onLogout = async () => {
-    setAuth(null);
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      const msg = 'Error signing out';
-      Platform.OS === 'web' ? window.alert(msg) : Alert.alert(msg);
+  const onLogout = async ()=>{
+    try {
+      const {error} = await supabase.auth.signOut()
+      if (error) {
+        if (Platform.OS === 'web') {
+          window.alert('Error signing out')
+        } else {
+          Alert.alert('Error signing out')
+        }
+        return
+      }
+      setAuth(null)
+      router.replace('/welcome')
+    } catch (err) {
+      console.error('Error signing out:', err)
+      Alert.alert('Error', 'Error signing out.')
     }
-  };
+  }
 
   const removeUserData = async () => {
     Alert.alert(
@@ -45,15 +56,11 @@ const settings = () => {
   };
 
   return (
-    <View style={styles.container}>
-      
-      <View style={styles.header}>
-        <Text style={styles.title}>Settings</Text>
-      </View>
+    <View style={[{justifyContent: 'center'}, {alignItems: 'center'}, {flex:1}]}>
       
       <Pressable 
         style={[styles.button, { backgroundColor: '#056f46' }]} 
-        onPress={() => {}}
+        onPress={() => router.push("../dataExport")}
       >
         <Text style={styles.buttonText}>📤 Export Data</Text>
       </Pressable>

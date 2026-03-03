@@ -1,23 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-  SafeAreaView,
-  ActivityIndicator,
-} from 'react-native';
+import {View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, SafeAreaView, ActivityIndicator} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useRouter } from 'expo-router';
+import * as FileSystem from 'expo-file-system/legacy';
 import { getAllLogs } from '../utils/storage';
-import {
-  exportLogsToFile,
-  filterLogsByDateRange,
-  generateExportSummary,
-  generateExportReport,
-} from '../utils/dataExport';
+import {exportLogsToFile, filterLogsByDateRange, generateExportSummary,
+generateExportReport, getExportedFiles, deleteExportedFile, formatFileSize,
+readExportedFile, getDownloadsDirectory} from '../utils/dataExport';
+import { FlatList } from 'react-native';
 
 const DataExport = () => {
   const router = useRouter();
@@ -36,14 +26,74 @@ const DataExport = () => {
   const [filteredLogs, setFilteredLogs] = useState([]);
   const [summary, setSummary] = useState(null);
   const [reportText, setReportText] = useState('');
+  
+  // Exported files
+  const [exportedFiles, setExportedFiles] = useState([]);
+  const [fileViewModalVisible, setFileViewModalVisible] = useState(false);
+  const [viewingFile, setViewingFile] = useState(null);
+  const [fileContent, setFileContent] = useState('');
+  const [isLoadingFileContent, setIsLoadingFileContent] = useState(false);
 
   useEffect(() => {
     loadLogs();
+    loadExportedFiles();
   }, []);
 
   useEffect(() => {
     updateFilteredLogs();
   }, [startDate, endDate, allLogs]);
+
+  const loadExportedFiles = async () => {
+    const files = await getExportedFiles();
+    setExportedFiles(files);
+  };
+
+  const handleDeleteFile = async (filepath) => {
+    Alert.alert(
+      'Delete File',
+      'Are you sure? This cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            const success = await deleteExportedFile(filepath);
+            if (success) {
+              Alert.alert('Success', 'File deleted');
+              await loadExportedFiles(); // Reload list
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleViewFile = async (file) => {
+    setViewingFile(file);
+    setIsLoadingFileContent(true);
+    try {
+      const content = await readExportedFile(file.uri);
+      setFileContent(content);
+      setFileViewModalVisible(true);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load file: ' + error.message);
+    } finally {
+      setIsLoadingFileContent(false);
+    }
+  };
+
+  const handleDownloadFile = async (file = viewingFile) => {
+    if (!file) return;
+    try {
+      await Sharing.shareAsync(file.uri, {
+        mimeType: file.format === 'CSV' ? 'text/csv' : 'application/json',
+        dialogTitle: `Download ${file.name}`,
+      });
+    } catch (error) {
+      Alert.alert('Info', 'File saved to: ' + viewingFile.uri);
+    }
+  };
 
   const loadLogs = async () => {
     try {
@@ -86,14 +136,24 @@ const DataExport = () => {
       Alert.alert('No Data', 'No logs found in the selected date range');
       return;
     }
+    Alert.alert(
+      'Choose Save Location',
+      'Where would you like to save the exported file?',
+      [
+        { text: 'Downloads (Recommended)', onPress: () => doExport(getDownloadsDirectory()) },
+        { text: 'App Cache', onPress: () => doExport(FileSystem.cacheDirectory) },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
 
+  const doExport = async (directory) => {
     setIsExporting(true);
     try {
-      await exportLogsToFile(filteredLogs, exportFormat);
-      Alert.alert(
-        'Success',
-        `Exported ${filteredLogs.length} logs as ${exportFormat.toUpperCase()}`
-      );
+      await exportLogsToFile(filteredLogs, exportFormat, directory);
+      Alert.alert('Success', `Exported ${summary.foodLogsCount} food logs`);
+      // Add delay to ensure file system updates before reload
+      setTimeout(() => loadExportedFiles(), 500);
     } catch (error) {
       Alert.alert('Error', 'Failed to export logs: ' + error.message);
     } finally {
@@ -121,7 +181,7 @@ const DataExport = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>📊 Export Data</Text>
+          <Text style={styles.title}>Export Data 📊</Text>
           <TouchableOpacity onPress={() => router.back()}>
             <Text style={styles.closeButton}>✕</Text>
           </TouchableOpacity>
@@ -210,8 +270,8 @@ const DataExport = () => {
             <Text style={styles.sectionTitle}>Summary</Text>
             <View style={styles.summaryGrid}>
               <View style={styles.summaryCard}>
-                <Text style={styles.summaryLabel}>Logs</Text>
-                <Text style={styles.summaryValue}>{filteredLogs.length}</Text>
+                <Text style={styles.summaryLabel}>Food Logs</Text>
+                <Text style={styles.summaryValue}>{summary.foodLogsCount}</Text>
               </View>
               <View style={styles.summaryCard}>
                 <Text style={styles.summaryLabel}>Days</Text>
@@ -297,6 +357,43 @@ const DataExport = () => {
           </TouchableOpacity>
         </View>
 
+        {/* Exported Files */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>📂 Exported Files</Text>
+            {exportedFiles.length > 0 && (
+              <Text style={styles.fileCount}>{exportedFiles.length}</Text>
+            )}
+          </View>
+          {exportedFiles.length === 0 ? (
+            <Text style={styles.emptyText}>No exported files yet</Text>
+          ) : (
+            exportedFiles.map((file) => (
+              <View key={file.uri} style={styles.fileItem}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.fileName}>
+                    {file.name.replace('FoodLog_', '').replace('.csv', '').replace('.json', '')}
+                  </Text>
+                  <Text style={styles.fileDetails}>
+                    {file.format} • {formatFileSize(file.size)} • {new Date(file.modificationTime).toLocaleDateString()} • {file.location || 'Cache'}
+                  </Text>
+                </View>
+                <View style={styles.fileActions}>
+                  <TouchableOpacity onPress={() => handleViewFile(file)} style={styles.textActionButton}>
+                    <Text style={styles.actionButtonText}>View</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleDownloadFile(file)} style={styles.textActionButton}>
+                    <Text style={styles.actionButtonText}>Download</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => handleDeleteFile(file.uri)} style={styles.textActionButton}>
+                    <Text style={styles.actionButtonText}>Delete</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            ))
+          )}
+        </View>
+
         {/* Info Box */}
         <View style={styles.infoBox}>
           <Text style={styles.infoTitle}>ℹ️ About Export</Text>
@@ -308,6 +405,47 @@ const DataExport = () => {
           </Text>
         </View>
       </ScrollView>
+      {/* File Viewer Modal */}
+      {fileViewModalVisible && viewingFile && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{viewingFile.name}</Text>
+              <TouchableOpacity onPress={() => setFileViewModalVisible(false)}>
+                <Text style={styles.modalCloseButton}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            {isLoadingFileContent ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="large" color="#007AFF" />
+                <Text style={styles.loadingText}>Loading file...</Text>
+              </View>
+            ) : (
+              <>
+                <ScrollView style={styles.fileContentScroll}>
+                  <Text style={styles.fileContentText}>{fileContent}</Text>
+                </ScrollView>
+
+                <View style={styles.modalActions}>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.downloadModalButton]}
+                    onPress={() => handleDownloadFile(viewingFile)}
+                  >
+                    <Text style={styles.modalButtonText}>Download</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.modalButton, styles.closeModalButton]}
+                    onPress={() => setFileViewModalVisible(false)}
+                  >
+                    <Text style={styles.modalButtonText}>Close</Text>
+                  </TouchableOpacity>
+                </View>
+              </>
+            )}
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 };
@@ -526,6 +664,97 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#1B5E20',
     lineHeight: 18,
+  },
+    fileActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  textActionButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 6,
+    backgroundColor: '#f0f0f0',
+  },
+  actionButtonText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#007AFF',
+  },
+  
+  // Modal styles
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+    zIndex: 999,
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    height: '85%',
+    paddingTop: 16,
+    paddingBottom: 16,
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#333',
+  },
+  modalCloseButton: {
+    fontSize: 24,
+    color: '#999',
+  },
+  fileContentScroll: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  fileContentText: {
+    fontSize: 11,
+    color: '#333',
+    fontFamily: 'monospace',
+    lineHeight: 16,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  modalButton: {
+    flex: 1,
+    borderRadius: 8,
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  downloadModalButton: {
+    backgroundColor: '#007AFF',
+  },
+  closeModalButton: {
+    backgroundColor: '#e0e0e0',
+  },
+  modalButtonText: {
+    fontWeight: '600',
+    fontSize: 14,
+    color: '#fff',
   },
 });
 

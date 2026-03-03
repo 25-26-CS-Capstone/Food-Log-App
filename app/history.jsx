@@ -31,7 +31,6 @@ export default function History() {
   const [searchType, setSearchType] = useState("food");
   const [sortBy, setSortBy] = useState("date");
 
-
   useEffect(() => {
     loadFoodLogs();
     loadSymptomLogs();
@@ -624,6 +623,53 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     borderRadius: 6,
     backgroundColor: "#fff",
+  },
+  headerContainer: {
+    flexDirection: 'row', 
+    padding: 10,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 10,
+  },
+  toggleBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 6,
+    backgroundColor: "#f0f0f0",
+  },
+  toggleBtnActive: {
+    backgroundColor: "#0077FF",
+    borderColor: "#0077FF",
+  },
+  toggleBtnText: {
+    fontWeight: "600",
+    color: "#333",
+  },
+  dropdownContainer: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 6,
+    overflow: "hidden",
+  },
+  sortOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    backgroundColor: "#fff",
+  },
+  sortOptionActive: {
+    backgroundColor: "#e3f2fd",
   },
   row: {
     flexDirection: "row",
