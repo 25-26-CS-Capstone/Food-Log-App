@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { Stack } from 'expo-router';
 
 export default function DietAndExercises() {
   // 🔹 Mock data (pretend this came from logs)
@@ -30,6 +31,16 @@ export default function DietAndExercises() {
 
   return (
     <View style={styles.container}>
+
+      <Stack.Screen 
+        options={{
+          title: 'Diet & Exercises',
+          headerStyle: { backgroundColor: "#ef4444" },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }} 
+      />
+
       <Text style={styles.title}>Diet & Exercise Analysis</Text>
 
       {/* 🔹 Summary */}
@@ -72,6 +83,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     flex: 1,
+    backgroundColor: "#eef2ff",
   },
   title: {
     fontSize: 24,
@@ -80,7 +92,7 @@ const styles = StyleSheet.create({
   },
   summaryCard: {
     padding: 15,
-    backgroundColor: "#e8f0fe",
+    backgroundColor: "#ffffff",
     borderRadius: 8,
     marginBottom: 15,
   },
