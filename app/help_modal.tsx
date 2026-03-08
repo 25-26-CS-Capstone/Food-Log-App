@@ -1,32 +1,42 @@
 import { StatusBar } from 'expo-status-bar';
-import { Platform, StyleSheet, Pressable, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';  // Import useRouter
+import { Platform, StyleSheet, Pressable, Text, View, ScrollView } from 'react-native';
+import { useRouter } from 'expo-router';
 
-export default function help_modal() {
-  const router = useRouter();  // Get router instance
+export default function HelpModal() {
+  const router = useRouter();
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Help</Text>
+      <Text style={styles.title}>Help & Guide</Text>
 
-      <Text style={styles.content}>
-        How to use the Food Log App:
-        {'\n'}{'\n'}
-        (1) Welcome Screen - Press [Login] or [Register] to proceed.{'\n'}
-        {'\t'} (1.1) Login - Enter your credentials to access your account.{'\n'}
-        {'\t'} (1.2) Register - Create a new account by providing necessary details.{'\n\n'}
+      <ScrollView showsVerticalScrollIndicator={false} style={styles.scroll}>
+        
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>1. Welcome Screen</Text>
+          <Text style={styles.item}>• Press <Text style={styles.bold}>Login</Text> or <Text style={styles.bold}>Register</Text> to proceed.</Text>
+          <Text style={styles.subItem}>Login – Enter your credentials to access your account.</Text>
+          <Text style={styles.subItem}>Register – Create a new account with your details.</Text>
+        </View>
 
-        (2) Home Screen - Access different features of the app.{'\n'}
-        {'\t'} (2.1) View Food Calendar - See your logged meals in a calendar view.{'\n'}
-        {'\t'} (2.2) View Previous Food Log - See your logged meals.{'\n\n'}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>2. Home Screen</Text>
+          <Text style={styles.item}>• Add New Food Logs – Search and log meals to track calories and symptoms.</Text>
+          <Text style={styles.item}>• Evaluate Symptoms – Test possible allergens and intolerances.</Text>
+          <Text style={styles.item}>• View History – Access and modify previous food logs.</Text>
+          <Text style={styles.item}>• Food Calendar – View logged meals in a calendar format.</Text>
+          <Text style={styles.item}>• Diet & Exercise – Get diet analysis and exercise recommendations.</Text>
+        </View>
 
-        (3) Settings - Customize your app preferences and logout.{'\n'}
-      </Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>3. Settings</Text>
+          <Text style={styles.item}>• Export Data - Save logs in different ranges and formats.</Text>
+          <Text style={styles.item}>• Logout – Return to the Welcome Screen.</Text>
+          <Text style={styles.item}>• Delete All Data – Remove all stored food logs.</Text>
+        </View>
 
-      <Pressable
-        style={styles.closeButton}
-        onPress={() => router.back()}  // Close the modal by going back
-      >
+      </ScrollView>
+
+      <Pressable style={styles.closeButton} onPress={() => router.back()}>
         <Text style={styles.closeButtonText}>Close</Text>
       </Pressable>
 
@@ -38,28 +48,68 @@ export default function help_modal() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#F5F7FA',
+    paddingTop: 60,
     paddingHorizontal: 20,
   },
+
   title: {
-    fontSize: 20,
+    fontSize: 28,
     fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
   },
-  content: {
-    fontSize: 16,
-    marginTop: 20,
-    textAlign: 'left',
-    marginBottom: 30,
+
+  scroll: {
+    flex: 1,
   },
+
+  section: {
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+
+  item: {
+    fontSize: 15,
+    marginBottom: 6,
+    lineHeight: 22,
+  },
+
+  subItem: {
+    fontSize: 14,
+    color: '#555',
+    marginLeft: 10,
+    marginBottom: 4,
+  },
+
+  bold: {
+    fontWeight: '600',
+  },
+
   closeButton: {
     backgroundColor: '#007AFF',
-    paddingVertical: 10,
-    paddingHorizontal: 30,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginVertical: 20,
   },
+
   closeButtonText: {
     color: 'white',
     fontSize: 16,
+    fontWeight: '600',
   },
 });
