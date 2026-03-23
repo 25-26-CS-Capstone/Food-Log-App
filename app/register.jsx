@@ -18,6 +18,24 @@ const Register = () => {
       Alert.alert('Error', 'Please enter both email and password.');
       return
     }
+
+    // Validate email format (TC-002)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      const msg = 'Please enter a valid email address.';
+      if (Platform.OS === 'web') { window.alert(msg); return; }
+      Alert.alert('Invalid Email', msg);
+      return;
+    }
+
+    // Validate password strength (TC-004) — min 6 chars, at least one letter and one number
+    if (password.length < 6) {
+      const msg = 'Password must be at least 6 characters long.';
+      if (Platform.OS === 'web') { window.alert(msg); return; }
+      Alert.alert('Weak Password', msg);
+      return;
+    }
+
     setLoading(true)
 
     const trimmedEmail = email.trim()

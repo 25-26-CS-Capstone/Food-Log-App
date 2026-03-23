@@ -31,6 +31,12 @@ export default function History() {
   const [searchType, setSearchType] = useState("food");
   const [sortBy, setSortBy] = useState("date");
 
+  const [dateFrom, setDateFrom] = useState(null);
+  const [dateTo, setDateTo] = useState(null);
+  const [timeFrom, setTimeFrom] = useState(null);
+  const [timeTo, setTimeTo] = useState(null);
+  const [filterPickerMode, setFilterPickerMode] = useState(null); // null | 'dateFrom' | 'dateTo' | 'timeFrom' | 'timeTo'
+
   useEffect(() => {
     loadFoodLogs();
     loadSymptomLogs();
@@ -179,6 +185,34 @@ export default function History() {
         });
         filtered = filtered.filter((food) => matchingFoods.has(food.foodName));
       }
+    }
+
+    // Date range filter
+    if (dateFrom) {
+      filtered = filtered.filter((food) =>
+        moment(food.date).startOf('day').isSameOrAfter(moment(dateFrom).startOf('day'))
+      );
+    }
+    if (dateTo) {
+      filtered = filtered.filter((food) =>
+        moment(food.date).startOf('day').isSameOrBefore(moment(dateTo).startOf('day'))
+      );
+    }
+
+    // Time interval filter (by time of day, regardless of date)
+    if (timeFrom) {
+      const fromMins = moment(timeFrom).hours() * 60 + moment(timeFrom).minutes();
+      filtered = filtered.filter((food) => {
+        const logMins = moment(food.date).hours() * 60 + moment(food.date).minutes();
+        return logMins >= fromMins;
+      });
+    }
+    if (timeTo) {
+      const toMins = moment(timeTo).hours() * 60 + moment(timeTo).minutes();
+      filtered = filtered.filter((food) => {
+        const logMins = moment(food.date).hours() * 60 + moment(food.date).minutes();
+        return logMins <= toMins;
+      });
     }
 
     if (sortBy === "date") {
@@ -388,6 +422,69 @@ export default function History() {
               onChangeText={setSearchQuery}
             />
 
+            {/* Date Range Filter */}
+            <Text style={styles.label}>Date Range:</Text>
+            <View style={styles.buttonRow}>
+              <Pressable
+                style={styles.datePickerBtn}
+                onPress={() => setFilterPickerMode('dateFrom')}
+              >
+                <Text style={styles.datePickerText}>
+                  {dateFrom ? moment(dateFrom).format('MMM D, YYYY') : 'From Date'}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={styles.datePickerBtn}
+                onPress={() => setFilterPickerMode('dateTo')}
+              >
+                <Text style={styles.datePickerText}>
+                  {dateTo ? moment(dateTo).format('MMM D, YYYY') : 'To Date'}
+                </Text>
+              </Pressable>
+            </View>
+
+            {/* Time Interval Filter */}
+            <Text style={styles.label}>Time Interval:</Text>
+            <View style={styles.buttonRow}>
+              <Pressable
+                style={styles.datePickerBtn}
+                onPress={() => setFilterPickerMode('timeFrom')}
+              >
+                <Text style={styles.datePickerText}>
+                  {timeFrom ? moment(timeFrom).format('h:mm A') : 'From Time'}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={styles.datePickerBtn}
+                onPress={() => setFilterPickerMode('timeTo')}
+              >
+                <Text style={styles.datePickerText}>
+                  {timeTo ? moment(timeTo).format('h:mm A') : 'To Time'}
+                </Text>
+              </Pressable>
+            </View>
+
+            {/* Date/Time picker for filter fields */}
+            <DateTimePickerModal
+              isVisible={filterPickerMode !== null}
+              mode={filterPickerMode && filterPickerMode.startsWith('date') ? 'date' : 'time'}
+              date={
+                filterPickerMode === 'dateFrom' ? (dateFrom || new Date()) :
+                filterPickerMode === 'dateTo' ? (dateTo || new Date()) :
+                filterPickerMode === 'timeFrom' ? (timeFrom || new Date()) :
+                filterPickerMode === 'timeTo' ? (timeTo || new Date()) :
+                new Date()
+              }
+              onConfirm={(date) => {
+                if (filterPickerMode === 'dateFrom') setDateFrom(date);
+                else if (filterPickerMode === 'dateTo') setDateTo(date);
+                else if (filterPickerMode === 'timeFrom') setTimeFrom(date);
+                else if (filterPickerMode === 'timeTo') setTimeTo(date);
+                setFilterPickerMode(null);
+              }}
+              onCancel={() => setFilterPickerMode(null)}
+            />
+
             <Text style={styles.label}>Sort by:</Text>
             <View style={styles.dropdownContainer}>
               <Pressable
@@ -424,6 +521,10 @@ export default function History() {
                 setSearchQuery("");
                 setSortBy("date");
                 setSearchType("food");
+                setDateFrom(null);
+                setDateTo(null);
+                setTimeFrom(null);
+                setTimeTo(null);
               }}
             />
             <Button
@@ -675,6 +776,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 12,
+  },
+  datePickerBtn: {
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: '#0077FF',
+    borderRadius: 6,
+    backgroundColor: '#f0f8ff',
+    alignItems: 'center',
+    marginHorizontal: 2,
+  },
+  datePickerText: {
+    color: '#0077FF',
+    fontWeight: '600',
+    fontSize: 12,
   },
   evaluationBox: {
   marginTop: 6,

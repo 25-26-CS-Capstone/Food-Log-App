@@ -110,10 +110,16 @@ const BarcodeScanner = () => {
             {/* Overlay */}
             <View pointerEvents="none" style={styles.overlay}>
               <Text style={styles.overlayText}>
-                Align the barcode inside the frame
+                Align barcode to the centre of the frame
               </Text>
 
-              <View style={styles.frame} />
+              <View style={styles.frame}>
+                {/* Corner markers */}
+                <View style={[styles.corner, styles.cornerTL]} />
+                <View style={[styles.corner, styles.cornerTR]} />
+                <View style={[styles.corner, styles.cornerBL]} />
+                <View style={[styles.corner, styles.cornerBR]} />
+              </View>
 
               <Text style={styles.overlaySubText}>
                 {loading ? 'Looking up product…' : scanned ? 'Scanned ✓ Tap Rescan to scan again' : 'Scanning is on'}
@@ -222,10 +228,45 @@ const styles = StyleSheet.create({
   frame: {
     width: '82%',
     height: 140,
-    borderRadius: 14,
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.9)',
-    backgroundColor: 'rgba(0,0,0,0.15)',
+    borderRadius: 6,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.1)',
+    position: 'relative',
+  },
+  corner: {
+    position: 'absolute',
+    width: 22,
+    height: 22,
+    borderColor: '#fff',
+  },
+  cornerTL: {
+    top: -1.5,
+    left: -1.5,
+    borderTopWidth: 3,
+    borderLeftWidth: 3,
+    borderTopLeftRadius: 6,
+  },
+  cornerTR: {
+    top: -1.5,
+    right: -1.5,
+    borderTopWidth: 3,
+    borderRightWidth: 3,
+    borderTopRightRadius: 6,
+  },
+  cornerBL: {
+    bottom: -1.5,
+    left: -1.5,
+    borderBottomWidth: 3,
+    borderLeftWidth: 3,
+    borderBottomLeftRadius: 6,
+  },
+  cornerBR: {
+    bottom: -1.5,
+    right: -1.5,
+    borderBottomWidth: 3,
+    borderRightWidth: 3,
+    borderBottomRightRadius: 6,
   },
 
   sheet: {

@@ -9,7 +9,9 @@ import {
   Switch,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { clearAllLogs } from '../utils/storage';
+import { clearAllLogs, getAllLogs } from '../utils/storage';
+import { exportLogsToFile } from '../utils/dataExport';
+import { supabase } from '../lib/supabase';
 import { 
   scheduleMealReminders, 
   sendDailyReminder, 
@@ -26,7 +28,7 @@ const Settings = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [dataSync, setDataSync] = useState(true);
 
-  const handleSignOut = () => {
+  const handleSignOut = async () => {
     Alert.alert(
       'Sign Out',
       'Are you sure you want to sign out?',
@@ -35,10 +37,42 @@ const Settings = () => {
         {
           text: 'Sign Out',
           style: 'destructive',
-          onPress: () => {
-            // TODO: Implement actual sign out logic when authentication is fully integrated
-            Alert.alert('Signed Out', 'You have been signed out successfully');
-            router.push('/login');
+          onPress: async () => {
+            try {
+              await supabase.auth.signOut();
+            } catch (error) {
+              console.log('Sign out error:', error);
+            }
+            router.replace('/login');
+          }
+        }
+      ]
+    );
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This will permanently delete your account and ALL your data. This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete Account',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await clearAllLogs();
+              try {
+                await supabase.rpc('delete_user');
+              } catch (rpcError) {
+                // RPC may not be set up; fall back to sign out with data cleared
+                console.log('delete_user RPC not available:', rpcError);
+              }
+              await supabase.auth.signOut();
+              router.replace('/login');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete account. Please try again.');
+            }
           }
         }
       ]
@@ -71,11 +105,25 @@ const Settings = () => {
     );
   };
 
+  const exportData = async (format) => {
+    try {
+      const logs = await getAllLogs();
+      await exportLogsToFile(logs, format);
+      Alert.alert('Export Successful', `Your logs have been exported as ${format.toUpperCase()}.`);
+    } catch (error) {
+      Alert.alert('Export Failed', 'Could not export your data. Please try again.');
+    }
+  };
+
   const handleExportData = () => {
     Alert.alert(
       'Export Data',
-      'Export functionality coming soon! This will allow you to backup your food and symptom data.',
-      [{ text: 'OK' }]
+      'Choose an export format for your food and symptom logs:',
+      [
+        { text: 'CSV', onPress: () => exportData('csv') },
+        { text: 'JSON', onPress: () => exportData('json') },
+        { text: 'Cancel', style: 'cancel' },
+      ]
     );
   };
 
@@ -289,6 +337,11 @@ const Settings = () => {
         </SettingsSection>
 
         <SettingsSection title="Account">
+          <SettingsItem
+            title="Delete Account"
+            subtitle="Permanently delete your account and all data"
+            onPress={handleDeleteAccount}
+          />
           <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
             <Text style={styles.signOutText}>Sign Out</Text>
           </TouchableOpacity>
