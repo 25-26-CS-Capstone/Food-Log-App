@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TextInput, Button, StyleSheet, TouchableOpacity, Alert, } from 'react-native';
 import moment from 'moment';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, Stack } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { evaluateAllergyRisk } from "../utils/risk_engine";
@@ -88,6 +88,16 @@ const SymptomLog = () => {
 
   return (
     <View style={styles.container}>
+
+      <Stack.Screen
+        options={{
+          title: 'Symptom Log',
+          headerStyle: { backgroundColor: '#22c55e' },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      />
+
       <Text style={styles.header}>Select Food</Text>
 
       <FlatList
@@ -134,7 +144,7 @@ const SymptomLog = () => {
 /* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f9f9f9' },
+  container: { flex: 1, padding: 20, backgroundColor: '#eef2ff' },
   header: { fontSize: 18, fontWeight: '700', marginVertical: 10 },
   foodItem: {
     padding: 10,

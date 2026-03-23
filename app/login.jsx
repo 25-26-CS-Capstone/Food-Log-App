@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { sendWelcomeWithLogsLink } from '../utils/notifications'
 import { useAuth } from './AuthContext'
 import { getUserData, recordTodayLoginDay, saveUserData } from '../utils/storage'
+import { router } from 'expo-router'
 
 const Login = () => {
   const [email, setEmail] = useState('')  
@@ -31,6 +32,7 @@ const Login = () => {
     if (error) {
       Alert.alert(error.message)
     } else {
+      router.replace('/(tabs)/home') 
       // Login successful - set auth and send welcome notification
       if (data?.user) {
         setAuth(data.user)

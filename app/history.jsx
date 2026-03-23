@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { Stack } from 'expo-router';
 
 export default function History() {
   const [foodLogs, setFoodLogs] = useState([]);
@@ -25,6 +26,10 @@ export default function History() {
 
   const [evaluationHistory, setEvaluationHistory] = useState([]);
 
+  const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchType, setSearchType] = useState("food");
+  const [sortBy, setSortBy] = useState("date");
 
   useEffect(() => {
     loadFoodLogs();
@@ -190,6 +195,16 @@ export default function History() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.headerContainer}>
+
+        <Stack.Screen 
+          options={{
+            title: 'History',
+            headerStyle: { backgroundColor: "#0ea5e9"},
+            headerTintColor: '#fff',
+            headerTitleStyle: { fontWeight: 'bold' },
+          }} 
+        />
+
         <Text style={styles.title}>History</Text>
         <Pressable
           style={[styles.button, { padding: 10, marginLeft: 'auto' }]}
@@ -217,9 +232,18 @@ export default function History() {
             ) : null}
 
             <Text style={styles.subHeader}>Calories:</Text>
-            <Text style={styles.detail}>
-              {food.product?.calories != null ? food.product.calories: "Unknown"}
-            </Text>
+              <Text style={styles.detail}>
+                {food.totalCalories
+                  ? `${food.totalCalories} cal`
+                  : food.product?.calories != null
+                  ? `${food.product.calories} cal`
+                  : "Unknown"}
+              </Text>
+            
+            <Text style={styles.subHeader}>Servings:</Text>
+              <Text style={styles.detail}>
+                {food.servings ? food.servings : 1}
+              </Text>
 
             <Text style={styles.subHeader}>Ingredients:</Text>
             <Text style={styles.detail}>
@@ -516,7 +540,7 @@ export default function History() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, backgroundColor: "#fff", flex: 1 },
+  container: { padding: 20, backgroundColor: "#eef2ff", flex: 1 },
   title: { fontSize: 28, fontWeight: "bold", marginBottom: 20 },
   empty: { color: "#777", fontStyle: "italic", marginTop: 20 },
   card: {
@@ -599,6 +623,53 @@ const styles = StyleSheet.create({
     marginVertical: 6,
     borderRadius: 6,
     backgroundColor: "#fff",
+  },
+  headerContainer: {
+    flexDirection: 'row', 
+    padding: 10,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginTop: 12,
+    marginBottom: 6,
+  },
+  buttonRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 10,
+  },
+  toggleBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 6,
+    backgroundColor: "#f0f0f0",
+  },
+  toggleBtnActive: {
+    backgroundColor: "#0077FF",
+    borderColor: "#0077FF",
+  },
+  toggleBtnText: {
+    fontWeight: "600",
+    color: "#333",
+  },
+  dropdownContainer: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 6,
+    overflow: "hidden",
+  },
+  sortOption: {
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+    backgroundColor: "#fff",
+  },
+  sortOptionActive: {
+    backgroundColor: "#e3f2fd",
   },
   row: {
     flexDirection: "row",

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Modal, Button, ScrollView, KeyboardAvoidingView, Platform, Keyboard, Alert, } from 'react-native';
-
+import { Stack } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { evaluateAllergyRisk } from '../utils/risk_engine';
 
@@ -160,10 +160,20 @@ ${evaluation.reasons.join('\n')}`
   /* ---------------- UI ---------------- */
 
   return (
+    
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
+      <Stack.Screen 
+        options={{
+          title: 'Evaluate',
+          headerStyle: { backgroundColor: "#f40756" },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }} 
+      />
+
       <ScrollView
         contentContainerStyle={styles.container}
         keyboardShouldPersistTaps="handled"
@@ -349,6 +359,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 16,
     paddingBottom: 40,
+    backgroundColor: '#eef2ff',
   },
   header: {
     fontSize: 22,

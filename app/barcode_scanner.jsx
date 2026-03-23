@@ -1,204 +1,3 @@
-/*
-import React, { useMemo, useState } from 'react';
-import { StyleSheet, View, Text, Button, TextInput, Alert, ActivityIndicator } from 'react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useRouter } from 'expo-router';
-import { Keyboard, TouchableWithoutFeedback } from 'react-native';
-
-import { offGetProductByBarcode } from '../lib/openfoodfacts';
-
-const BarcodeScanner = () => {
-  const router = useRouter();
-  const [permission, requestPermission] = useCameraPermissions();
-
-  const [scanned, setScanned] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const [manualCode, setManualCode] = useState('');
-
-  const canScan = useMemo(() => !scanned && !loading, [scanned, loading]);
-
-  const handleLookup = async (barcode) => {
-    const code = (barcode || '').trim();
-
-    // Basic barcode validation (UPC/EAN/GTIN are typically 8–14 digits)
-    if (!/^\d{8,14}$/.test(code)) {
-      Alert.alert('Invalid barcode', 'Enter 8–14 digits (numbers only).');
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      const product = await offGetProductByBarcode(code);
-
-      if (!product) {
-        Alert.alert('Not found', 'No product found for this barcode.');
-        return;
-      }
-
-      setScanned(true);
-
-      // Send product back to Food Log page
-      router.replace({
-        pathname: '/food_log',
-        params: {
-          scannedName: product.product_name || '',
-          scannedBrand: product.brands || '',
-          scannedCode: code,
-        },
-      });
-
-    } catch (err) {
-      Alert.alert('Error', err?.message || 'Something went wrong.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const onBarcodeScanned = (result) => {
-    if (!canScan) return;
-    if (!result?.data) return;
-
-    handleLookup(result.data);
-  };
-
-  if (!permission) return null;
-
-  if (!permission.granted) {
-    return (
-      <View style={styles.permissionContainer}>
-        <Text style={styles.permissionText}>
-          Camera permission is required to scan barcodes.
-        </Text>
-        <View style={styles.permissionBtn}>
-          <Button title="Grant Permission" onPress={requestPermission} />
-        </View>
-        <View style={styles.permissionBtn}>
-          <Button title="Go Back" onPress={() => router.back()} />
-        </View>
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      <View style={styles.cameraWrap}>
-        <CameraView
-          style={styles.camera}
-          onBarcodeScanned={canScan ? onBarcodeScanned : undefined}
-          barcodeScannerSettings={{
-            barcodeTypes: ['upc_a', 'upc_e', 'ean13', 'ean8'],
-          }}
-        />
-      </View>
-
-      <View style={styles.panel}>
-        <Text style={styles.panelTitle}>Manual Barcode Entry</Text>
-
-        <TextInput
-          style={styles.input}
-          value={manualCode}
-          onChangeText={(t) => setManualCode(t.replace(/[^\d]/g, ''))}
-          keyboardType="number-pad"
-          placeholder="Enter barcode digits"
-          placeholderTextColor="#777"
-        />
-
-        <View style={styles.btnRow}>
-          <View style={styles.btn}>
-            <Button title="Search" onPress={() => handleLookup(manualCode)} />
-          </View>
-
-          <View style={styles.btn}>
-            <Button
-              title="Rescan"
-              onPress={() => {
-                setScanned(false);
-              }}
-            />
-          </View>
-        </View>
-
-        <View style={styles.btnRow}>
-          <View style={styles.btn}>
-            <Button title="Back" onPress={() => router.back()} />
-          </View>
-
-          <View style={styles.statusWrap}>
-            {loading ? <ActivityIndicator /> : null}
-            {scanned ? <Text style={styles.statusText}>Scanned</Text> : null}
-          </View>
-        </View>
-      </View>
-    </View>
-  );
-};
-
-export default BarcodeScanner;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  cameraWrap: {
-    flex: 1,
-  },
-  camera: {
-    flex: 1,
-  },
-  panel: {
-    padding: 12,
-    borderTopWidth: 1,
-    borderColor: '#ddd',
-    backgroundColor: '#fff',
-  },
-  panelTitle: {
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#bbb',
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 10,
-  },
-  btnRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 10,
-    marginBottom: 10,
-  },
-  btn: {
-    flex: 1,
-  },
-  statusWrap: {
-    flex: 1,
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-  },
-  statusText: {
-    marginTop: 6,
-    color: '#0077FF',
-    fontWeight: 'bold',
-  },
-  permissionContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 16,
-  },
-  permissionText: {
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  permissionBtn: {
-    width: 240,
-    marginVertical: 6,
-  },
-});
-*/
 import React, { useMemo, useState } from 'react';
 import {
   View,
@@ -212,9 +11,10 @@ import {
   TouchableWithoutFeedback,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useRouter } from 'expo-router';
+import { useRouter, Stack } from 'expo-router';
 
 import { offGetProductByBarcode } from '../lib/openfoodfacts';
 
@@ -227,6 +27,8 @@ const BarcodeScanner = () => {
   const [manualCode, setManualCode] = useState('');
 
   const canScan = useMemo(() => !scanned && !loading, [scanned, loading]);
+  const canSearchManual = useMemo(() => manualCode.trim().length > 0 && !loading, [manualCode, loading]);
+
 
   const handleLookup = async (barcode) => {
     const code = (barcode || '').trim();
@@ -272,75 +74,110 @@ const BarcodeScanner = () => {
   if (!permission.granted) {
     return (
       <View style={styles.permissionContainer}>
+        <Text style={styles.permissionTitle}>Camera access needed</Text>
         <Text style={styles.permissionText}>
-          Camera permission is required to scan barcodes.
+          Allow camera access to scan barcodes.
         </Text>
-        <View style={styles.permissionBtn}>
-          <Button title="Grant Permission" onPress={requestPermission} />
-        </View>
-        <View style={styles.permissionBtn}>
-          <Button title="Go Back" onPress={() => router.back()} />
-        </View>
+        <Pressable style={styles.primaryBtn} onPress={requestPermission}>
+          <Text style={styles.primaryBtnText}>Grant Permission</Text>
+        </Pressable>
+
+        <Pressable style={styles.ghostBtn} onPress={() => router.back()}>
+          <Text style={styles.ghostBtnText}>Go Back</Text>
+        </Pressable>
       </View>
     );
   }
 
-  return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 120 : 0}
-      >
-        {/* Camera */}
-        <View style={styles.cameraWrap}>
-          <CameraView
-            style={styles.camera}
-            onBarcodeScanned={canScan ? onBarcodeScanned : undefined}
-            barcodeScannerSettings={{
-              barcodeTypes: ['upc_a', 'upc_e', 'ean13', 'ean8'],
-            }}
-          />
-        </View>
+    return (
+    <>
+      <Stack.Screen options={{ title: 'Scan Barcode' }} />
 
-        {/* Manual barcode entry */}
-        <View style={styles.panel}>
-          <Text style={styles.panelTitle}>Enter barcode manually</Text>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <KeyboardAvoidingView
+          style={styles.container}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+        >
+          {/* Camera */}
+          <View style={styles.cameraWrap}>
+            <CameraView
+              style={styles.camera}
+              onBarcodeScanned={canScan ? onBarcodeScanned : undefined}
+              barcodeScannerSettings={{ barcodeTypes: ['upc_a', 'upc_e', 'ean13', 'ean8'] }}
+            />
 
-          <TextInput
-            style={styles.input}
-            value={manualCode}
-            onChangeText={(t) => setManualCode(t.replace(/[^\d]/g, ''))}
-            keyboardType="number-pad"
-            placeholder="Enter barcode digits"
-            placeholderTextColor="#777"
-          />
+            {/* Overlay */}
+            <View pointerEvents="none" style={styles.overlay}>
+              <Text style={styles.overlayText}>
+                Align the barcode inside the frame
+              </Text>
 
-          <View style={styles.row}>
-            <View style={styles.btn}>
-              <Button title="Search" onPress={() => handleLookup(manualCode)} />
-            </View>
+              <View style={styles.frame} />
 
-            <View style={styles.btn}>
-              <Button
-                title="Rescan"
-                onPress={() => {
-                  setScanned(false);
-                  setManualCode('');
-                }}
-              />
-            </View>
-
-            <View style={styles.btn}>
-              <Button title="Back" onPress={() => router.back()} />
+              <Text style={styles.overlaySubText}>
+                {loading ? 'Looking up product…' : scanned ? 'Scanned ✓ Tap Rescan to scan again' : 'Scanning is on'}
+              </Text>
             </View>
           </View>
 
-          {loading ? <ActivityIndicator style={{ marginTop: 8 }} /> : null}
-        </View>
-      </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
+          {/* Bottom sheet */}
+          <View style={styles.sheet}>
+            <View style={styles.sheetHandle} />
+
+            <Text style={styles.sheetTitle}>Manual entry</Text>
+            <Text style={styles.sheetSubtitle}>Type the barcode digits (8–14)</Text>
+
+            <TextInput
+              style={styles.input}
+              value={manualCode}
+              onChangeText={(t) => setManualCode(t.replace(/[^\d]/g, ''))}
+              keyboardType="number-pad"
+              placeholder="e.g. 012345678905"
+              placeholderTextColor="#888"
+            />
+
+            <View style={styles.actions}>
+              <Pressable
+                style={[styles.primaryBtn, (!canSearchManual || loading) && styles.btnDisabled]}
+                onPress={() => handleLookup(manualCode)}
+                disabled={!canSearchManual || loading}
+              >
+                <Text style={styles.primaryBtnText}>Search</Text>
+              </Pressable>
+
+              <View style={styles.secondaryRow}>
+                <Pressable
+                  style={[styles.outlineBtn, loading && styles.btnDisabled]}
+                  onPress={() => {
+                    setScanned(false);
+                    setManualCode('');
+                  }}
+                  disabled={loading}
+                >
+                  <Text style={styles.outlineBtnText}>Rescan</Text>
+                </Pressable>
+
+                <Pressable
+                  style={[styles.ghostBtnSmall, loading && styles.btnDisabled]}
+                  onPress={() => router.back()}
+                  disabled={loading}
+                >
+                  <Text style={styles.ghostBtnText}>Back</Text>
+                </Pressable>
+              </View>
+
+              {loading ? (
+                <View style={styles.loadingRow}>
+                  <ActivityIndicator />
+                  <Text style={styles.loadingText}>Searching…</Text>
+                </View>
+              ) : null}
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
+    </>
   );
 };
 
@@ -350,6 +187,7 @@ export default BarcodeScanner;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000'
   },
   cameraWrap: {
     flex: 1,
@@ -357,43 +195,128 @@ const styles = StyleSheet.create({
   camera: {
     flex: 1,
   },
-  panel: {
-    padding: 12,
-    borderTopWidth: 1,
-    borderColor: '#ddd',
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+  },
+  overlayText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+    marginBottom: 12,
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowRadius: 6,
+  },
+  overlaySubText: {
+    color: '#fff',
+    marginTop: 12,
+    fontSize: 12,
+    opacity: 0.9,
+    textAlign: 'center',
+    textShadowColor: '#000',
+    textShadowRadius: 6,
+  },
+  frame: {
+    width: '82%',
+    height: 140,
+    borderRadius: 14,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: 'rgba(0,0,0,0.15)',
+  },
+
+  sheet: {
     backgroundColor: '#fff',
+    padding: 14,
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    borderTopWidth: 1,
+    borderColor: '#eee',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 10,
   },
-  panelTitle: {
-    fontWeight: '600',
-    marginBottom: 8,
+  sheetHandle: {
+    alignSelf: 'center',
+    width: 44,
+    height: 5,
+    borderRadius: 99,
+    backgroundColor: '#ddd',
+    marginBottom: 10,
   },
+  sheetTitle: { fontSize: 16, fontWeight: '800', marginBottom: 2 },
+  sheetSubtitle: { fontSize: 12, color: '#666', marginBottom: 10 },
+
   input: {
     borderWidth: 1,
     borderColor: '#bbb',
-    borderRadius: 6,
-    padding: 10,
-    marginBottom: 10,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    backgroundColor: '#fafafa',
+    marginBottom: 12,
   },
-  row: {
+
+  actions: { gap: 10 },
+
+  primaryBtn: {
+    backgroundColor: '#0077FF',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  primaryBtnText: { color: '#fff', fontWeight: '800' },
+
+  secondaryRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
     justifyContent: 'space-between',
   },
-  btn: {
+  outlineBtn: {
     flex: 1,
+    borderWidth: 1,
+    borderColor: '#0077FF',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#fff',
   },
+  outlineBtnText: { color: '#0077FF', fontWeight: '800' },
+
+  ghostBtnSmall: {
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#f3f3f3',
+  },
+  ghostBtn: {
+    marginTop: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+    backgroundColor: '#f3f3f3',
+  },
+  ghostBtnText: { color: '#222', fontWeight: '700' },
+
+  btnDisabled: { opacity: 0.5 },
+
+  loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2 },
+  loadingText: { color: '#444', fontWeight: '600' },
+
   permissionContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: 22,
+    backgroundColor: '#fff',
   },
-  permissionText: {
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  permissionBtn: {
-    width: 240,
-    marginVertical: 6,
-  },
+  permissionTitle: { fontSize: 18, fontWeight: '800', marginBottom: 6 },
+  permissionText: { textAlign: 'center', marginBottom: 14, color: '#555' },
 });

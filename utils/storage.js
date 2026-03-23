@@ -1,7 +1,13 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// primary keys used by current helpers
 const FOOD_LOG_KEY = '@food_log';
 const SYMPTOMS_LOG_KEY = '@symptoms_log';
+
+// legacy keys produced by older components (food_log.jsx, symptom_log.jsx, etc.)
+const LEGACY_FOOD_LOG_KEY = 'foodLog';
+const LEGACY_SYMPTOMS_LOG_KEY = 'symptomLog';
+
 const USER_KEY = '@user_data';
 const USER_LOGIN_DATES_KEY = '@user_login_dates';
 const UI_WELCOME_BANNER_DISMISSED_DATE = '@ui_welcome_banner_dismissed_date';
@@ -12,7 +18,10 @@ export const saveFoodEntry = async (foodEntry) => {
   try {
     const existingLogs = await getFoodLogs();
     const updatedLogs = [foodEntry, ...existingLogs];
-    await AsyncStorage.setItem(FOOD_LOG_KEY, JSON.stringify(updatedLogs));
+    const data = JSON.stringify(updatedLogs);
+    // write to both new and legacy key so future reads are consistent
+    await AsyncStorage.setItem(FOOD_LOG_KEY, data);
+    await AsyncStorage.setItem(LEGACY_FOOD_LOG_KEY, data);
     return true;
   } catch (error) {
     console.error('Error saving food entry:', error);
@@ -22,8 +31,13 @@ export const saveFoodEntry = async (foodEntry) => {
 
 export const getFoodLogs = async () => {
   try {
-    const logs = await AsyncStorage.getItem(FOOD_LOG_KEY);
-    return logs ? JSON.parse(logs) : [];
+    let logs = await AsyncStorage.getItem(FOOD_LOG_KEY);
+    if (logs !== null) {
+      return JSON.parse(logs);
+    }
+    // if nothing under primary key, fall back to legacy location
+    const legacy = await AsyncStorage.getItem(LEGACY_FOOD_LOG_KEY);
+    return legacy ? JSON.parse(legacy) : [];
   } catch (error) {
     console.error('Error getting food logs:', error);
     return [];
@@ -52,7 +66,9 @@ export const saveSymptomEntry = async (symptomEntry) => {
   try {
     const existingLogs = await getSymptomLogs();
     const updatedLogs = [symptomEntry, ...existingLogs];
-    await AsyncStorage.setItem(SYMPTOMS_LOG_KEY, JSON.stringify(updatedLogs));
+    const data = JSON.stringify(updatedLogs);
+    await AsyncStorage.setItem(SYMPTOMS_LOG_KEY, data);
+    await AsyncStorage.setItem(LEGACY_SYMPTOMS_LOG_KEY, data);
     return true;
   } catch (error) {
     console.error('Error saving symptom entry:', error);
@@ -62,8 +78,12 @@ export const saveSymptomEntry = async (symptomEntry) => {
 
 export const getSymptomLogs = async () => {
   try {
-    const logs = await AsyncStorage.getItem(SYMPTOMS_LOG_KEY);
-    return logs ? JSON.parse(logs) : [];
+    let logs = await AsyncStorage.getItem(SYMPTOMS_LOG_KEY);
+    if (logs !== null) {
+      return JSON.parse(logs);
+    }
+    const legacy = await AsyncStorage.getItem(LEGACY_SYMPTOMS_LOG_KEY);
+    return legacy ? JSON.parse(legacy) : [];
   } catch (error) {
     console.error('Error getting symptom logs:', error);
     return [];
@@ -99,7 +119,9 @@ export const deleteSymptomEntry = async (entryId) => {
       return false; // No entries were removed - ID not found
     }
 
-    await AsyncStorage.setItem(SYMPTOMS_LOG_KEY, JSON.stringify(updatedLogs));
+    const data = JSON.stringify(updatedLogs);
+    await AsyncStorage.setItem(SYMPTOMS_LOG_KEY, data);
+    await AsyncStorage.setItem(LEGACY_SYMPTOMS_LOG_KEY, data);
     return true;
   } catch (error) {
     console.error('Error deleting symptom entry:', error);
@@ -171,7 +193,9 @@ export const deleteFoodEntry = async (entryId) => {
       return false; // No entries were removed - ID not found
     }
     
-    await AsyncStorage.setItem(FOOD_LOG_KEY, JSON.stringify(updatedLogs));
+    const data = JSON.stringify(updatedLogs);
+    await AsyncStorage.setItem(FOOD_LOG_KEY, data);
+    await AsyncStorage.setItem(LEGACY_FOOD_LOG_KEY, data);
     return true;
   } catch (error) {
     console.error('Error deleting food entry:', error);

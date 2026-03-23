@@ -1,18 +1,22 @@
-export async function offSearch(query) {
-  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(
-    query
-  )}&search_simple=1&action=process&json=1&page_size=20`;
+export const offSearch = async (query) => {
+  const url =
+    `https://world.openfoodfacts.org/cgi/search.pl` +
+    `?search_terms=${encodeURIComponent(query)}` +
+    `&search_simple=1` +
+    `&action=process` +
+    `&json=1` +
+    `&page_size=20`;
 
-  try {
-    const res = await fetch(url);
-    const data = await res.json();
+  const response = await fetch(url);
 
-    return Array.isArray(data.products) ? data.products : [];
-  } catch (err) {
-    console.error("OpenFoodFacts error:", err);
-    return [];
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
   }
-}
+
+  const data = await response.json();
+
+  return data.products || [];
+};
 
 export async function offGetProductByBarcode(barcode) {
   const url = `https://world.openfoodfacts.net/api/v2/product/${encodeURIComponent(barcode)}`;
