@@ -55,6 +55,42 @@ const settings = () => {
     );
   };
 
+  const deleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "This will permanently delete your account and all your data. This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete Account",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await AsyncStorage.multiRemove([
+                "user_name",
+                "foodLog",
+                "symptomLog",
+                "evaluationHistory",
+              ]);
+              try {
+                await supabase.rpc('delete_user');
+              } catch (rpcError) {
+                console.log('delete_user RPC not available:', rpcError);
+              }
+              const { error } = await supabase.auth.signOut();
+              if (error) console.error('Sign out error during account deletion:', error);
+              setAuth(null);
+              router.replace('/welcome');
+            } catch (error) {
+              console.error("Error deleting account:", error);
+              Alert.alert("Error", "Failed to delete account. Please try again.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <View style={[{justifyContent: 'center'}, {alignItems: 'center'}, {flex:1}]}>
       
@@ -73,12 +109,20 @@ const settings = () => {
         <Text style={styles.buttonText}>🔑 Logout</Text>
       </Pressable>
 
-      {/* Delete - Danger Color */}
+      {/* Delete All Data */}
       <Pressable 
         style={[styles.button, { backgroundColor: '#e74c3c' }]} 
         onPress={removeUserData}
       >
         <Text style={styles.buttonText}>⚠️ Delete All Data</Text>
+      </Pressable>
+
+      {/* Delete Account */}
+      <Pressable 
+        style={[styles.button, { backgroundColor: '#7b0000' }]} 
+        onPress={deleteAccount}
+      >
+        <Text style={styles.buttonText}>🗑️ Delete Account</Text>
       </Pressable>
 
     </View>

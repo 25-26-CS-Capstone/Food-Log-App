@@ -1,5 +1,46 @@
 # Testing Guide: Notification Feature
 
+## Automated Full Test Run (Jest)
+
+Run this from the project root:
+
+```bash
+npm test -- --runInBand --detectOpenHandles
+```
+
+Expected clean result:
+- `Test Suites: 2 passed, 2 total`
+- `Tests: 30 passed, 30 total`
+- No `Jest has detected open handles` warning
+
+Use this command before pushing changes to `sebastest` to confirm the suite exits cleanly.
+
+## Cross-Platform Smoke Test (iOS / Android / Web)
+
+### Goal
+Validate that authentication persistence and login notifications work on all supported platforms.
+
+### Run Commands
+- iOS: `npm run ios`
+- Android: `npm run android`
+- Web browser: `npm run web`
+
+### Steps
+1. Register a new user with name, email, and password.
+2. Close and reopen the app/browser tab.
+3. Log in with that account.
+4. Confirm login success and user data persistence (`name`, `email`, `lastLogin`, login day count).
+5. Confirm login notification behavior:
+  - iOS/Android: local push appears.
+  - Web: browser notification appears (or alert fallback).
+
+### Pass Criteria
+- [ ] Login works on iOS
+- [ ] Login works on Android
+- [ ] Login works on Web
+- [ ] User data persists after relaunch/reload
+- [ ] Login notification appears on all platforms (native push or web fallback)
+
 ## Quick Test (5 minutes)
 
 ### Test Case 1: Welcome Notification on Login

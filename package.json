@@ -10,7 +10,19 @@
     "test": "jest"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "modulePathIgnorePatterns": [
+      "<rootDir>/testing/"
+    ],
+    "testPathIgnorePatterns": [
+      "<rootDir>/testing/"
+    ],
+    "watchPathIgnorePatterns": [
+      "<rootDir>/testing/"
+    ]
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",

@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { sendWelcomeWithLogsLink } from '../utils/notifications'
 import { useAuth } from './AuthContext'
+import { getUserData, recordTodayLoginDay, saveUserData } from '../utils/storage'
 import { router } from 'expo-router'
 
 const Login = () => {
@@ -35,15 +36,33 @@ const Login = () => {
       // Login successful - set auth and send welcome notification
       if (data?.user) {
         setAuth(data.user)
+
+        const existingUserData = await getUserData()
+        const loginDayCount = await recordTodayLoginDay()
+
         // Get user's name from metadata or email
-        const userName = data.user.user_metadata?.name || email.split('@')[0] || 'User'
-        // Send welcome notification with deep link to logs (only on native)
-        if (Platform.OS !== 'web') {
-          try {
-            await sendWelcomeWithLogsLink(userName)
-          } catch (error) {
-            console.log('Notification not available:', error)
-          }
+        const userName = data.user.user_metadata?.name || email.trim().split('@')[0] || 'User'
+
+        await saveUserData({
+          ...existingUserData,
+          userId: data.user.id,
+          email: data.user.email || email.trim(),
+          name: userName,
+          lastLogin: new Date().toISOString(),
+          loginDayCount: loginDayCount ?? existingUserData?.loginDayCount ?? 0,
+          notificationsEnabled: existingUserData?.notificationsEnabled !== false,
+        })
+
+        try {
+          await sendWelcomeWithLogsLink(userName)
+        } catch (error) {
+          console.log('Notification not available:', error)
+        }
+
+        if (Platform.OS === 'web') {
+          window.alert(`Login successful. Welcome back, ${userName}!`)
+        } else {
+          Alert.alert('Login successful', `Welcome back, ${userName}!`)
         }
       }
     }
@@ -54,10 +73,10 @@ const Login = () => {
   return (
     <View style={{margin:20}}>
       <Text style={{paddingBottom:5}}>Enter email</Text>
-      <TextInput value={email} onChangeText={setEmail} placeholder="Email" placeholderTextColor="gray" style={styles.input}/>
+      <TextInput testID="Email" value={email} onChangeText={setEmail} placeholder="Email" placeholderTextColor="gray" style={styles.input}/>
       <Text style={{paddingBottom:5}}>Enter password</Text>
-      <TextInput value={password} onChangeText={setPassword} placeholder="Password" placeholderTextColor="gray" style={styles.input} secureTextEntry/>
-      <Button title="Login" onPress={signInWithEmail} disabled={loading} />
+      <TextInput testID="Password" value={password} onChangeText={setPassword} placeholder="Password" placeholderTextColor="gray" style={styles.input} secureTextEntry/>
+      <Button testID="Login" title="Login" onPress={signInWithEmail} disabled={loading} />
     </View>
   )
 }
