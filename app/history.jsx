@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import moment from "moment";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { supabase } from '../lib/supabase';
 
 export default function History() {
   const [foodLogs, setFoodLogs] = useState([]);
@@ -36,10 +37,24 @@ export default function History() {
     loadEvaluationHistory();
   }, []);
 
-  const loadFoodLogs = async () => {
-    const saved = await AsyncStorage.getItem("foodLog");
-    setFoodLogs(saved ? JSON.parse(saved) : []);
-  };
+const loadFoodLogs = async () => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('food_log')
+      .select('*')
+      .eq('user_id', user.id)
+      .is('deleted_at', null);
+
+    if (error) throw error;
+
+    setFoodLogs(data ?? []);
+  } catch (err) {
+    console.error('Error loading food logs:', err);
+  }
+};
 
   const loadSymptomLogs = async () => {
     const saved = await AsyncStorage.getItem("symptomLog");
@@ -137,7 +152,6 @@ export default function History() {
     );
 
     setFoodLogs(updated);
-    await AsyncStorage.setItem("foodLog", JSON.stringify(updated));
     setFoodModal(false);
   };
 
@@ -154,9 +168,6 @@ export default function History() {
 
     setFoodLogs(newFoodLogs);
     setSymptomLogs(newSymptomLogs);
-
-    await AsyncStorage.setItem("foodLog", JSON.stringify(newFoodLogs));
-    await AsyncStorage.setItem("symptomLog", JSON.stringify(newSymptomLogs));
 
     setDeleteFoodModal(false);
   };
@@ -181,7 +192,7 @@ export default function History() {
     }
 
     if (sortBy === "date") {
-      filtered.sort((a, b) => moment(b.date).diff(moment(a.date)));
+      filtered.sort((a, b) => moment(b.date_time).diff(moment(a.date_time)));
     } else if (sortBy === "alpha-asc") {
       filtered.sort((a, b) => a.foodName.localeCompare(b.foodName));
     } else if (sortBy === "alpha-desc") {
@@ -214,7 +225,7 @@ export default function History() {
 
         return (
           <View key={food.id} style={styles.card}>
-            <Text style={styles.foodTitle}>{food.foodName}</Text>
+            <Text style={styles.foodTitle}>{food.food_name}</Text>
 
             {food.brand ? (
               <Text style={styles.detail}>Brand: {food.brand}</Text>
@@ -222,18 +233,17 @@ export default function History() {
 
             <Text style={styles.subHeader}>Calories:</Text>
             <Text style={styles.detail}>
-              {food.product?.calories != null ? food.product.calories: "Unknown"}
+              {food.calories != null ? food.calories : "Unknown"}
             </Text>
 
             <Text style={styles.subHeader}>Ingredients:</Text>
             <Text style={styles.detail}>
-              {food.product?.ingredients || "Not provided"}
+              {food.ingredients || "Not provided"}
             </Text>
 
             <Text style={styles.subHeader}>Allergens:</Text>
             <Text style={styles.detail}>
-              {food.product?.allergens?.length
-                ? food.product.allergens.join(", ") : "No allergens detected"}
+              {food.allergens?.length ? food.allergens.join(", ") : "No allergens detected"}
             </Text>
 
 
@@ -364,6 +374,7 @@ export default function History() {
             <TextInput
               style={styles.input}
               placeholder={`Search by ${searchType}...`}
+              placeholderTextColor="#999"
               value={searchQuery}
               onChangeText={setSearchQuery}
             />

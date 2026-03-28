@@ -3,16 +3,17 @@ import React, { useEffect } from 'react'
 import { Stack, Link, useRouter } from 'expo-router'
 import { AuthProvider } from './AuthContext'
 import { initNotifications, setNotificationNavigationCallback } from '../utils/notifications'
+import { startPeriodicSync } from '../lib/syncService'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 const _layout = ()=>{
   const router = useRouter()
   
   useEffect(() => {
-    // Initialize notifications with navigation callback
+  const init = async () => {
+
     const navigationCallback = (data) => {
       console.log('Notification navigation data:', data)
-      
-      // Handle different notification types
       if (data.route) {
         router.push(`/${data.route}`)
       } else if (data.type === 'welcome_with_logs') {
@@ -23,8 +24,7 @@ const _layout = ()=>{
         router.push('/symptom_log')
       }
     }
-    
-    // Initialize notification system (only on native platforms)
+
     if (Platform.OS !== 'web') {
       try {
         initNotifications(navigationCallback)
@@ -33,7 +33,14 @@ const _layout = ()=>{
         console.log('Notification service not available:', error)
       }
     }
-  }, [router])
+  }
+
+  init();
+
+  const stopSync = startPeriodicSync(30000);
+  return () => stopSync(); 
+
+}, [router])
 
   return (
       <AuthProvider>

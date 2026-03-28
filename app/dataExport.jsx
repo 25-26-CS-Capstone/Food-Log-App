@@ -255,11 +255,11 @@ const DataExport = () => {
               style={styles.quickRangeButton}
               onPress={() => {
                 const newStart = new Date();
-                newStart.setMonth(newStart.getMonth() - 1);
+                newStart.setDate(newStart.getDate() - 90);
                 setStartDate(newStart);
               }}
             >
-              <Text style={styles.quickRangeText}>Last Month</Text>
+              <Text style={styles.quickRangeText}>Last 90 Days </Text>
             </TouchableOpacity>
           </View>
         </View>

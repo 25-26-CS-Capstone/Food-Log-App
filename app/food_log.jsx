@@ -1,6 +1,6 @@
 // app/food_log.jsx
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, FlatList, StyleSheet, Text, TouchableOpacity, Alert, Pressable, } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, TextInput, Button, FlatList, StyleSheet, Text, TouchableOpacity, Alert, Pressable, ActivityIndicator } from 'react-native';
 
 import { Picker } from '@react-native-picker/picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
@@ -15,6 +15,10 @@ import {
 } from '../lib/allergens';
 
 import { useLocalSearchParams } from 'expo-router';
+import { syncSupabaseChangesToLocal, queueLocalChange, syncLocalChangesToSupabase } from '../lib/syncService';
+
+import 'react-native-get-random-values';
+import { v4 as uuidv4 } from 'uuid';
 
 /* ---------------- CONSTANTS ---------------- */
 
@@ -29,13 +33,16 @@ const MEAL_COLORS = {
 
 const FoodLog = () => {
   const router = useRouter();
+  const searchTimeout = useRef(null);
 
   const [foodName, setFoodName] = useState('');
   const [mealType, setMealType] = useState('breakfast');
 
   const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-
+  const [servings, setServings] = useState(1); 
   const [selectedDateTime, setSelectedDateTime] = useState(null);
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
 
@@ -44,17 +51,19 @@ const FoodLog = () => {
   const params = useLocalSearchParams();
 
   /* ---------------- LOAD SAVED LOGS ---------------- */
-
   useEffect(() => {
-    const loadLogs = async () => {
-      try {
-        const saved = await AsyncStorage.getItem('foodLog');
-        if (saved) setLog(JSON.parse(saved));
-      } catch (err) {
-        console.error('Error loading food logs:', err);
-      }
-    };
-    loadLogs();
+  const clearLegacyStorage = async () => {
+    const cleared = await AsyncStorage.getItem('storage_cleared_v1');
+    if (!cleared) {
+      await AsyncStorage.removeItem('foodLog');
+      await AsyncStorage.removeItem('food_log_list');
+      await AsyncStorage.removeItem('pending_changes');
+      await AsyncStorage.removeItem('last_sync_timestamp');
+      await AsyncStorage.setItem('storage_cleared_v1', 'true');
+    }
+    setLog([]);
+  };
+  clearLegacyStorage();
   }, []);
 
   useEffect(() => {
@@ -65,20 +74,31 @@ const FoodLog = () => {
 
   /* ---------------- SEARCH FOOD ---------------- */
 
-  const handleSearch = async () => {
-    if (!foodName.trim()) {
-      Alert.alert('Error', 'Please enter a food name.');
+  const handleSearch = (text) => {
+    setFoodName(text);
+    setHasSearched(false);
+    setSearchResults([]);
+
+    if (searchTimeout.current) clearTimeout(searchTimeout.current);
+
+    if (!text.trim()) {
+      setIsSearching(false);
       return;
     }
 
-    try {
-      const products = await offSearch(foodName.trim());
-      setSearchResults(products);
-    } catch (err) {
-      console.error(err);
-      Alert.alert('Error', 'Could not search foods.');
-    }
-  };
+    searchTimeout.current = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const products = await offSearch(text.trim());
+        setSearchResults(products);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsSearching(false);
+        setHasSearched(true);
+      }
+    }, 500);
+};
 
   /* ---------------- SELECT PRODUCT ---------------- */
 
@@ -122,19 +142,28 @@ const FoodLog = () => {
     }
 
     const newEntry = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       foodName: selectedProduct?.name || foodName,
-      date: selectedDateTime,
-      mealType,
+      date_time: selectedDateTime,
+      meal_type: mealType,
+      servings,
+      calories:
+        selectedProduct?.calories != null
+          ? (selectedProduct.calories * servings).toFixed(0)
+          : null,
       color: MEAL_COLORS[mealType],
-      product: selectedProduct || null,
+      product_code: selectedProduct?.code || null,
+      brand: selectedProduct?.brand || null,
+      ingredients: selectedProduct?.ingredients || null,
+      allergens: selectedProduct?.allergens || [],
     };
 
     const updated = [...log, newEntry];
     setLog(updated);
 
     try {
-      await AsyncStorage.setItem('foodLog', JSON.stringify(updated));
+      await queueLocalChange('create', 'food_log', newEntry);
+      await syncLocalChangesToSupabase();
       Alert.alert('Saved', 'Food log saved successfully.');
     } catch (err) {
       console.error(err);
@@ -144,6 +173,8 @@ const FoodLog = () => {
     setFoodName('');
     setSelectedProduct(null);
     setSelectedDateTime(null);
+    setServings(1);
+    setHasSearched(false);
   };
 
   /* ---------------- RENDER ---------------- */
@@ -154,13 +185,23 @@ const FoodLog = () => {
       <TextInput
         style={styles.input}
         placeholder="Search for food..."
+        placeholderTextColor={"#999"}
         value={foodName}
-        onChangeText={setFoodName}
+        onChangeText={handleSearch}
       />
 
-      <Button title="Search Food" onPress={handleSearch} />
       <Button title="Scan Barcode" onPress={() => router.push('/barcode_scanner')} />
 
+      {isSearching && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#224ec5" />
+          <Text style={styles.loadingText}>Searching...</Text>
+        </View>
+      )}
+ 
+      {!isSearching && hasSearched && searchResults.length === 0 && (
+        <Text style={styles.noResults}>No results found. Try a different search term.</Text>
+      )}
 
       <FlatList
         data={searchResults}
@@ -273,10 +314,29 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#f9f9f9' },
   input: {
     height: 40,
+    backgroundColor: 'white',
+    color: '#000',
     borderColor: 'gray',
     borderWidth: 1,
     marginBottom: 10,
     paddingLeft: 10,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    gap: 8,
+  },
+  loadingText: {
+    fontSize: 13,
+    color: 'gray',
+  },
+  noResults: {
+    textAlign: 'center',
+    color: 'gray',
+    fontSize: 13,
+    paddingVertical: 12,
   },
   searchResult: {
     paddingVertical: 8,
