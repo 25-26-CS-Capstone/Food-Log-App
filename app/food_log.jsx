@@ -5,7 +5,7 @@ import { View, TextInput, Button, FlatList, StyleSheet, Text, TouchableOpacity, 
 import { Picker } from '@react-native-picker/picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import moment from 'moment';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { offSearch } from '../lib/openfoodfacts';
@@ -67,10 +67,10 @@ const FoodLog = () => {
   }, []);
 
   useEffect(() => {
-  if (params?.scannedName) {
-    setFoodName(String(params.scannedName));
-  }
-}, [params?.scannedName]);
+    if (params?.scannedName) {
+      setFoodName(String(params.scannedName));
+    }
+  }, [params?.scannedName]);
 
   /* ---------------- SEARCH FOOD ---------------- */
 
@@ -129,6 +129,7 @@ const FoodLog = () => {
       brand: product.brands || '',
     });
 
+    setServings(1);
     setFoodName(name);
     setSearchResults([]);
   };
@@ -136,10 +137,12 @@ const FoodLog = () => {
   /* ---------------- SUBMIT LOG ---------------- */
 
   const handleSubmit = async () => {
-    if (!foodName || !selectedDateTime) {
-      Alert.alert('Error', 'Please choose a food and date/time.');
-      return;
-    }
+    if (!foodName) {
+  Alert.alert('Error', 'Please choose a food.');
+  return;
+}
+
+const finalDate = selectedDateTime || new Date();
 
     const newEntry = {
       id: uuidv4(),
@@ -244,55 +247,138 @@ const FoodLog = () => {
 
       {selectedProduct && (
         <>
-          <Text style={styles.label}>Meal Type</Text>
-          <Picker
-            selectedValue={mealType}
-            onValueChange={setMealType}
-          >
-            <Picker.Item label="Breakfast" value="breakfast" />
-            <Picker.Item label="Lunch" value="lunch" />
-            <Picker.Item label="Dinner" value="dinner" />
-            <Picker.Item label="Snack" value="snack" />
-          </Picker>
-
-          <Button
-            title={
-              selectedDateTime
-                ? moment(selectedDateTime).format('MMMM Do YYYY, h:mm a')
-                : 'Pick Date & Time'
-            }
-            onPress={() => setDatePickerVisible(true)}
+          <TextInput
+            style={styles.input}
+            placeholder="Search for food..."
+            value={foodName}
+            onChangeText={setFoodName}
           />
+
+          <Button title="Search Food" onPress={handleSearch} />
+          <Button
+            title="Scan Barcode"
+            onPress={() => router.push('/barcode_scanner')}
+          />
+
+          {/* SELECTED PRODUCT CARD */}
+          {selectedProduct && (
+            <View style={styles.selectedCard}>
+              <Text style={styles.selectedTitle}>
+                {selectedProduct.name}
+              </Text>
+
+              {selectedProduct.brand && (
+                <Text style={styles.selectedSub}>
+                  Brand: {selectedProduct.brand}
+                </Text>
+              )}
+
+              {selectedProduct.calories != null && (
+                <Text>
+                  Calories: {(selectedProduct.calories * servings).toFixed(0)}
+                </Text>
+              )}
+
+              {/* 👇 FIX LONG INGREDIENTS PROPERLY */}
+              <Text style={{ marginTop: 8, fontWeight: '600' }}>
+                Ingredients:
+              </Text>
+
+              <Text style={{ marginBottom: 8 }}>
+                {selectedProduct.ingredients || 'N/A'}
+              </Text>
+
+              <Text>
+                Allergens:{' '}
+                {selectedProduct.allergens.length > 0
+                  ? selectedProduct.allergens.join(', ')
+                  : 'None detected'}
+              </Text>
+
+              {/* SERVINGS */}
+              <Text style={styles.label}>Servings</Text>
+
+              <View style={styles.servingsRow}>
+                <TouchableOpacity
+                  style={styles.servingButton}
+                  onPress={() =>
+                    setServings((prev) => Math.max(0.5, prev - 0.5))
+                  }
+                >
+                  <Text style={styles.servingButtonText}>-</Text>
+                </TouchableOpacity>
+
+                <Text style={styles.servingsText}>{servings}</Text>
+
+                <TouchableOpacity
+                  style={styles.servingButton}
+                  onPress={() => setServings((prev) => prev + 0.5)}
+                >
+                  <Text style={styles.servingButtonText}>+</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {selectedProduct && (
+            <>
+              <Text style={styles.label}>Meal Type</Text>
+              <Picker
+                selectedValue={mealType}
+                onValueChange={setMealType}
+              >
+                <Picker.Item label="Breakfast" value="breakfast" />
+                <Picker.Item label="Lunch" value="lunch" />
+                <Picker.Item label="Dinner" value="dinner" />
+                <Picker.Item label="Snack" value="snack" />
+              </Picker>
+
+              <Button
+                title={
+                  selectedDateTime
+                    ? moment(selectedDateTime).format(
+                        'MMMM Do YYYY, h:mm a'
+                      )
+                    : 'Pick Date & Time'
+                }
+                onPress={() => setDatePickerVisible(true)}
+              />
+            </>
+          )}
+
+          {selectedProduct && (
+  <Button title="Submit Log" onPress={handleSubmit} />
+)}
+
+          <Pressable
+            style={styles.navButton}
+            onPress={() =>
+              router.push({
+                pathname: '/symptom_log',
+                params: { foodLogData: JSON.stringify(log) },
+              })
+            }
+          >
+            <Text style={styles.navButtonText}>
+              Go to Symptom Log
+            </Text>
+          </Pressable>
         </>
-      )}
-
-      {selectedProduct && selectedDateTime && (
-        <Button title="Submit Log" onPress={handleSubmit} />
-      )}
-
-      <Text style={[styles.label, { marginTop: 20 }]}>Recent Logs:</Text>
-
-      <Button
-        title="Log Symptom(s)"
-        onPress={() =>
-          router.push({
-            pathname: '/symptom_log',
-            params: { foodLogData: JSON.stringify(log) },
-          })
-        }
-      />
-
-      <Pressable
-          style={[styles.button, { borderRadius:15, backgroundColor: 'midnightblue', padding: 10, marginTop: 30, marginBottom:10, width: 200, alignItems: 'center' }]}
-          onPress={() =>
-            router.push({
-              pathname: '/symptom_log',
-              params: { foodLogData: JSON.stringify(log) },
-            })
-          }
+      }
+      renderItem={({ item }) => (
+        <TouchableOpacity
+          style={styles.searchResult}
+          onPress={() => handleSelectProduct(item)}
         >
-          <Text style={{ color: 'white', fontWeight: 'bold' }}>Go to Symptom Log</Text>
-      </Pressable>
+          <Text style={styles.searchName}>
+            {item.product_name_en || item.product_name || 'Unnamed'}
+          </Text>
+          {item.brands && (
+            <Text style={styles.searchSub}>{item.brands}</Text>
+          )}
+        </TouchableOpacity>
+      )}
+    />
 
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
@@ -311,7 +397,8 @@ const FoodLog = () => {
 /* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f9f9f9' },
+  container: { flex: 1, padding: 20, backgroundColor: '#eef2ff' },
+
   input: {
     height: 40,
     backgroundColor: 'white',
@@ -343,8 +430,10 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
+
   searchName: { fontWeight: '600' },
   searchSub: { fontSize: 12, color: 'gray' },
+
   selectedCard: {
     marginTop: 12,
     padding: 12,
@@ -353,16 +442,50 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#eee',
   },
+
   selectedTitle: { fontSize: 16, fontWeight: '700' },
   selectedSub: { fontSize: 13, color: 'gray' },
   label: { marginTop: 10, fontWeight: '600' },
-  logItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+
+  servingsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
   },
-  button: {
+
+  servingButton: {
+    backgroundColor: '#22c55e',
+    paddingHorizontal: 15,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+
+  servingButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+
+  servingsText: {
+    marginHorizontal: 15,
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  navButton: {
+    borderRadius: 15,
+    backgroundColor: 'midnightblue',
+    padding: 10,
+    marginTop: 30,
+    marginBottom: 10,
+    width: 200,
+    alignItems: 'center',
     alignSelf: 'center',
+  },
+
+  navButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 
