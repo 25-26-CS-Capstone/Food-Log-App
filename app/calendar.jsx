@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from "react-native";
 import { useRouter, useFocusEffect, Stack } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from '../lib/supabase';
 
 const MEAL_COLORS = {
   breakfast: "#fbc02d",
@@ -33,26 +33,15 @@ function monthMatrix(year, monthIndex) {
 function aggregateDay(entries = []) {
   return entries.reduce(
     (acc, e) => {
-      const p = e.product || {};
+      if (e.calories) acc.calories += Number(e.calories);
+      if (e.protein)  acc.protein  += Number(e.protein);
+      if (e.carbs)    acc.carbs    += Number(e.carbs);
+      if (e.fat)      acc.fat      += Number(e.fat);
 
-      if (e.totalCalories) {
-        acc.calories += Number(e.totalCalories);
-      } else if (p.calories) {
-        const servings = e.servings || 1;
-        acc.calories += p.calories * servings;
+      if (e.meal_type && e.color) {
+        acc.meals.add(JSON.stringify({ type: e.meal_type, color: e.color }));
       }
-
-      if (p.protein) acc.protein += p.protein * (e.servings || 1);
-      if (p.carbs) acc.carbs += p.carbs * (e.servings || 1);
-      if (p.fat) acc.fat += p.fat * (e.servings || 1);
-
-      if (e.mealType && e.color) {
-        acc.meals.add(JSON.stringify({ type: e.mealType, color: e.color }));
-      }
-
-      if (p.allergens?.length) {
-        acc.hasAllergen = true;
-      }
+      if (e.allergens?.length) acc.hasAllergen = true;
 
       return acc;
     },
@@ -63,6 +52,7 @@ function aggregateDay(entries = []) {
 export default function CalendarPage() {
   const router = useRouter();
   const today = useMemo(() => new Date(), []);
+  const [foodList, setFoodList] = useState([]);
   const [cursor, setCursor] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [selected, setSelected] = useState(ymd(today));
   const [logsByDate, setLogsByDate] = useState({});
@@ -74,33 +64,40 @@ export default function CalendarPage() {
   const cells = useMemo(() => monthMatrix(year, monthIndex), [year, monthIndex]);
 
   const loadLogs = async () => {
-    try {
-      const storedFood = await AsyncStorage.getItem("foodLog");
-      const storedSymptoms = await AsyncStorage.getItem("symptomLog");
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-      if (storedFood) {
-        const list = JSON.parse(storedFood);
-        const grouped = {};
-        list.forEach((item) => {
-          const key = ymd(new Date(item.date));
-          if (!grouped[key]) grouped[key] = [];
-          grouped[key].push(item);
-        });
-        setLogsByDate(grouped);
-      } else {
-        setLogsByDate({});
-      }
+    const { data: foodData, error: foodError } = await supabase
+      .from('food_log')
+      .select('*')
+      .eq('user_id', user.id)
+      .is('deleted_at', null);
 
-      if (storedSymptoms) {
-        setSymptomLogs(JSON.parse(storedSymptoms));
-      } else {
-        setSymptomLogs([]);
-      }
+    if (foodError) throw foodError;
 
-    } catch (err) {
-      console.error("Error loading logs:", err);
-    }
-  };
+    const grouped = {};
+    (foodData ?? []).forEach((item) => {
+      const key = ymd(new Date(item.date_time));
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(item);
+    });
+    setLogsByDate(grouped);
+    setFoodList(foodData ?? []);
+
+    const { data: symptomData, error: symptomError } = await supabase
+      .from('symptom_log')
+      .select('*')
+      .eq('user_id', user.id)
+      .is('deleted_at', null);
+
+    if (symptomError) throw symptomError;
+    setSymptomLogs(symptomData ?? []);
+
+  } catch (err) {
+    console.error('Error loading logs:', err);
+  }
+};
 
   useFocusEffect(
     React.useCallback(() => {
@@ -111,8 +108,11 @@ export default function CalendarPage() {
   const selectedEntries = logsByDate[selected] || [];
   const totals = aggregateDay(selectedEntries);
 
-  const selectedSymptoms = symptomLogs.filter(
-    (s) => ymd(new Date(s.foodDate)) === selected
+  const selectedSymptoms = symptomLogs.filter(s =>
+    s.food_log_ids?.some(id => {
+      const food = foodList.find(f => f.id === id);
+      return food && ymd(new Date(food.date_time)) === selected;
+    })
   );
 
   let healthScore = 100;
@@ -248,47 +248,44 @@ export default function CalendarPage() {
           </View>
         )}
 
-        {/* Entries List (YOUR ORIGINAL LOGIC KEPT) */}
-        {selectedEntries.length ? (
-          <View style={{ marginTop: 10 }}>
-            {selectedEntries.map((entry, index) => {
-              const matchedSymptoms = symptomLogs.filter(
-                (s) =>
-                  s.foodName === entry.foodName &&
-                  new Date(s.foodDate).toISOString() === new Date(entry.date).toISOString()
-              );
+      {selectedEntries.length ? (
+      <View style={{ marginTop: 10 }}>
+        {selectedEntries.map((entry, index) => {
+        const matchedSymptoms = symptomLogs.filter(s =>
+        s.food_log_ids?.includes(entry.id)
+      );
 
-              return (
-                <View key={entry.id || index} style={{ marginBottom: 12 }}>
-                  <View style={styles.entryRow}>
-                    <Text style={styles.entryName}>{entry.foodName}</Text>
-                    <Text style={styles.entryMeta}>
-                      {new Date(entry.date).toLocaleTimeString([], {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </Text>
-                  </View>
-
-                  {matchedSymptoms.length > 0 && (
-                    <View style={{ marginTop: 4, paddingLeft: 8 }}>
-                      <Text style={{ fontSize: 12, fontWeight: "600", color: "#b91c1c" }}>
-                        Symptoms:
-                      </Text>
-                      {matchedSymptoms.map((sym, i) => (
-                        <Text key={sym.id || i} style={{ fontSize: 12, color: "#7f1d1d" }}>
-                          • {sym.symptom}
-                        </Text>
-                      ))}
-                    </View>
-                  )}
-                </View>
-              );
-            })}
+      return (
+        <View key={entry.id || index} style={{ marginBottom: 12 }}>
+          <View style={styles.entryRow}>
+            <Text style={styles.entryName}>{entry.food_name}</Text>
+            <Text style={styles.entryMeta}>
+              {new Date(entry.date_time).toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </Text>
           </View>
-        ) : (
-          <Text style={styles.noLogs}>No logs for this date.</Text>
-        )}
+
+          {matchedSymptoms.length > 0 && (
+            <View style={{ marginTop: 4, paddingLeft: 8 }}>
+              <Text style={{ fontSize: 12, fontWeight: '600', color: '#b91c1c' }}>
+                Symptoms:
+              </Text>
+              {matchedSymptoms.map((sym) => (
+                <Text key={sym.id} style={{ fontSize: 12, color: '#7f1d1d' }}>
+                  • {sym.symptom} (Severity: {sym.severity}/10)
+                </Text>
+              ))}
+              </View>
+          )}
+          </View>
+        );
+      })}
+        </View>
+      ) : (
+      <Text style={styles.noLogs}>No logs for this date.</Text>
+      )}
       </View>
 
       {/* Weekly Summary */}

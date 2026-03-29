@@ -8,6 +8,8 @@ import {exportLogsToFile, filterLogsByDateRange, generateExportSummary,
 generateExportReport, getExportedFiles, deleteExportedFile, formatFileSize,
 readExportedFile, getDownloadsDirectory} from '../utils/dataExport';
 import { FlatList } from 'react-native';
+import { supabase } from '../lib/supabase';
+import * as Sharing from 'expo-sharing';
 
 const DataExport = () => {
   const router = useRouter();
@@ -96,15 +98,32 @@ const DataExport = () => {
   };
 
   const loadLogs = async () => {
-    try {
-      const logs = await getAllLogs();
-      setAllLogs(logs);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error loading logs:', error);
-      setIsLoading(false);
-    }
-  };
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: foodData } = await supabase
+      .from('food_log')
+      .select('*')
+      .eq('user_id', user.id)
+      .is('deleted_at', null)
+      .order('date_time', { ascending: false });
+
+    const { data: symptomData } = await supabase
+      .from('symptom_log')
+      .select('*')
+      .eq('user_id', user.id)
+      .is('deleted_at', null)
+      .order('date_time', { ascending: false });
+
+    const logs = { foodLogs: foodData ?? [], symptomLogs: symptomData ?? [] };
+    setAllLogs(logs);
+    setIsLoading(false);
+  } catch (error) {
+    console.error('Error loading logs:', error);
+    setIsLoading(false);
+  }
+};
 
   const updateFilteredLogs = () => {
     const filtered = filterLogsByDateRange(allLogs, startDate, endDate);

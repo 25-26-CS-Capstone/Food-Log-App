@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Modal, Button, ScrollView, KeyboardAvoidingView, Platform, Keyboard, Alert, } from 'react-native';
 import { Stack } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { supabase } from '../lib/supabase';
 import { evaluateAllergyRisk } from '../utils/risk_engine';
 
 /* ---------------- OPTIONS ---------------- */
@@ -56,26 +56,44 @@ export default function SymptomEvaluate() {
   const [previousReaction, setPreviousReaction] = useState('');
   const [foodType, setFoodType] = useState('');
   const [medicalConditions, setMedicalConditions] = useState([]);
-  const [severityScore, setSeverityScore] = useState('');
   const [result, setResult] = useState(null);
 
   /* ---------------- LOAD LOGGED CASES ---------------- */
 
   useEffect(() => {
-    const loadLoggedSymptoms = async () => {
-      try {
-        const stored = await AsyncStorage.getItem('symptomLog');
-        if (!stored) return;
+  const loadLoggedSymptoms = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-        const parsed = JSON.parse(stored);
-        setLoggedEntries(parsed);
-      } catch (err) {
-        console.error('Failed to load logged symptoms:', err);
-      }
-    };
+      const { data: symptoms, error } = await supabase
+        .from('symptom_log')
+        .select('*')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .order('date_time', { ascending: false });
+      if (error) throw error;
 
-    loadLoggedSymptoms();
-  }, []);
+    const enriched = await Promise.all((symptoms ?? []).map(async (s) => {
+      const firstFoodId = s.food_log_ids?.[0];
+      if (!firstFoodId) return { ...s, food_name: null, meal_type: null };
+
+      const { data: food } = await supabase
+        .from('food_log')
+        .select('food_name, meal_type')
+        .eq('id', firstFoodId)
+        .single();
+
+      return { ...s, food_name: food?.food_name ?? null, meal_type: food?.meal_type ?? null };
+    }));
+
+    setLoggedEntries(enriched);
+    } catch (err) {
+      console.error('Failed to load logged symptoms:', err);
+    }
+  };
+  loadLoggedSymptoms();
+}, []);
 
   /* ---------------- HELPERS ---------------- */
 
@@ -118,35 +136,29 @@ export default function SymptomEvaluate() {
       previousReaction,
       foodType,
       medicalConditions,
-      severityScore: Number(severityScore) || 0,
+      severityScore: selectedEntry.severity ?? 0,
     });
 
     setResult(evaluation);
 
     // Save evaluation to history
     try {
-      const existing = await AsyncStorage.getItem('evaluationHistory');
-      const parsed = existing ? JSON.parse(existing) : [];
-
-      const newHistoryEntry = {
-        id: Date.now().toString(),
+        const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+      await supabase.from('evaluation_history').insert({
+        user_id: user.id,
+        symptom_log_id: selectedEntry.id,
         symptom: selectedEntry.symptom,
-        foodName: selectedEntry.foodName,
-        mealType: selectedEntry.mealType,
+        food_name: selectedEntry.food_name,
+        meal_type: selectedEntry.meal_type,
         risk: evaluation.risk,
         confidence: evaluation.confidence,
-        evaluatedAt: new Date().toISOString(),
-      };
-
-      const updatedHistory = [...parsed, newHistoryEntry];
-
-      await AsyncStorage.setItem(
-        'evaluationHistory',
-        JSON.stringify(updatedHistory)
-      );
-    } catch (err) {
-      console.error('Failed to save evaluation history:', err);
+      });
     }
+  } catch (err) {
+    console.error('Failed to save evaluation history:', err);
+  }
+      
 
     Alert.alert(
       'Allergy Assessment',
@@ -189,22 +201,20 @@ ${evaluation.reasons.join('\n')}`
         >
           <Text>
             {selectedEntry
-              ? `${selectedEntry.symptom || 'Unknown'} – ${selectedEntry.foodName || 'Unknown'}`
+              ? `${selectedEntry.symptom} – ${selectedEntry.food_name || 'Unknown Food'}`
               : 'Select Previously Logged Case'}
           </Text>
         </TouchableOpacity>
 
 
         {selectedEntry && (
-          <View style={styles.selectedInfo}>
-            <Text style={{ fontWeight: '600' }}>
-              Selected Symptom:
-            </Text>
-            <Text>{selectedEntry.symptom}</Text>
-            <Text style={{ color: 'gray', fontSize: 12 }}>
-              {selectedEntry.foodName} · {selectedEntry.mealType}
-            </Text>
-          </View>
+        <View style={styles.selectedInfo}>
+          <Text style={{ fontWeight: '600' }}>Selected Symptom:</Text>
+          <Text>{selectedEntry.symptom}</Text>
+          <Text style={{ color: 'gray', fontSize: 12 }}>
+            {selectedEntry.food_name || 'Unknown Food'} · Severity: {selectedEntry.severity}/10
+          </Text>
+        </View>
         )}
 
 
@@ -214,6 +224,7 @@ ${evaluation.reasons.join('\n')}`
         <TextInput
           style={styles.input}
           placeholder="Age"
+          placeholderTextColor={"#999"}
           keyboardType="numeric"
           value={age}
           onChangeText={setAge}
@@ -263,15 +274,6 @@ ${evaluation.reasons.join('\n')}`
           </TouchableOpacity>
         ))}
 
-        {/* SEVERITY */}
-        <TextInput
-          style={styles.input}
-          placeholder="Severity Score (0–10)"
-          keyboardType="numeric"
-          value={severityScore}
-          onChangeText={setSeverityScore}
-        />
-
         <Button title="Evaluate Allergy Risk" onPress={handleEvaluate} />
 
         {result && (
@@ -294,7 +296,7 @@ ${evaluation.reasons.join('\n')}`
               <ScrollView>
                 {loggedEntries.map(entry => (
                   <TouchableOpacity
-                    key={entry.id}   // ✅ UNIQUE KEY
+                    key={entry.id}
                     style={styles.modalItem}
                     onPress={() => {
                       setSelectedEntry(entry);
@@ -305,7 +307,7 @@ ${evaluation.reasons.join('\n')}`
                       {entry.symptom || 'Unknown Symptom'}
                     </Text>
                     <Text style={{ fontSize: 12, color: 'gray' }}>
-                      {entry.foodName || 'Unknown Food'} · {entry.mealType || ''}
+                      {entry.food_name || 'Unknown Food'} · {entry.meal_type  || ''}
                     </Text>
                   </TouchableOpacity>
                 ))}
@@ -392,6 +394,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
+    color: '#000', 
   },
   selector: {
     borderWidth: 1,

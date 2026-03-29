@@ -1,31 +1,54 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { Stack } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { supabase } from '../lib/supabase';
 
 export default function DietAndExercises() {
 
   const [foodLogs, setFoodLogs] = useState([]);
   const [symptomLogs, setSymptomLogs] = useState([]);
+  const [evaluationHistory, setEvaluationHistory] = useState([]);
 
   useEffect(() => {
-    const loadData = async () => {
-      const storedFood = await AsyncStorage.getItem("foodLog");
-      const storedSymptoms = await AsyncStorage.getItem("symptomLog");
+  const loadData = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-      if (storedFood) setFoodLogs(JSON.parse(storedFood));
-      if (storedSymptoms) setSymptomLogs(JSON.parse(storedSymptoms));
-    };
+      const { data: foodData } = await supabase
+        .from('food_log')
+        .select('*')
+        .eq('user_id', user.id)
+        .is('deleted_at', null);
 
-    loadData();
-  }, []);
+      const { data: symptomData } = await supabase
+        .from('symptom_log')
+        .select('*')
+        .eq('user_id', user.id)
+        .is('deleted_at', null);
+
+      const { data: evalData } = await supabase
+        .from('evaluation_history')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('evaluated_at', { ascending: false });
+
+      setFoodLogs(foodData ?? []);
+      setSymptomLogs(symptomData ?? []);
+      setEvaluationHistory(evalData ?? []);
+    } catch (err) {
+      console.error('Failed to load data:', err);
+    }
+  };
+  loadData();
+}, []);
 
   // ---- REAL DATA CALCULATIONS ----
   const foodLogsCount = foodLogs.length;
   const symptomCount = symptomLogs.length;
 
-  const highRiskCount = symptomLogs.filter(s => s.riskLevel === "High").length;
-  const moderateRiskCount = symptomLogs.filter(s => s.riskLevel === "Moderate").length;
+  const highRiskCount = evaluationHistory.filter(e => e.risk === 'High').length;
+  const moderateRiskCount = evaluationHistory.filter(e => e.risk === 'Medium').length;
 
   let riskLevel = "Low";
 

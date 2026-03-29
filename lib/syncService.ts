@@ -18,6 +18,9 @@ const toSnakeCase = (entry: any) => {
     brand:        entry.brand        ?? null,
     ingredients:  entry.ingredients  ?? null,
     allergens:    entry.allergens    ?? [],
+    protein: entry.protein ?? null,
+    carbs:   entry.carbs   ?? null,
+    fat:     entry.fat     ?? null,
   };
 };
 
@@ -66,9 +69,6 @@ export const syncSupabaseChangesToLocal = async () => {
 
     // Pull symptom logs
     await syncTable('symptom_log', user.id, lastSync);
-
-    // Pull user profile
-    await syncTable('user_profiles', user.id, lastSync);
 
     // Update last sync time
     await setLastSyncTime(Date.now());

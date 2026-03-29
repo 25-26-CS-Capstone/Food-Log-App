@@ -58,9 +58,9 @@ export const logsToCSV = (logs) => {
       const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       
       const calories = log.calories || log.usdaData?.calories || '';
-      const carbs = log.usdaData?.carbs || '';
-      const protein = log.usdaData?.protein || '';
-      const fat = log.usdaData?.fat || '';
+      const carbs = log.carbs || '';
+      const protein = log.protein || '';
+      const fat = log.fat || '';
       const fiber = log.usdaData?.fiber || '';
       const sugar = log.usdaData?.sugar || '';
       const sodium = log.usdaData?.sodium || '';
@@ -227,10 +227,31 @@ const deriveTimestamp = (log) => {
 };
 
 const normalizeLogs = (logs) => {
-  return logs.map(log => ({
-    ...log,
-    type: deriveType(log),
-    timestamp: deriveTimestamp(log),
+  // Handle new Supabase shape { foodLogs: [], symptomLogs: [] }
+  if (logs && !Array.isArray(logs) && (logs.foodLogs || logs.symptomLogs)) {
+    const food = (logs.foodLogs ?? []).map(l => ({
+      ...l,
+      type: 'food',
+      timestamp: l.date_time,
+      foodName: l.food_name,
+      mealType: l.meal_type,
+    }));
+    const symptoms = (logs.symptomLogs ?? []).map(l => ({
+      ...l,
+      type: 'symptom',
+      timestamp: l.date_time,
+      symptomName: l.symptom,
+    }));
+    return [...food, ...symptoms];
+  }
+  // Fallback for flat arrays (legacy)
+  return (logs ?? []).map(l => ({
+    ...l,
+    type: deriveType(l),
+    timestamp: deriveTimestamp(l),
+    foodName: l.food_name ?? l.foodName,
+    mealType: l.meal_type ?? l.mealType,
+    symptomName: l.symptom ?? l.symptomName,
   }));
 };
 
@@ -270,10 +291,10 @@ export const generateExportSummary = (logs, startDate, endDate) => {
   let totalFat = 0;
 
   foodLogs.forEach(log => {
-    totalCalories += log.calories || log.usdaData?.calories || log.product?.calories || 0;
-    totalCarbs += log.usdaData?.carbs || 0;
-    totalProtein += log.usdaData?.protein || 0;
-    totalFat += log.usdaData?.fat || 0;
+    totalCalories += Number(log.calories) || 0;
+    totalCarbs += Number(log.carbs) || 0;
+    totalProtein += Number(log.protein) || 0;
+    totalFat += Number(log.fat) || 0;
   });
 
   const avgCaloriesPerDay = foodLogs.length > 0

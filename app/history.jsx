@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Button, Pressable } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Button, Pressable, Alert } from "react-native";
 import moment from "moment";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { supabase } from '../lib/supabase';
+import { Stack } from "expo-router";
 
 export default function History() {
   const [foodLogs, setFoodLogs] = useState([]);
@@ -63,27 +63,46 @@ const loadFoodLogs = async () => {
 };
 
   const loadSymptomLogs = async () => {
-    const saved = await AsyncStorage.getItem("symptomLog");
-    setSymptomLogs(saved ? JSON.parse(saved) : []);
-  };
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+      .from('symptom_log')
+      .select('*')
+      .eq('user_id', user.id)
+      .is('deleted_at', null)
+      .order('date_time', { ascending: false });
+
+    if (error) throw error;
+    setSymptomLogs(data ?? []);
+  } catch (err) {
+    console.error('Error loading symptom logs:', err);
+  }
+};
 
   const loadEvaluationHistory = async () => {
-    const saved = await AsyncStorage.getItem("evaluationHistory");
-    setEvaluationHistory(saved ? JSON.parse(saved) : []);
-  };
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from('evaluation_history')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('evaluated_at', { ascending: false });
+    setEvaluationHistory(data ?? []);
+  } catch (err) {
+    console.error('Error loading evaluation history:', err);
+  }
+};
 
-  const getSymptomsForFood = (foodName) => {
-    return symptomLogs.filter((s) => s.foodName  === foodName);
+  const getSymptomsForFood = (foodId) => {
+  return symptomLogs.filter((s) => s.food_log_ids?.includes(foodId));
   };
 
   const getEvaluationForSymptom = (symptomObj) => {
-  return evaluationHistory.find(
-    (e) =>
-      e.symptom === symptomObj.symptom &&
-      e.foodName === symptomObj.foodName
-  );
-};
-
+    return evaluationHistory.find(e => e.symptom_log_id === symptomObj.id);
+  };
 
   const addSymptom = (foodName) => {
     setEditingSymptom(null);
@@ -100,83 +119,126 @@ const loadFoodLogs = async () => {
     setSymptomFoodName(symptomObj.foodName);
     setSymptomFields({
       symptom: symptomObj.symptom,
-      time: new Date(symptomObj.symptomDate),
+      time: new Date(symptomObj.date_time),
     });
+    setSymptomModal(true);
   };
 
   const handleDeleteSymptom = async (symptom) => {
-    const updated = symptomLogs.filter((s) => s.id !== symptom.id);
-    setSymptomLogs(updated);
-    await AsyncStorage.setItem("symptomLog", JSON.stringify(updated));
+    try {
+      const { error } = await supabase
+        .from('symptom_log')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', symptom.id);
+
+      if (error) throw error;
+      setSymptomLogs(prev => prev.filter(s => s.id !== symptom.id));
+    } catch (err) {
+      console.error('Error deleting symptom:', err);
+      Alert.alert('Error', 'Failed to delete symptom.');
+    }
   };
 
   const saveSymptom = async () => {
-    let updated;
+    if (!editingSymptom) return;
+    try {
+      const { error } = await supabase
+        .from('symptom_log')
+        .update({
+          symptom: symptomFields.symptom,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', editingSymptom.id);
 
-    if (editingSymptom) {
-      updated = symptomLogs.map((s) =>
-        s.id === editingSymptom.id
-          ? {
-              ...s,
-              symptom: symptomFields.symptom,
-              symptomDate: symptomFields.time.toISOString(),
-            }
+      if (error) throw error;
+      setSymptomLogs(prev =>
+        prev.map(s => s.id === editingSymptom.id
+          ? { ...s, symptom: symptomFields.symptom }
           : s
+        )
       );
-    } else {
-      const newSymptom = {
-        id: Date.now().toString(),
-        food: symptomFoodName,
-        symptom: symptomFields.symptom,
-        symptomDate: symptomFields.time.toISOString(),
-      };
-
-      updated = [...symptomLogs, newSymptom];
+      setSymptomModal(false);
+    } catch (err) {
+      console.error('Error updating symptom:', err);
+      Alert.alert('Error', 'Failed to update symptom.');
     }
-
-    setSymptomLogs(updated);
-    await AsyncStorage.setItem("symptomLog", JSON.stringify(updated));
-    setSymptomModal(false);
   };
 
   const deleteSymptom = async () => {
-    const updated = symptomLogs.filter((s) => s.id !== editingSymptom.id);
-    setSymptomLogs(updated);
-    await AsyncStorage.setItem("symptomLog", JSON.stringify(updated));
-    setSymptomModal(false);
+    try {
+      const { error } = await supabase
+        .from('symptom_log')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', editingSymptom.id);
+
+      if (error) throw error;
+      setSymptomLogs(prev => prev.filter(s => s.id !== editingSymptom.id));
+      setSymptomModal(false);
+    } catch (err) {
+      console.error('Error deleting symptom:', err);
+      Alert.alert('Error', 'Failed to delete symptom.');
+    }
   };
 
   const openEditFoodTime = (food) => {
     setEditingFood(food);
-    setFoodTime(moment(food.date).toDate());
+    setFoodTime(moment(food.date_time).toDate());
     setFoodModal(true);
   };
 
   const saveFoodTime = async () => {
-    const updated = foodLogs.map((f) =>
-      f.id === editingFood.id ? { ...f, date: foodTime } : f
+  try {
+    const { error } = await supabase
+      .from('food_log')
+      .update({ date_time: foodTime.toISOString(), updated_at: new Date().toISOString() })
+      .eq('id', editingFood.id);
+
+    if (error) throw error;
+
+    setFoodLogs(prev =>
+      prev.map(f => f.id === editingFood.id ? { ...f, date_time: foodTime } : f)
     );
-
-    setFoodLogs(updated);
     setFoodModal(false);
-  };
-
-  const confirmDeleteFood = (food) => {
-    setFoodToDelete(food);
-    setDeleteFoodModal(true);
-  };
+  } catch (err) {
+    console.error('Error updating food time:', err);
+    Alert.alert('Error', 'Failed to update time.');
+  }
+};
 
   const deleteFoodLog = async () => {
-    const newFoodLogs = foodLogs.filter((f) => f.id !== foodToDelete.id);
-    const newSymptomLogs = symptomLogs.filter(
-      (s) => s.food !== foodToDelete.foodName
-    );
+  try {
+    const now = new Date().toISOString();
 
-    setFoodLogs(newFoodLogs);
-    setSymptomLogs(newSymptomLogs);
+    // Soft delete the food log
+    const { error: foodError } = await supabase
+      .from('food_log')
+      .update({ deleted_at: now })
+      .eq('id', foodToDelete.id);
 
+    if (foodError) throw foodError;
+
+    // Soft delete all symptoms linked to this food log
+    const linkedSymptomIds = symptomLogs
+      .filter(s => s.food_log_ids?.includes(foodToDelete.id))
+      .map(s => s.id);
+
+    if (linkedSymptomIds.length > 0) {
+      const { error: symptomError } = await supabase
+        .from('symptom_log')
+        .update({ deleted_at: now })
+        .in('id', linkedSymptomIds);
+
+      if (symptomError) throw symptomError;
+    }
+
+    setFoodLogs(prev => prev.filter(f => f.id !== foodToDelete.id));
+    setSymptomLogs(prev => prev.filter(s => !linkedSymptomIds.includes(s.id)));
     setDeleteFoodModal(false);
-  };
+  } catch (err) {
+    console.error('Error deleting food log:', err);
+    Alert.alert('Error', 'Failed to delete log.');
+  }
+};
 
   const getFilteredAndSortedLogs = () => {
     let filtered = foodLogs;
@@ -184,56 +246,58 @@ const loadFoodLogs = async () => {
     if (searchQuery.trim()) {
       if (searchType === "food") {
         filtered = filtered.filter((food) =>
-          food.foodName.toLowerCase().includes(searchQuery.toLowerCase())
+          food.food_name?.toLowerCase().includes(searchQuery.toLowerCase())  
         );
       } else {
-        const matchingFoods = new Set();
+        const matchingFoodIds = new Set();
         symptomLogs.forEach((s) => {
           if (s.symptom.toLowerCase().includes(searchQuery.toLowerCase())) {
-            matchingFoods.add(s.food);
+            s.food_log_ids?.forEach(id => matchingFoodIds.add(id));  
           }
         });
-        filtered = filtered.filter((food) => matchingFoods.has(food.foodName));
+        filtered = filtered.filter((food) => matchingFoodIds.has(food.id));  
       }
     }
 
-    // Date range filter
     if (dateFrom) {
       filtered = filtered.filter((food) =>
-        moment(food.date).startOf('day').isSameOrAfter(moment(dateFrom).startOf('day'))
+        moment(food.date_time).startOf('day').isSameOrAfter(moment(dateFrom).startOf('day'))
       );
     }
     if (dateTo) {
       filtered = filtered.filter((food) =>
-        moment(food.date).startOf('day').isSameOrBefore(moment(dateTo).startOf('day'))
+        moment(food.date_time).startOf('day').isSameOrBefore(moment(dateTo).startOf('day'))
       );
     }
-
-    // Time interval filter (by time of day, regardless of date)
     if (timeFrom) {
       const fromMins = moment(timeFrom).hours() * 60 + moment(timeFrom).minutes();
       filtered = filtered.filter((food) => {
-        const logMins = moment(food.date).hours() * 60 + moment(food.date).minutes();
+        const logMins = moment(food.date_time).hours() * 60 + moment(food.date_time).minutes();
         return logMins >= fromMins;
       });
     }
     if (timeTo) {
       const toMins = moment(timeTo).hours() * 60 + moment(timeTo).minutes();
       filtered = filtered.filter((food) => {
-        const logMins = moment(food.date).hours() * 60 + moment(food.date).minutes();
+        const logMins = moment(food.date_time).hours() * 60 + moment(food.date_time).minutes();
         return logMins <= toMins;
       });
     }
 
     if (sortBy === "date") {
-      filtered.sort((a, b) => moment(b.date_time).diff(moment(a.date_time)));
+      filtered = [...filtered].sort((a, b) => moment(b.date_time).diff(moment(a.date_time)));
     } else if (sortBy === "alpha-asc") {
-      filtered.sort((a, b) => a.foodName.localeCompare(b.foodName));
+      filtered = [...filtered].sort((a, b) => a.food_name?.localeCompare(b.food_name));  
     } else if (sortBy === "alpha-desc") {
-      filtered.sort((a, b) => b.foodName.localeCompare(a.foodName));
+      filtered = [...filtered].sort((a, b) => b.food_name?.localeCompare(a.food_name));  
     }
 
     return filtered;
+  };
+
+  const confirmDeleteFood = (food) => {
+    setFoodToDelete(food);
+    setDeleteFoodModal(true);
   };
 
   return (
@@ -264,7 +328,7 @@ const loadFoodLogs = async () => {
       )}
 
       {getFilteredAndSortedLogs().map((food) => {
-        const symptoms = getSymptomsForFood(food.foodName);
+        const symptoms = getSymptomsForFood(food.id); 
         const hasSymptoms = symptoms.length > 0;
 
         return (
@@ -321,16 +385,10 @@ const loadFoodLogs = async () => {
 
         {evaluation && (
           <View style={styles.evaluationBox}>
-            <Text style={styles.riskText}>
-              Risk: {evaluation.risk}
-            </Text>
-            <Text style={styles.confidenceText}>
-              Confidence: {evaluation.confidence}
-            </Text>
+            <Text style={styles.riskText}>Risk: {evaluation.risk}</Text>
+            <Text style={styles.confidenceText}>Confidence: {evaluation.confidence}</Text>
             <Text style={styles.evalDate}>
-              Evaluated {moment(evaluation.evaluatedAt).format(
-                "MMM D, h:mm a"
-              )}
+              Evaluated {moment(evaluation.evaluated_at).format("MMM D, h:mm a")}
             </Text>
           </View>
         )}
@@ -364,7 +422,7 @@ const loadFoodLogs = async () => {
             */}
 
             <Text style={styles.detail}>
-              Logged: {moment(food.date).format("MMMM Do YYYY, h:mm a")}
+              Logged: {moment(food.date_time).format("MMMM Do YYYY, h:mm a")}
             </Text>
 
             {/* EDIT TIME */}
@@ -561,7 +619,7 @@ const loadFoodLogs = async () => {
             <DateTimePickerModal
               isVisible={pickerVisible}
               mode="datetime"
-              date={symptomFields.time}
+              date={symptomFields.time || new Date()}
               onConfirm={(date) => {
                 setSymptomFields({ ...symptomFields, time: date });
                 setPickerVisible(false);

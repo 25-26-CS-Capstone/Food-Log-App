@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TextInput, Button, StyleSheet, TouchableOpacity, Alert, } from 'react-native';
 import moment from 'moment';
 import { useLocalSearchParams, Stack } from 'expo-router';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import { evaluateAllergyRisk } from "../utils/risk_engine";
+import { supabase } from '../lib/supabase';
 
 /* ---------------- COMPONENT ---------------- */
 
@@ -15,74 +13,99 @@ const SymptomLog = () => {
   const [selectedFood, setSelectedFood] = useState(null);
   const [symptom, setSymptom] = useState('');
   const [symptomLog, setSymptomLog] = useState([]);
+  const [severity, setSeverity] = useState(1);
 
   /* ---------------- LOAD FOOD LOG ---------------- */
 
   useEffect(() => {
-    if (params.foodLogData) {
-      try {
-        setFoodLog(JSON.parse(params.foodLogData));
-      } catch (err) {
-        console.error('Failed to parse food log:', err);
-      }
+  const loadFoodLog = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('food_log')
+        .select('*')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .order('date_time', { ascending: false });
+
+      if (error) throw error;
+      setFoodLog(data ?? []);
+    } catch (err) {
+      console.error('Failed to load food log:', err);
     }
-  }, [params.foodLogData]);
+  };
+  loadFoodLog();
+}, []);
 
   /* ---------------- LOAD SYMPTOMS ---------------- */
 
   useEffect(() => {
-    const loadSymptoms = async () => {
-      const stored = await AsyncStorage.getItem('symptomLog');
-      if (stored) setSymptomLog(JSON.parse(stored));
-    };
-    loadSymptoms();
-  }, []);
+  const loadSymptoms = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('symptom_log')
+        .select('*')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .order('date_time', { ascending: false });
+
+      if (error) throw error;
+      setSymptomLog(data ?? []);
+    } catch (err) {
+      console.error('Failed to load symptoms:', err);
+    }
+  };
+  loadSymptoms();
+}, []);
 
   /* ---------------- SUBMIT SYMPTOM ---------------- */
 
   const handleSubmit = async () => {
-    if (!selectedFood || !symptom.trim()) {
-      Alert.alert('Error', 'Please select a food and enter a symptom.');
-      return;
-    }
+  if (!selectedFood || !symptom.trim()) {
+    Alert.alert('Error', 'Please select a food and enter a symptom.');
+    return;
+  }
 
-    // Temporary user profile (later replace with real profile screen)
-    const userProfile = {
-      familyHistory: 'No',
-      previousReaction: 'None',
-      severityScore: 3,
-    };
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-    const risk = evaluateAllergyRisk({
-      symptoms: [symptom],
-      allergens: selectedFood.product?.allergens || [],
-      previousReaction: userProfile.previousReaction,
-      familyHistory: userProfile.familyHistory,
-      severityScore: userProfile.severityScore,
-    });
+    const { error } = await supabase
+      .from('symptom_log')
+      .insert({
+        user_id: user.id,
+        symptom: symptom.trim(),
+        severity,
+        date_time: new Date().toISOString(),
+        food_log_ids: [selectedFood.id],  
+        notes: null,
+      });
 
-    const newEntry = {
-      id: Date.now().toString(),
-      foodName: selectedFood.foodName,
-      mealType: selectedFood.mealType,
-      symptom,
-      riskLevel: risk.level,
-      riskScore: risk.score,
-      foodDate: selectedFood.date,
-      symptomDate: new Date().toISOString(),
-    };
+    if (error) throw error;
 
-    const updated = [...symptomLog, newEntry];
-    setSymptomLog(updated);
-    await AsyncStorage.setItem('symptomLog', JSON.stringify(updated));
-
-    Alert.alert(
-      'Symptom log has been saved.',
-    );
-
+    Alert.alert('Saved', 'Symptom log has been saved.');
     setSymptom('');
+    setSeverity(1);
     setSelectedFood(null);
-  };
+  } catch (err) {
+    console.error('Failed to save symptom:', err);
+    Alert.alert('Error', 'Failed to save symptom.');
+  }
+    // Refresh symptom list
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data } = await supabase
+    .from('symptom_log')
+    .select('*')
+    .eq('user_id', user.id)
+    .is('deleted_at', null)
+    .order('date_time', { ascending: false });
+    setSymptomLog(data ?? []);
+};
 
   /* ---------------- RENDER ---------------- */
 
@@ -112,9 +135,9 @@ const SymptomLog = () => {
             ]}
             onPress={() => setSelectedFood(item)}
           >
-            <Text style={styles.foodName}>{item.foodName}</Text>
+            <Text style={styles.foodName}>{item.food_name}</Text>
             <Text style={styles.foodSub}>
-              {moment(item.date).format('MMM D, h:mm a')} · {item.mealType}
+              {moment(item.date_time).format('MMM D, h:mm a')} · {item.meal_type}
             </Text>
           </TouchableOpacity>
         )}
@@ -125,17 +148,39 @@ const SymptomLog = () => {
             <TextInput
               style={styles.input}
               placeholder="Describe symptoms (e.g. hives, nausea)"
+              placeholderTextColor={"#999"}
               value={symptom}
               onChangeText={setSymptom}
               multiline
             />
 
-            <View style={styles.buttonWrapper}>
-              <Button title="Submit Symptom" onPress={handleSubmit} />
-            </View>
-          </View>
-        )}
+            <Text style={{ fontWeight: '600', marginTop: 10 }}>
+              Severity: {severity}/10
+            </Text>
+            <View style={styles.servingsRow}>
+              <TouchableOpacity
+                style={styles.severityButton}
+                onPress={() => setSeverity(prev => Math.max(1, prev - 1))}
+              >
+            <Text style={styles.severityButtonText}>-</Text>
+            </TouchableOpacity>
+            <Text style={styles.severityText}>{severity}</Text>
+            <TouchableOpacity
+              style={styles.severityButton}
+              onPress={() => setSeverity(prev => Math.min(10, prev + 1))}
+            >
+            <Text style={styles.severityButtonText}>+</Text>
+          </TouchableOpacity>
+          
+         </View>  
 
+      <View style={styles.buttonWrapper}>
+        <Button title="Submit Symptom" onPress={handleSubmit} />
+          </View>
+        </View>
+      )}
+
+      
 
     </View>
   );
@@ -185,7 +230,37 @@ input: {
   minHeight: 60,
   textAlignVertical: 'top',
 },
-
+servingsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+severityButton: {
+  backgroundColor: '#224ec5',
+  paddingHorizontal: 15,
+  paddingVertical: 5,
+  borderRadius: 8,
+},
+severityButtonText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
+severityText: { marginHorizontal: 15, fontSize: 16, fontWeight: '600' },
+symptomItem: {
+  padding: 12,
+  borderBottomWidth: 1,
+  borderBottomColor: '#ddd',
+  backgroundColor: 'white',
+  borderRadius: 8,
+  marginBottom: 8,
+},
+symptomRow: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+},
+symptomText: { fontWeight: '600', fontSize: 15, flex: 1 },
+symptomSub: { fontSize: 12, color: 'gray', marginTop: 4 },
+severityBadge: {
+  backgroundColor: '#224ec5',
+  borderRadius: 12,
+  paddingHorizontal: 8,
+  paddingVertical: 3,
+},
+severityBadgeText: { color: 'white', fontSize: 12, fontWeight: '600' },
 buttonWrapper: {
   marginTop: 10,
 },

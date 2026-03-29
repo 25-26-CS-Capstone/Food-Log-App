@@ -1,5 +1,4 @@
-import { StyleSheet, Text, View, Pressable, Button, Platform, Alert } from 'react-native'; // Changed Button to Pressable
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StyleSheet, Text, View, Pressable, Platform, Alert } from 'react-native'; 
 import React from 'react'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../AuthContext'
@@ -27,69 +26,86 @@ const settings = () => {
     }
   }
 
-  const removeUserData = async () => {
-    Alert.alert(
-      "Delete All Data",
-      "This will permanently delete all food logs, symptoms, and evaluations. This cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await AsyncStorage.multiRemove([
-                "user_name",
-                "foodLog",
-                "symptomLog",
-                "evaluationHistory",
-              ]);
-              Alert.alert("Success", "All data has been deleted.");
-            } catch (error) {
-              console.error("Error deleting data:", error);
-              Alert.alert("Error", "Failed to delete data.");
-            }
-          },
-        },
-      ]
-    );
-  };
+  const removeUserData = () => {
+  Alert.alert(
+    'Clear All Data',
+    'This will permanently delete all your food logs, symptom logs, and evaluation history. This action cannot be undone.',
+    [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete All',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const now = new Date().toISOString();
+
+            await supabase.from('food_log')
+              .update({ deleted_at: now })
+              .eq('user_id', user.id)
+              .is('deleted_at', null);
+
+            await supabase.from('symptom_log')
+              .update({ deleted_at: now })
+              .eq('user_id', user.id)
+              .is('deleted_at', null);
+
+            await supabase.from('evaluation_history')
+              .delete()
+              .eq('user_id', user.id);
+
+            Alert.alert('Success', 'All data has been cleared.');
+          } catch (error) {
+            console.error(error);
+            Alert.alert('Error', 'Failed to clear data.');
+          }
+        }
+      }
+    ]
+  );
+};
 
   const deleteAccount = () => {
-    Alert.alert(
-      "Delete Account",
-      "This will permanently delete your account and all your data. This action cannot be undone.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete Account",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await AsyncStorage.multiRemove([
-                "user_name",
-                "foodLog",
-                "symptomLog",
-                "evaluationHistory",
-              ]);
-              try {
-                await supabase.rpc('delete_user');
-              } catch (rpcError) {
-                console.log('delete_user RPC not available:', rpcError);
-              }
-              const { error } = await supabase.auth.signOut();
-              if (error) console.error('Sign out error during account deletion:', error);
-              setAuth(null);
-              router.replace('/welcome');
-            } catch (error) {
-              console.error("Error deleting account:", error);
-              Alert.alert("Error", "Failed to delete account. Please try again.");
-            }
-          },
-        },
-      ]
-    );
-  };
+  Alert.alert(
+    'Delete Account',
+    'This will permanently delete your account and ALL your data. This action cannot be undone.',
+    [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Delete Account',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const now = new Date().toISOString();
+            await supabase.from('food_log')
+              .update({ deleted_at: now })
+              .eq('user_id', user.id);
+            await supabase.from('symptom_log')
+              .update({ deleted_at: now })
+              .eq('user_id', user.id);
+            await supabase.from('evaluation_history')
+              .delete()
+              .eq('user_id', user.id);
+
+            const { error } = await supabase.rpc('delete_user');
+            if (error) throw error;
+
+            await supabase.auth.signOut();
+            router.replace('/welcome');
+          } catch (error) {
+            console.error(error);
+            Alert.alert('Error', 'Failed to delete account. Please try again.');
+          }
+        }
+      }
+    ]
+  );
+};
 
   return (
     <View style={[{justifyContent: 'center'}, {alignItems: 'center'}, {flex:1}]}>
