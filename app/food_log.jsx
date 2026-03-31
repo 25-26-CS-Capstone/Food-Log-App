@@ -294,19 +294,35 @@ const FoodLog = () => {
           data={searchResults}
           keyExtractor={(item) => item.code?.toString()}
           style={styles.searchList}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.searchResult}
-              onPress={() => handleSelectProduct(item)}
-            >
-              <Text style={styles.searchName}>
-                {item.product_name_en || item.product_name || 'Unnamed'}
-              </Text>
-              {item.brands && (
-                <Text style={styles.searchSub}>{item.brands}</Text>
-              )}
-            </TouchableOpacity>
-          )}
+          renderItem={({ item }) => {
+  const calories =
+    item.nutriments?.['energy-kcal_serving'] ??
+    item.nutriments?.['energy-kcal'] ??
+    item.nutriments?.energy_kcal_serving ??
+    item.nutriments?.energy_kcal ??
+    null;
+
+  return (
+    <TouchableOpacity
+      style={styles.searchResult}
+      onPress={() => handleSelectProduct(item)}
+    >
+      <Text style={styles.searchName}>
+        {item.product_name_en || item.product_name || 'Unnamed'}
+      </Text>
+
+      {item.brands && (
+        <Text style={styles.searchSub}>{item.brands}</Text>
+      )}
+
+      {calories != null && (
+        <Text style={styles.searchCalories}>
+          Calories: {Math.round(calories)}
+        </Text>
+      )}
+    </TouchableOpacity>
+  );
+}}
           ListFooterComponent={renderSearchFooter}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.4}
@@ -645,6 +661,12 @@ const styles = StyleSheet.create({
   iosDoneText: {
     color: '#fff',
     fontWeight: '700',
+  },
+  searchCalories: {
+    fontSize: 14,
+    //color: '#555',
+    marginTop: 2,
+    fontWeight: 'bold',
   },
 });
 
