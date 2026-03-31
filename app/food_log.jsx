@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, TextInput, Button, FlatList, StyleSheet, Text, TouchableOpacity, Alert, Pressable, ActivityIndicator } from 'react-native';
+import { View, TextInput, Button, FlatList, StyleSheet, Text, TouchableOpacity, Alert, Pressable, ActivityIndicator, Platform, Modal } from 'react-native';
 
 import { Picker } from '@react-native-picker/picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import moment from 'moment';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { offSearch } from '../lib/openfoodfacts';
 import {
@@ -212,7 +213,22 @@ const FoodLog = () => {
     setServings(1);
     setHasSearched(false);
   };
+    const handleIOSDateChange = (_event, date) => {
+    if (date) {
+      setSelectedDateTime(date);
+    }
+  };
 
+  const closeIOSPicker = () => {
+    setDatePickerVisible(false);
+  };
+
+  const confirmIOSPicker = () => {
+    if (!selectedDateTime) {
+      setSelectedDateTime(new Date());
+    }
+    setDatePickerVisible(false);
+  };
   /* ---------------- RENDER HELPERS ---------------- */
  
   const renderSearchFooter = () => {
@@ -379,16 +395,56 @@ const FoodLog = () => {
         <Text style={styles.navButtonText}>Go to Symptom Log</Text>
       </Pressable>
  
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="datetime"
-        date={selectedDateTime || new Date()}
-        onConfirm={(date) => {
-          setSelectedDateTime(date);
-          setDatePickerVisible(false);
-        }}
-        onCancel={() => setDatePickerVisible(false)}
-      />
+            {Platform.OS === 'ios' ? (
+        <Modal
+          visible={isDatePickerVisible}
+          transparent
+          animationType="slide"
+          onRequestClose={closeIOSPicker}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.iosPickerCard}>
+              <Text style={styles.iosPickerTitle}>Pick Date & Time</Text>
+
+              <DateTimePicker
+                value={selectedDateTime || new Date()}
+                mode="datetime"
+                display="spinner"
+                onChange={handleIOSDateChange}
+                textColor="black"
+                style={styles.iosPicker}
+              />
+
+              <View style={styles.iosPickerActions}>
+                <TouchableOpacity
+                  style={[styles.iosPickerButton, styles.iosCancelButton]}
+                  onPress={closeIOSPicker}
+                >
+                  <Text style={styles.iosCancelText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.iosPickerButton, styles.iosDoneButton]}
+                  onPress={confirmIOSPicker}
+                >
+                  <Text style={styles.iosDoneText}>Done</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      ) : (
+        <DateTimePickerModal
+          isVisible={isDatePickerVisible}
+          mode="datetime"
+          date={selectedDateTime || new Date()}
+          onConfirm={(date) => {
+            setSelectedDateTime(date);
+            setDatePickerVisible(false);
+          }}
+          onCancel={() => setDatePickerVisible(false)}
+        />
+      )}
     </View>
   );
 };
@@ -531,6 +587,64 @@ const styles = StyleSheet.create({
     color: '#999',
     fontSize: 13,
     fontWeight: '600',
+  },
+    modalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.35)',
+  },
+
+  iosPickerCard: {
+    backgroundColor: '#fff',
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 24,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+
+  iosPickerTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 8,
+    color: '#111',
+  },
+
+  iosPicker: {
+    backgroundColor: '#fff',
+  },
+
+  iosPickerActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    gap: 12,
+  },
+
+  iosPickerButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+
+  iosCancelButton: {
+    backgroundColor: '#e5e7eb',
+  },
+
+  iosDoneButton: {
+    backgroundColor: '#224ec5',
+  },
+
+  iosCancelText: {
+    color: '#111827',
+    fontWeight: '600',
+  },
+
+  iosDoneText: {
+    color: '#fff',
+    fontWeight: '700',
   },
 });
 
