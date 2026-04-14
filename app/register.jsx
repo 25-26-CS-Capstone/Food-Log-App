@@ -2,8 +2,10 @@ import { StyleSheet, Text, View, TextInput, Alert, Button, Platform } from 'reac
 import React, { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { saveUserData } from '../utils/storage'
+import { useRouter } from 'expo-router'
 
 const Register = () => {
+  const router = useRouter()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')  
   const [password, setPassword] = useState('')
@@ -88,6 +90,10 @@ const Register = () => {
       <TextInput testID="Password" value={password} onChangeText={setPassword} placeholder="Password" placeholderTextColor="gray" style={styles.input} secureTextEntry/>
   
       <Button testID="Submit" title="Submit" onPress={signUpWithEmail} disabled={loading} />
+
+      <View style={styles.backButtonContainer}>
+        <Button testID="BackToLogin" title="Back to Login" onPress={() => router.push('/login')} />
+      </View>
     </View>
   )
 }
@@ -100,5 +106,8 @@ const styles = StyleSheet.create({
       padding: 20,
       borderColor: '#000',
       borderWidth: 1
+    },
+    backButtonContainer: {
+      marginTop: 12
     }
 })
