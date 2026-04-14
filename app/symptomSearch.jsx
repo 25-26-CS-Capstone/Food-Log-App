@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getSymptomLogs } from '../utils/storage';
-import { SEVERITY_OPTIONS, DATE_RANGE_OPTIONS } from './constants';
+import { SEVERITY_OPTIONS, DATE_RANGE_OPTIONS } from '../lib/constants';
 
 const SymptomSearch = () => {
   const router = useRouter();
