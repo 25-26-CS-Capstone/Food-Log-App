@@ -73,11 +73,24 @@ const FoodLog = () => {
   }, []);
 
   useEffect(() => {
+  if (params?.scannedProduct) {
+    try {
+      const product = JSON.parse(params.scannedProduct);
+
+      handleSelectProduct(product);
+    } catch (error) {
+      console.error('Failed to load scanned product:', error);
+    }
+  } else if (params?.scannedName) {
+    setFoodName(String(params.scannedName));
+  }
+}, [params?.scannedProduct, params?.scannedName]);
+  /*useEffect(() => {
     if (params?.scannedName) {
       setFoodName(String(params.scannedName));
     }
   }, [params?.scannedName]);
-
+*/
   /* ---------------- SEARCH FOOD ---------------- */
 
   const handleSearch = (text) => {

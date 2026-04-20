@@ -115,33 +115,46 @@ export async function offSearch(query, page = 1) {
 
   return { products: [], total: 0 };
 }
- 
+
 export async function offGetProductByBarcode(barcode) {
-  const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(barcode)}?fields=code,product_name,product_name_en,brands,ingredients_text,ingredients_text_en,allergens_tags,nutriments`;
- 
-  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-    try {
-      const res = await fetchWithTimeout(url, TIMEOUT_MS);
-      const text = await res.text();
- 
-      if (text.trimStart().startsWith('<')) {
-        throw new Error('Server returned HTML');
+  const code = encodeURIComponent(String(barcode).trim());
+
+  const urls = [
+    `https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=code,product_name,product_name_en,brands,ingredients_text,ingredients_text_en,allergens_tags,nutriments`,
+    `https://world.openfoodfacts.org/api/v2/product/${code}?fields=code,product_name,product_name_en,brands,ingredients_text,ingredients_text_en,allergens_tags,nutriments`,
+    `https://world.openfoodfacts.org/api/v0/product/${code}.json`,
+  ];
+
+  for (const url of urls) {
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      try {
+        const res = await fetchWithTimeout(url, TIMEOUT_MS);
+        const text = await res.text();
+
+        if (text.trimStart().startsWith('<')) {
+          throw new Error('Server returned HTML');
+        }
+
+        const data = JSON.parse(text);
+
+        if (!data || data.status === 0 || !data.product) {
+          return null;
+        }
+
+        return data.product;
+      } catch (err) {
+        console.warn(
+          `OpenFoodFacts barcode lookup failed on attempt ${attempt}:`,
+          err.message
+        );
+
+        if (attempt < MAX_RETRIES) {
+          await new Promise((res) => setTimeout(res, attempt * 500));
+        }
       }
- 
-      const data = JSON.parse(text);
-      if (!data || data.status === 0 || !data.product) return null;
-      return data.product;
- 
-    } catch (err) {
-      console.warn(`OpenFoodFacts barcode attempt ${attempt} failed:`, err.message);
-      if (attempt === MAX_RETRIES) {
-        console.error('OpenFoodFacts barcode failed after all retries:', err);
-        return null;
-      }
-      await new Promise(res => setTimeout(res, attempt * 2000));
     }
   }
- 
+
+  console.warn('OpenFoodFacts barcode lookup failed after all fallbacks.');
   return null;
 }
- 
