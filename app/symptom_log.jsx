@@ -1,24 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TextInput, Button, StyleSheet, TouchableOpacity, Alert, } from 'react-native';
+import { View, Text, FlatList, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView, KeyboardAvoidingView, Platform} from 'react-native';
 import moment from 'moment';
-import { useLocalSearchParams, Stack } from 'expo-router';
+import { Stack } from 'expo-router';
 import { supabase } from '../lib/supabase';
 
-/* ---------------- COMPONENT ---------------- */
-
 const SymptomLog = () => {
-  const params = useLocalSearchParams();
-
   const [foodLog, setFoodLog] = useState([]);
   const [selectedFood, setSelectedFood] = useState(null);
   const [symptom, setSymptom] = useState('');
-  const [symptomLog, setSymptomLog] = useState([]);
   const [severity, setSeverity] = useState(1);
-
-  /* ---------------- LOAD FOOD LOG ---------------- */
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-  const loadFoodLog = async () => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -28,243 +25,262 @@ const SymptomLog = () => {
         .select('*')
         .eq('user_id', user.id)
         .is('deleted_at', null)
-        .order('date_time', { ascending: false });
+        .order('date_time', { ascending: false })
+        .limit(10); // Only need recent meals for logging symptoms
 
       if (error) throw error;
       setFoodLog(data ?? []);
     } catch (err) {
-      console.error('Failed to load food log:', err);
+      console.error('Fetch error:', err);
     }
   };
-  loadFoodLog();
-}, []);
-
-  /* ---------------- LOAD SYMPTOMS ---------------- */
-
-  useEffect(() => {
-  const loadSymptoms = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('symptom_log')
-        .select('*')
-        .eq('user_id', user.id)
-        .is('deleted_at', null)
-        .order('date_time', { ascending: false });
-
-      if (error) throw error;
-      setSymptomLog(data ?? []);
-    } catch (err) {
-      console.error('Failed to load symptoms:', err);
-    }
-  };
-  loadSymptoms();
-}, []);
-
-  /* ---------------- SUBMIT SYMPTOM ---------------- */
 
   const handleSubmit = async () => {
-  if (!selectedFood || !symptom.trim()) {
-    Alert.alert('Error', 'Please select a food and enter a symptom.');
-    return;
-  }
+    if (!selectedFood || !symptom.trim()) {
+      Alert.alert('Missing Info', 'Please select a meal and describe your symptom.');
+      return;
+    }
 
-  try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { error } = await supabase
-      .from('symptom_log')
-      .insert({
+    setLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase.from('symptom_log').insert({
         user_id: user.id,
         symptom: symptom.trim(),
         severity,
         date_time: new Date().toISOString(),
-        food_log_ids: [selectedFood.id],  
-        notes: null,
+        food_log_ids: [selectedFood.id],
       });
 
-    if (error) throw error;
+      if (error) throw error;
 
-    Alert.alert('Saved', 'Symptom log has been saved.');
-    setSymptom('');
-    setSeverity(1);
-    setSelectedFood(null);
-  } catch (err) {
-    console.error('Failed to save symptom:', err);
-    Alert.alert('Error', 'Failed to save symptom.');
-  }
-    // Refresh symptom list
-    const { data: { user } } = await supabase.auth.getUser();
-    const { data } = await supabase
-    .from('symptom_log')
-    .select('*')
-    .eq('user_id', user.id)
-    .is('deleted_at', null)
-    .order('date_time', { ascending: false });
-    setSymptomLog(data ?? []);
-};
+      Alert.alert('Success', 'Symptom recorded.');
+      setSymptom('');
+      setSeverity(1);
+      setSelectedFood(null);
+    } catch (err) {
+      Alert.alert('Error', 'Could not save log.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  /* ---------------- RENDER ---------------- */
+  const SeverityPicker = () => (
+    <View style={styles.severityContainer}>
+      <Text style={styles.label}>How severe is the symptom? ({severity}/10)</Text>
+      <View style={styles.severityRow}>
+        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
+          <TouchableOpacity
+            key={num}
+            style={[
+              styles.severityCircle,
+              severity === num && styles.severityCircleSelected,
+              { backgroundColor: severity === num ? getSeverityColor(num) : '#fff' }
+            ]}
+            onPress={() => setSeverity(num)}
+          >
+            <Text style={[styles.severityNum, severity === num && { color: '#fff' }]}>{num}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+    </View>
+  );
+
+  const getSeverityColor = (val) => {
+    if (val <= 3) return '#22c55e'; // Green
+    if (val <= 7) return '#f59e0b'; // Orange
+    return '#ef4444'; // Red
+  };
 
   return (
-    <View style={styles.container}>
-
+    <KeyboardAvoidingView 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+      style={styles.container}
+    >
       <Stack.Screen
         options={{
-          title: 'Symptom Log',
+          title: 'Log Symptoms',
           headerStyle: { backgroundColor: '#22c55e' },
           headerTintColor: '#fff',
-          headerTitleStyle: { fontWeight: 'bold' },
         }}
       />
 
-      <Text style={styles.header}>Select Food</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <Text style={styles.sectionTitle}>1. Which meal triggered this?</Text>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={foodLog}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              style={[
+                styles.foodCard,
+                selectedFood?.id === item.id && styles.foodCardSelected,
+              ]}
+              onPress={() => setSelectedFood(item)}
+            >
+              <Text style={styles.foodName} numberOfLines={1}>{item.food_name}</Text>
+              <Text style={styles.foodTime}>{moment(item.date_time).format('ddd, h:mm a')}</Text>
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={<Text style={styles.emptyText}>No recent meals found.</Text>}
+        />
 
-      <FlatList
-        data={foodLog}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 20 }}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={[
-              styles.foodItem,
-              selectedFood?.id === item.id && styles.selected,
-            ]}
-            onPress={() => setSelectedFood(item)}
-          >
-            <Text style={styles.foodName}>{item.food_name}</Text>
-            <Text style={styles.foodSub}>
-              {moment(item.date_time).format('MMM D, h:mm a')} · {item.meal_type}
-            </Text>
-          </TouchableOpacity>
-        )}
-      />
-
-        {selectedFood && (
-          <View style={styles.inputSection}>
+        {selectedFood ? (
+          <View style={styles.formSection}>
+            <Text style={styles.sectionTitle}>2. Describe what happened</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Describe symptoms (e.g. hives, nausea)"
-              placeholderTextColor={"#999"}
+              style={styles.textArea}
+              placeholder="E.g. Bloating, itchy throat, headache..."
+              placeholderTextColor="#999"
               value={symptom}
               onChangeText={setSymptom}
               multiline
             />
 
-            <Text style={{ fontWeight: '600', marginTop: 10 }}>
-              Severity: {severity}/10
-            </Text>
-            <View style={styles.servingsRow}>
-              <TouchableOpacity
-                style={styles.severityButton}
-                onPress={() => setSeverity(prev => Math.max(1, prev - 1))}
-              >
-            <Text style={styles.severityButtonText}>-</Text>
-            </TouchableOpacity>
-            <Text style={styles.severityText}>{severity}</Text>
-            <TouchableOpacity
-              style={styles.severityButton}
-              onPress={() => setSeverity(prev => Math.min(10, prev + 1))}
+            <SeverityPicker />
+
+            <TouchableOpacity 
+              style={[styles.submitButton, loading && { opacity: 0.7 }]} 
+              onPress={handleSubmit}
+              disabled={loading}
             >
-            <Text style={styles.severityButtonText}>+</Text>
-          </TouchableOpacity>
-          
-         </View>  
-
-      <View style={styles.buttonWrapper}>
-        <Button title="Submit Symptom" onPress={handleSubmit} />
+              <Text style={styles.submitButtonText}>
+                {loading ? 'Saving...' : 'Save Symptom Log'}
+              </Text>
+            </TouchableOpacity>
           </View>
-        </View>
-      )}
-
-      
-
-    </View>
+        ) : (
+          <View style={styles.instructionBox}>
+            <Text style={styles.instructionText}>Select a meal above to start logging.</Text>
+          </View>
+        )}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
-/* ---------------- STYLES ---------------- */
-
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#eef2ff' },
-  header: { fontSize: 18, fontWeight: '700', marginVertical: 10 },
-  foodItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
   },
-  selected: { backgroundColor: '#e0f4ff' },
-  foodName: { fontWeight: '600' },
-  foodSub: { fontSize: 12, color: 'gray' },
-  input: {
+  scrollContent: {
+    padding: 20,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1e293b',
+    marginBottom: 12,
+  },
+
+  // Food Cards
+  foodCard: {
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 12,
+    marginRight: 10,
+    width: 140,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  foodCardSelected: {
+    borderColor: '#224ec5',
+    backgroundColor: '#eff6ff',
+  },
+  mealEmoji: {
+    fontSize: 24,
+    marginBottom: 5,
+  },
+  foodName: {
+    fontWeight: '600',
+    fontSize: 14,
+    color: '#334155',
+  },
+  foodTime: {
+    fontSize: 11,
+    color: '#64748b',
+    marginTop: 2,
+  },
+
+  // Form
+  formSection: {
+    marginTop: 30,
+  },
+  textArea: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    minHeight: 80,
+    textAlignVertical: 'top',
     borderWidth: 1,
-    borderColor: '#ccc',
-    padding: 10,
-    marginVertical: 10,
-    backgroundColor: 'white',
+    borderColor: '#e2e8f0',
+    fontSize: 16,
   },
-  logItem: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+  label: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#475569',
+    marginTop: 20,
+    marginBottom: 10,
   },
-  logFood: { fontWeight: '600' },
-  logSub: { fontSize: 12, color: 'gray' },
 
-  inputSection: {
-  marginTop: 15,
-  paddingTop: 10,
-  borderTopWidth: 1,
-  borderTopColor: '#ddd',
-},
+  // Severity
+  severityRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  severityCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#cbd5e1',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  severityCircleSelected: {
+    borderColor: 'transparent',
+  },
+  severityNum: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748b',
+  },
 
-input: {
-  borderWidth: 1,
-  borderColor: '#ccc',
-  padding: 12,
-  borderRadius: 6,
-  backgroundColor: 'white',
-  minHeight: 60,
-  textAlignVertical: 'top',
-},
-servingsRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
-severityButton: {
-  backgroundColor: '#224ec5',
-  paddingHorizontal: 15,
-  paddingVertical: 5,
-  borderRadius: 8,
-},
-severityButtonText: { color: 'white', fontSize: 18, fontWeight: 'bold' },
-severityText: { marginHorizontal: 15, fontSize: 16, fontWeight: '600' },
-symptomItem: {
-  padding: 12,
-  borderBottomWidth: 1,
-  borderBottomColor: '#ddd',
-  backgroundColor: 'white',
-  borderRadius: 8,
-  marginBottom: 8,
-},
-symptomRow: {
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-},
-symptomText: { fontWeight: '600', fontSize: 15, flex: 1 },
-symptomSub: { fontSize: 12, color: 'gray', marginTop: 4 },
-severityBadge: {
-  backgroundColor: '#224ec5',
-  borderRadius: 12,
-  paddingHorizontal: 8,
-  paddingVertical: 3,
-},
-severityBadgeText: { color: 'white', fontSize: 12, fontWeight: '600' },
-buttonWrapper: {
-  marginTop: 10,
-},
+  // Button
+  submitButton: {
+    backgroundColor: '#224ec5',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 30,
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
 
+  instructionBox: {
+    marginTop: 40,
+    alignItems: 'center',
+  },
+  instructionText: {
+    color: '#94a3b8',
+    fontStyle: 'italic',
+  },
+  emptyText: {
+    color: '#94a3b8',
+    padding: 20,
+  },
 });
 
 export default SymptomLog;
