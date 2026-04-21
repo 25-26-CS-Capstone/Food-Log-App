@@ -10,6 +10,8 @@
 class Attack : public CObject {
 private:
 	float mLifetime = 0.3f;
+	LEventTimer* m_pFrameEvent = nullptr; ///< Frame event timer.
+	LSpriteDesc2D currentSprite;
 
 public:
 	Attack(eSprite t, const Vector2& p);
@@ -17,6 +19,8 @@ public:
 	void onCollision(CObject*);
 	void move();
 	void update(float);
+	void draw();
+	void UpdateFramenumber();
 };
 
 class explosion : public Attack {

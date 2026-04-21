@@ -154,7 +154,7 @@ void CGame::MenuUpdate() {
         }
     }
     
-    if (m_pKeyboard->TriggerDown('J')) {
+    if (m_pKeyboard->TriggerDown('F')) {
         if (currentButton == 0) {
             BeginGame();
         }
@@ -198,7 +198,7 @@ void CGame::gameOverUpdate() {
         }
     }
 
-    if (m_pKeyboard->TriggerDown('J')) {
+    if (m_pKeyboard->TriggerDown('F')) {
         if (currentButton == 0) {
             BeginGame();
         }
@@ -241,7 +241,7 @@ void CGame::gameWinUpdate() {
         }
     }
 
-    if (m_pKeyboard->TriggerDown('J')) {
+    if (m_pKeyboard->TriggerDown('F')) {
         if (currentButton == 0) {
             BeginGame();
         }
