@@ -1,13 +1,5 @@
-import { useRouter } from 'expo-router'
-import { useEffect } from 'react'
-import { View } from 'react-native'
+import { Redirect } from 'expo-router'
 
 export default function RootIndex() {
-  const router = useRouter()
-
-  useEffect(() => {
-    router.replace('/welcome')
-  }, [router])
-
-  return <View style={{ flex: 1 }} />
+  return <Redirect href="/welcome" />
 }
