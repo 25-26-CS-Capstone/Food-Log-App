@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Stack } from "expo-router";
 import { supabase } from '../lib/supabase';
 
 export default function DietAndExercises() {
+  const insets = useSafeAreaInsets();
 
   const [foodLogs, setFoodLogs] = useState([]);
   const [symptomLogs, setSymptomLogs] = useState([]);
@@ -101,9 +103,10 @@ export default function DietAndExercises() {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <Stack.Screen
-        options={{
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView contentContainerStyle={[styles.container, { paddingBottom: insets.bottom + 20 }]}> 
+        <Stack.Screen
+          options={{
           title: "Diet & Exercises",
           headerStyle: { backgroundColor: "#ef4444" },
           headerTintColor: "#fff",
@@ -159,13 +162,19 @@ export default function DietAndExercises() {
           diet plans and low-impact exercises.
         </Text>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#eef2ff",
+  },
   container: {
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 8,
     flex: 1,
     backgroundColor: "#eef2ff",
   },

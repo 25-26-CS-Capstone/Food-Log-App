@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, TextInput, Button, FlatList, StyleSheet, Text, TouchableOpacity, Alert, Pressable, ActivityIndicator } from 'react-native';
+import { View, TextInput, Button, FlatList, StyleSheet, Text, TouchableOpacity, Alert, Pressable, ActivityIndicator, Platform, ScrollView, Modal } from 'react-native';
 
 import { Picker } from '@react-native-picker/picker';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import moment from 'moment';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Stack } from 'expo-router';
 
 import { offSearch } from '../lib/openfoodfacts';
 import {
@@ -47,6 +48,7 @@ const FoodLog = () => {
   const [servings, setServings] = useState(1); 
   const [selectedDateTime, setSelectedDateTime] = useState(null);
   const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+  const [webDateTimeInput, setWebDateTimeInput] = useState('');
 
   const [log, setLog] = useState([]);
 
@@ -166,6 +168,33 @@ const FoodLog = () => {
     setSearchResults([]);
   };
 
+  const handleOpenDatePicker = () => {
+    const defaultValue = selectedDateTime
+      ? moment(selectedDateTime).format(moment.HTML5_FMT.DATETIME_LOCAL)
+      : moment().format(moment.HTML5_FMT.DATETIME_LOCAL);
+
+    if (Platform.OS === 'web') {
+      setWebDateTimeInput(defaultValue);
+      setDatePickerVisible(true);
+    } else {
+      setDatePickerVisible(true);
+    }
+  };
+
+  const handleConfirmWebDateTime = () => {
+    const parsed = moment(webDateTimeInput, moment.HTML5_FMT.DATETIME_LOCAL, true);
+    if (parsed.isValid()) {
+      setSelectedDateTime(parsed.toDate());
+      setDatePickerVisible(false);
+    } else {
+      Alert.alert('Invalid date format', 'Please use YYYY-MM-DDTHH:mm');
+    }
+  };
+
+  const handleCancelWebDateTime = () => {
+    setDatePickerVisible(false);
+  };
+
   /* ---------------- SUBMIT LOG ---------------- */
 
   const handleSubmit = async () => {
@@ -244,129 +273,176 @@ const FoodLog = () => {
   /* ---------------- RENDER ---------------- */
 
   return (
-    <View style={styles.container}>
- 
-      <TextInput
-        style={styles.input}
-        placeholder="Search for food..."
-        placeholderTextColor="#999"
-        value={foodName}
-        onChangeText={handleSearch}
-      />
-
-      <View style={styles.orRow}>
-        <View style={styles.orLine} />
-        <Text style={styles.orText}>or</Text>
-        <View style={styles.orLine} />
-      </View>
- 
-      <Button title="Scan Barcode" onPress={() => router.push('/barcode_scanner')} />
- 
-      {isSearching && (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#224ec5" />
-          <Text style={styles.loadingText}>Searching...</Text>
-        </View>
-      )}
- 
-      {!isSearching && hasSearched && searchResults.length === 0 && (
-        <Text style={styles.noResults}>No results found. Try a different search term.</Text>
-      )}
- 
-      {searchResults.length > 0 && (
-        <FlatList
-          data={searchResults}
-          keyExtractor={(item) => item.code?.toString()}
-          style={styles.searchList}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.searchResult}
-              onPress={() => handleSelectProduct(item)}
-            >
-              <Text style={styles.searchName}>
-                {item.product_name_en || item.product_name || 'Unnamed'}
-              </Text>
-              {item.brands && (
-                <Text style={styles.searchSub}>{item.brands}</Text>
-              )}
-            </TouchableOpacity>
-          )}
-          ListFooterComponent={renderSearchFooter}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.4}
+    <View style={styles.screenContainer}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <Stack.Screen 
+          options={{
+            title: 'Add Food Log',
+            headerStyle: { backgroundColor: "#22c55e"},
+            headerTintColor: '#fff',
+            headerTitleStyle: { fontWeight: 'bold' },
+          }} 
         />
-      )}
- 
-      {/* SELECTED PRODUCT CARD */}
-      {selectedProduct && (
-        <View style={styles.selectedCard}>
-          <Text style={styles.selectedTitle}>{selectedProduct.name}</Text>
- 
-          {selectedProduct.brand && (
-            <Text style={styles.selectedSub}>Brand: {selectedProduct.brand}</Text>
-          )}
- 
-          {selectedProduct.calories != null && (
-            <Text>Calories: {(selectedProduct.calories * servings).toFixed(0)}</Text>
-          )}
- 
-          <Text style={{ marginTop: 8, fontWeight: '600' }}>Ingredients:</Text>
-          <Text style={{ marginBottom: 8 }}>{selectedProduct.ingredients || 'N/A'}</Text>
- 
-          <Text>
-            Allergens:{' '}
-            {selectedProduct.allergens.length > 0
-              ? selectedProduct.allergens.join(', ')
-              : 'None detected'}
-          </Text>
- 
-          {/* SERVINGS */}
-          <Text style={styles.label}>Servings</Text>
-          <View style={styles.servingsRow}>
-            <TouchableOpacity
-              style={styles.servingButton}
-              onPress={() => setServings((prev) => Math.max(0.5, prev - 0.5))}
-            >
-              <Text style={styles.servingButtonText}>-</Text>
-            </TouchableOpacity>
- 
-            <Text style={styles.servingsText}>{servings}</Text>
- 
-            <TouchableOpacity
-              style={styles.servingButton}
-              onPress={() => setServings((prev) => prev + 0.5)}
-            >
-              <Text style={styles.servingButtonText}>+</Text>
-            </TouchableOpacity>
-          </View>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Search for food..."
+          placeholderTextColor="#999"
+          value={foodName}
+          onChangeText={handleSearch}
+        />
+
+        <View style={styles.orRow}>
+          <View style={styles.orLine} />
+          <Text style={styles.orText}>or</Text>
+          <View style={styles.orLine} />
         </View>
-      )}
- 
-      {selectedProduct && (
-        <>
-          <Text style={styles.label}>Meal Type</Text>
-          <Picker selectedValue={mealType} onValueChange={setMealType}>
-            <Picker.Item label="Breakfast" value="breakfast" />
-            <Picker.Item label="Lunch" value="lunch" />
-            <Picker.Item label="Dinner" value="dinner" />
-            <Picker.Item label="Snack" value="snack" />
-          </Picker>
- 
-          <Button
-            title={
-              selectedDateTime
-                ? moment(selectedDateTime).format('MMMM Do YYYY, h:mm a')
-                : 'Pick Date & Time'
-            }
-            onPress={() => setDatePickerVisible(true)}
+   
+        <Button title="Scan Barcode" onPress={() => router.push('/barcode_scanner')} />
+   
+        {isSearching && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#224ec5" />
+            <Text style={styles.loadingText}>Searching...</Text>
+          </View>
+        )}
+   
+        {!isSearching && hasSearched && searchResults.length === 0 && !selectedProduct && (
+          <Text style={styles.noResults}>No results found. Try a different search term.</Text>
+        )}
+   
+        {searchResults.length > 0 && (
+          <FlatList
+            data={searchResults}
+            keyExtractor={(item) => item.code?.toString()}
+            style={styles.searchList}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.searchResult}
+                onPress={() => handleSelectProduct(item)}
+              >
+                <Text style={styles.searchName}>
+                  {item.product_name_en || item.product_name || 'Unnamed'}
+                </Text>
+                {item.brands && (
+                  <Text style={styles.searchSub}>{item.brands}</Text>
+                )}
+              </TouchableOpacity>
+            )}
+            ListFooterComponent={renderSearchFooter}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.4}
           />
-        </>
-      )}
- 
-      {selectedProduct && (
-        <Button title="Submit Log" onPress={handleSubmit} />
-      )}
- 
+        )}
+   
+        {/* SELECTED PRODUCT CARD */}
+        {selectedProduct && (
+          <View style={styles.selectedCard}>
+            <Text style={styles.selectedTitle}>{selectedProduct.name}</Text>
+   
+            {selectedProduct.brand && (
+              <Text style={styles.selectedSub}>Brand: {selectedProduct.brand}</Text>
+            )}
+   
+            {selectedProduct.calories != null && (
+              <Text>Calories: {(selectedProduct.calories * servings).toFixed(0)}</Text>
+            )}
+   
+            <Text style={{ marginTop: 8, fontWeight: '600' }}>Ingredients:</Text>
+            <Text style={{ marginBottom: 8 }}>{selectedProduct.ingredients || 'N/A'}</Text>
+   
+            <Text>
+              Allergens:{' '}
+              {selectedProduct.allergens.length > 0
+                ? selectedProduct.allergens.join(', ')
+                : 'None detected'}
+            </Text>
+   
+            {/* SERVINGS */}
+            <Text style={styles.label}>Servings</Text>
+            <View style={styles.servingsRow}>
+              <TouchableOpacity
+                style={styles.servingButton}
+                onPress={() => setServings((prev) => Math.max(0.5, prev - 0.5))}
+              >
+                <Text style={styles.servingButtonText}>-</Text>
+              </TouchableOpacity>
+   
+              <Text style={styles.servingsText}>{servings}</Text>
+   
+              <TouchableOpacity
+                style={styles.servingButton}
+                onPress={() => setServings((prev) => prev + 0.5)}
+              >
+                <Text style={styles.servingButtonText}>+</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+   
+        {selectedProduct && (
+          <>
+            <Text style={styles.label}>Meal Type</Text>
+            <Picker selectedValue={mealType} onValueChange={setMealType}>
+              <Picker.Item label="Breakfast" value="breakfast" />
+              <Picker.Item label="Lunch" value="lunch" />
+              <Picker.Item label="Dinner" value="dinner" />
+              <Picker.Item label="Snack" value="snack" />
+            </Picker>
+   
+            <Button
+              title={
+                selectedDateTime
+                  ? moment(selectedDateTime).format('MMMM Do YYYY, h:mm a')
+                  : 'Pick Date & Time'
+              }
+              onPress={handleOpenDatePicker}
+            />
+          </>
+        )}
+
+        {Platform.OS === 'web' && (
+          <Modal visible={isDatePickerVisible} transparent animationType="fade">
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Pick Date & Time</Text>
+                <input
+                  type="datetime-local"
+                  value={webDateTimeInput}
+                  onChange={(e) => setWebDateTimeInput(e.target.value)}
+                  style={styles.webDateInput}
+                />
+                <View style={styles.modalButtons}>
+                  <Button title="Cancel" onPress={handleCancelWebDateTime} />
+                  <Button title="Save" onPress={handleConfirmWebDateTime} />
+                </View>
+              </View>
+            </View>
+          </Modal>
+        )}
+   
+        {selectedProduct && (
+          <Button title="Submit Log" onPress={handleSubmit} />
+        )}
+
+        {Platform.OS !== 'web' && (
+          <DateTimePickerModal
+            isVisible={isDatePickerVisible}
+            mode="datetime"
+            date={selectedDateTime || new Date()}
+            onConfirm={(date) => {
+              setSelectedDateTime(date);
+              setDatePickerVisible(false);
+            }}
+            onCancel={() => setDatePickerVisible(false)}
+          />
+        )}
+      </ScrollView>
+
       <Pressable
         style={styles.navButton}
         onPress={() =>
@@ -378,17 +454,6 @@ const FoodLog = () => {
       >
         <Text style={styles.navButtonText}>Go to Symptom Log</Text>
       </Pressable>
- 
-      <DateTimePickerModal
-        isVisible={isDatePickerVisible}
-        mode="datetime"
-        date={selectedDateTime || new Date()}
-        onConfirm={(date) => {
-          setSelectedDateTime(date);
-          setDatePickerVisible(false);
-        }}
-        onCancel={() => setDatePickerVisible(false)}
-      />
     </View>
   );
 };
@@ -396,7 +461,17 @@ const FoodLog = () => {
 /* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#eef2ff' },
+  screenContainer: { 
+    flex: 1, 
+    backgroundColor: '#eef2ff',
+    flexDirection: 'column',
+  },
+  container: { 
+    flex: 1,
+    padding: 20, 
+    backgroundColor: '#eef2ff' 
+  },
+  scrollContent: { paddingBottom: 40 },
 
   input: {
     height: 40,
@@ -406,6 +481,46 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginBottom: 10,
     paddingLeft: 10,
+  },
+  webDateInput: {
+    height: 44,
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    marginVertical: 16,
+    backgroundColor: 'white',
+    color: '#000',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    padding: 20,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 420,
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 22,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
   },
   loadingContainer: {
     flexDirection: 'row',
@@ -503,7 +618,7 @@ const styles = StyleSheet.create({
 
   navButton: {
     borderRadius: 15,
-    backgroundColor: 'midnightblue',
+    backgroundColor: '#22c55e',
     padding: 10,
     marginTop: 30,
     marginBottom: 10,

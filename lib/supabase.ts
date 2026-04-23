@@ -6,14 +6,19 @@ import { createClient, processLock } from '@supabase/supabase-js'
 const supabaseUrl = "https://vqacsootnkjskjqxnara.supabase.co"
 const supabaseAnonKey = "sb_publishable_-3h0BrWcbT-BfmhacJIFsQ_dlB__1Ct"
 
+const authOptions = {
+  ...(Platform.OS !== "web" ? { storage: AsyncStorage } : {}),
+  autoRefreshToken: true,
+  persistSession: true,
+  detectSessionInUrl: false,
+}
+
+if (Platform.OS !== "web") {
+  authOptions.lock = processLock
+}
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    ...(Platform.OS !== "web" ? { storage: AsyncStorage } : {}),
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-    lock: processLock,
-  },
+  auth: authOptions,
 })
 
 // Tells Supabase Auth to continuously refresh the session automatically

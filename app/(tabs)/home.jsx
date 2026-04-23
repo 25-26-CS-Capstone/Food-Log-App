@@ -1,10 +1,10 @@
-import { StyleSheet, View, Text, Pressable } from "react-native";
+import { StyleSheet, View, Text, Pressable, ScrollView } from "react-native";
 import React from "react";
 import { navigate } from "expo-router/build/global-state/routing";
 
 const home = () => {
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>Food Log Dashboard</Text>
@@ -55,7 +55,7 @@ const home = () => {
           <Text style={styles.cardText}>Diet & Exercises</Text>
         </Pressable>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -64,11 +64,13 @@ export default home;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    width: "100%",
     backgroundColor: "#eef2ff",
   },
 
   /* 🔵 HEADER STYLES */
   header: {
+    width: "100%",
     paddingTop: 70,
     paddingBottom: 40,
     paddingHorizontal: 20,
@@ -89,10 +91,18 @@ const styles = StyleSheet.create({
   },
 
   /* 🔵 CARDS */
+  scrollContent: {
+    flexGrow: 1,
+    width: "100%",
+    paddingBottom: 30,
+  },
   cardContainer: {
-    padding: 20,
+    width: "100%",
+    paddingVertical: 20,
+    paddingHorizontal: 20,
   },
   card: {
+    width: "100%",
     borderRadius: 16,
     padding: 18,
     marginBottom: 15,

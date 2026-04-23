@@ -1,6 +1,95 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
+import * as Print from 'expo-print';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+
+const WEB_EXPORTED_FILES_KEY = 'FoodLogWebExportedFiles';
+
+const parseDateRangeFromFilename = (filename) => {
+  const match = filename.match(/^FoodLog_(\d{4}-\d{2}-\d{2})_to_(\d{4}-\d{2}-\d{2})_/);
+  if (match) {
+    return `${match[1]} - ${match[2]}`;
+  }
+  return '';
+};
+
+const saveWebExportMetadata = async (metadata) => {
+  try {
+    const existing = await AsyncStorage.getItem(WEB_EXPORTED_FILES_KEY);
+    const list = existing ? JSON.parse(existing) : [];
+    list.unshift(metadata);
+    await AsyncStorage.setItem(WEB_EXPORTED_FILES_KEY, JSON.stringify(list));
+  } catch (error) {
+    console.error('Error saving web export metadata:', error);
+  }
+};
+
+const getWebExportedFiles = async () => {
+  try {
+    const stored = await AsyncStorage.getItem(WEB_EXPORTED_FILES_KEY);
+    if (!stored) return [];
+    const list = JSON.parse(stored);
+    return list.sort((a, b) => b.modificationTime - a.modificationTime);
+  } catch (error) {
+    console.error('Error reading web export metadata:', error);
+    return [];
+  }
+};
+
+const removeWebExportedFile = async (filename) => {
+  try {
+    const stored = await AsyncStorage.getItem(WEB_EXPORTED_FILES_KEY);
+    if (!stored) return;
+    const list = JSON.parse(stored).filter(item => item.name !== filename);
+    await AsyncStorage.setItem(WEB_EXPORTED_FILES_KEY, JSON.stringify(list));
+  } catch (error) {
+    console.error('Error removing web export metadata:', error);
+  }
+};
+
+const blobToBase64 = (blob) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onloadend = () => resolve(reader.result.split(',')[1]);
+  reader.onerror = reject;
+  reader.readAsDataURL(blob);
+});
+
+const NATIVE_EXPORTED_FILES_KEY = 'FoodLogNativeExportedFiles';
+
+const saveNativeExportMetadata = async (metadata) => {
+  try {
+    const existing = await AsyncStorage.getItem(NATIVE_EXPORTED_FILES_KEY);
+    const list = existing ? JSON.parse(existing) : [];
+    list.unshift(metadata);
+    await AsyncStorage.setItem(NATIVE_EXPORTED_FILES_KEY, JSON.stringify(list));
+  } catch (error) {
+    console.error('Error saving native export metadata:', error);
+  }
+};
+
+const getNativeExportedFiles = async () => {
+  try {
+    const stored = await AsyncStorage.getItem(NATIVE_EXPORTED_FILES_KEY);
+    if (!stored) return [];
+    const list = JSON.parse(stored);
+    return list.sort((a, b) => b.modificationTime - a.modificationTime);
+  } catch (error) {
+    console.error('Error reading native export metadata:', error);
+    return [];
+  }
+};
+
+const removeNativeExportedFile = async (filename) => {
+  try {
+    const stored = await AsyncStorage.getItem(NATIVE_EXPORTED_FILES_KEY);
+    if (!stored) return;
+    const list = JSON.parse(stored).filter(item => item.name !== filename);
+    await AsyncStorage.setItem(NATIVE_EXPORTED_FILES_KEY, JSON.stringify(list));
+  } catch (error) {
+    console.error('Error removing native export metadata:', error);
+  }
+};
 
 /**
  * Get user-accessible downloads directory
@@ -51,12 +140,12 @@ export const logsToCSV = (logs) => {
   if (foodLogs.length > 0) {
     csv += 'FOOD LOGS\n';
     csv += 'Date,Time,Food Name,Calories,Carbs,Protein,Fat,Fiber,Sugar,Sodium,Notes\n';
-    
+
     foodLogs.forEach(log => {
       const date = new Date(log.timestamp);
       const dateStr = date.toLocaleDateString('en-US');
       const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      
+
       const calories = log.calories || log.usdaData?.calories || '';
       const carbs = log.carbs || '';
       const protein = log.protein || '';
@@ -68,7 +157,7 @@ export const logsToCSV = (logs) => {
 
       csv += `${dateStr},${timeStr},"${log.foodName}",${calories},${carbs},${protein},${fat},${fiber},${sugar},${sodium},"${notes}"\n`;
     });
-    
+
     csv += '\n\n';
   }
 
@@ -76,7 +165,7 @@ export const logsToCSV = (logs) => {
   if (symptomLogs.length > 0) {
     csv += 'SYMPTOM LOGS\n';
     csv += 'Date,Time,Symptom,Severity,Notes\n';
-    
+
     symptomLogs.forEach(log => {
       const date = new Date(log.timestamp);
       const dateStr = date.toLocaleDateString('en-US');
@@ -90,6 +179,100 @@ export const logsToCSV = (logs) => {
   return csv;
 };
 
+
+const buildPDFHtml = (logs) => {
+  const normalized = normalizeLogs(logs);
+  const foodLogs = normalized.filter(l => l.type === 'food');
+  const symptomLogs = normalized.filter(l => l.type === 'symptom');
+  const titleDate = new Date().toLocaleString();
+
+  const rowHtml = (cells) => `<tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
+  const foodRows = foodLogs.map((log) => {
+    const date = new Date(log.timestamp);
+    return rowHtml([
+      date.toLocaleDateString('en-US'),
+      date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      log.foodName || '',
+      log.calories || log.usdaData?.calories || '',
+      log.carbs || '',
+      log.protein || '',
+      log.fat || '',
+      log.usdaData?.fiber || '',
+      log.usdaData?.sugar || '',
+      log.usdaData?.sodium || '',
+      (log.notes || '').replace(/\s+/g, ' ').trim(),
+    ]);
+  }).join('');
+
+  const symptomRows = symptomLogs.map((log) => {
+    const date = new Date(log.timestamp);
+    return rowHtml([
+      date.toLocaleDateString('en-US'),
+      date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      log.symptomName || '',
+      log.severity || '',
+      (log.notes || '').replace(/\s+/g, ' ').trim(),
+    ]);
+  }).join('');
+
+  return `<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Food Log Export</title>
+<style>
+  body { font-family: Arial, sans-serif; color: #1a1a1a; padding: 24px; }
+  h1, h2 { color: #0a6d6e; }
+  p { margin: 8px 0; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 24px; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+  th { background: #f2f2f2; }
+  .section-note { font-size: 12px; color: #555; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+  <h1>Food Log Export</h1>
+  <p class="section-note">Generated: ${titleDate}</p>
+  <h2>Food Logs</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Food</th>
+        <th>Calories</th>
+        <th>Carbs</th>
+        <th>Protein</th>
+        <th>Fat</th>
+        <th>Fiber</th>
+        <th>Sugar</th>
+        <th>Sodium</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${foodRows || '<tr><td colspan="11">No food logs found for this range.</td></tr>'}
+    </tbody>
+  </table>
+  <h2>Symptom Logs</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Symptom</th>
+        <th>Severity</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${symptomRows || '<tr><td colspan="5">No symptom logs found for this range.</td></tr>'}
+    </tbody>
+  </table>
+</body>
+</html>`;
+};
+
 /**
  * Export logs to a file
  * @param {Array} logs - Logs to export
@@ -97,66 +280,176 @@ export const logsToCSV = (logs) => {
  * @param {string} customDirectory - Optional custom directory path. Defaults to Documents.
  * @returns {Promise<boolean>} True if export successful
  */
-export const exportLogsToFile = async (logs, format = 'csv', customDirectory = null) => {
+export const exportLogsToFile = async (logs, format = 'csv', customDirectory = null, customFilename = null, options = { share: false, directoryUri: null, persist: true }) => {
   try {
-    const filename = `FoodLog_${new Date().toISOString().split('T')[0]}.${format}`;
-    // Use custom directory if provided, otherwise default to Downloads (user-accessible)
-    // Fall back to cache if Downloads not available
+    const filename = customFilename || `FoodLog_${new Date().toISOString().split('T')[0]}.${format}`;
+    const mimeType = format === 'csv' ? 'text/csv' : format === 'json' ? 'application/json' : 'application/pdf';
+
+    // Web platform: use browser download APIs
+    if (Platform.OS === 'web') {
+      let metadata = {
+        name: filename,
+        size: 0,
+        uri: filename,
+        modificationTime: Date.now(),
+        format: format === 'csv' ? 'CSV' : format === 'json' ? 'JSON' : 'PDF',
+        location: 'Web',
+        dateRange: parseDateRangeFromFilename(filename),
+      };
+
+      if (format === 'pdf') {
+        const html = buildPDFHtml(logs);
+        const blob = new Blob([html], { type: 'text/html' });
+        metadata.size = blob.size;
+        metadata.mimeType = 'text/html';
+        metadata.base64Content = btoa(unescape(encodeURIComponent(html)));
+
+        if (options.share) {
+          throw new Error('PDF sharing is not supported in this browser');
+        }
+
+        const printWindow = window.open('', '_blank', 'width=900,height=700');
+        if (printWindow) {
+          printWindow.document.write(html);
+          printWindow.document.close();
+          printWindow.focus();
+          setTimeout(() => printWindow.print(), 250);
+        }
+      } else {
+        const data = formatLogsForExport(logs, format);
+        const blob = new Blob([data], { type: mimeType });
+        metadata.size = blob.size;
+        metadata.mimeType = mimeType;
+        metadata.base64Content = await blobToBase64(blob);
+        const url = URL.createObjectURL(blob);
+        metadata.uri = url;
+
+        if (options.share) {
+          const shareFile = new File([blob], filename, { type: mimeType });
+          if (window.navigator?.canShare?.({ files: [shareFile] })) {
+            await window.navigator.share({ files: [shareFile], title: filename });
+            return true;
+          }
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          return true;
+        }
+
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        await saveWebExportMetadata(metadata);
+      }
+
+      if (format === 'pdf') {
+        await saveWebExportMetadata(metadata);
+      }
+
+      return true;
+    }
+
+    // Native platforms: use FileSystem API
     let directory = customDirectory || getDownloadsDirectory() || FileSystem.cacheDirectory;
-    if (!directory) {
+    if (!directory && !options.directoryUri) {
       throw new Error('No accessible file system directory available');
     }
 
-    // Format data
-    const data = formatLogsForExport(logs, format);
+    const isPdf = format === 'pdf';
+    let filepath = options.directoryUri ? null : `${directory}${filename}`;
 
-    // On Android, writing directly to /storage may be denied by scoped storage.
-    // Try Storage Access Framework (SAF) first when targeting Downloads, otherwise write normally.
-    let filepath = `${directory}${filename}`;
-    if (Platform.OS === 'android' && directory && directory.startsWith('/storage')) {
-      try {
-        const perm = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
-        if (perm.granted && perm.directoryUri) {
-          const mimeType = format === 'csv' ? 'text/csv' : 'application/json';
-          const fileUri = await FileSystem.StorageAccessFramework.createFileAsync(perm.directoryUri, filename, mimeType);
-          await FileSystem.writeAsStringAsync(fileUri, data, { encoding: FileSystem.EncodingType.UTF8 });
-          filepath = fileUri; // content:// URI
-        } else {
-          throw new Error('Directory permission not granted');
-        }
-      } catch (safErr) {
-        console.warn('SAF write failed, falling back to cache write:', safErr);
-        // Fallback: write to cache and attempt to share so user can save externally
-        const fallbackPath = `${FileSystem.cacheDirectory}${filename}`;
-        await FileSystem.writeAsStringAsync(fallbackPath, data, { encoding: FileSystem.EncodingType.UTF8 });
-        // Try to prompt user to save/share the file
+    if (options.directoryUri && Platform.OS === 'android') {
+      if (isPdf) {
+        const { uri } = await Print.printToFileAsync({ html: buildPDFHtml(logs) });
         try {
-          const canShare = await Sharing.isAvailableAsync();
-          if (canShare) await Sharing.shareAsync(fallbackPath);
-        } catch (shareErr) {
-          console.warn('Sharing fallback failed:', shareErr);
+          const targetUri = await FileSystem.StorageAccessFramework.createFileAsync(options.directoryUri, filename, mimeType);
+          await FileSystem.copyAsync({ from: uri, to: targetUri });
+          filepath = targetUri;
+        } catch (copyErr) {
+          console.warn('Could not save PDF to selected folder, using generated file URI instead.', copyErr);
+          filepath = uri;
         }
-        // Return early with fallback path
-        return fallbackPath;
+      } else {
+        const data = formatLogsForExport(logs, format);
+        const fileUri = await FileSystem.StorageAccessFramework.createFileAsync(options.directoryUri, filename, mimeType);
+        await FileSystem.writeAsStringAsync(fileUri, data, {
+          encoding: FileSystem.EncodingType.UTF8,
+        });
+        filepath = fileUri;
       }
     } else {
-      // Ensure directory exists for normal paths
-      try {
-        const dirInfo = await FileSystem.getInfoAsync(directory);
-        if (!dirInfo.exists) {
-          await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+      if (isPdf) {
+        const { uri } = await Print.printToFileAsync({ html: buildPDFHtml(logs) });
+        filepath = uri;
+
+        if (directory && !uri.startsWith(directory)) {
+          try {
+            const dirInfo = await FileSystem.getInfoAsync(directory);
+            if (!dirInfo.exists) {
+              await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+            }
+            const targetPath = `${directory}${filename}`;
+            await FileSystem.copyAsync({ from: uri, to: targetPath });
+            filepath = targetPath;
+          } catch (copyErr) {
+            console.warn('Could not copy PDF to target directory; using generated file URI instead.', copyErr);
+          }
         }
-      } catch (dirErr) {
-        console.warn('Could not create directory:', dirErr);
+      } else {
+        const data = formatLogsForExport(logs, format);
+
+        if (Platform.OS === 'android' && directory && directory.startsWith('/storage')) {
+          try {
+            const perm = await FileSystem.StorageAccessFramework.requestDirectoryPermissionsAsync();
+            if (perm.granted && perm.directoryUri) {
+              const fileUri = await FileSystem.StorageAccessFramework.createFileAsync(perm.directoryUri, filename, mimeType);
+              await FileSystem.writeAsStringAsync(fileUri, data, {
+                encoding: FileSystem.EncodingType.UTF8,
+              });
+              filepath = fileUri;
+            } else {
+              throw new Error('Directory permission not granted');
+            }
+          } catch (safErr) {
+            console.warn('SAF write failed, falling back to cache write:', safErr);
+            const fallbackPath = `${FileSystem.cacheDirectory}${filename}`;
+            await FileSystem.writeAsStringAsync(fallbackPath, data, {
+              encoding: FileSystem.EncodingType.UTF8,
+            });
+            try {
+              const canShare = await Sharing.isAvailableAsync();
+              if (canShare) await Sharing.shareAsync(fallbackPath, { mimeType });
+            } catch (shareErr) {
+              console.warn('Sharing fallback failed:', shareErr);
+            }
+            return fallbackPath;
+          }
+        } else {
+          try {
+            const dirInfo = await FileSystem.getInfoAsync(directory);
+            if (!dirInfo.exists) {
+              await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+            }
+          } catch (dirErr) {
+            console.warn('Could not create directory:', dirErr);
+          }
+          filepath = `${directory}${filename}`;
+          await FileSystem.writeAsStringAsync(filepath, data, {
+            encoding: FileSystem.EncodingType.UTF8,
+          });
+        }
       }
-      filepath = `${directory}${filename}`;
-      await FileSystem.writeAsStringAsync(filepath, data, { encoding: FileSystem.EncodingType.UTF8 });
     }
 
     console.log('Export: using directory:', directory);
     console.log('Export: writing to:', filepath);
 
-    // Verify file was written
     let fileInfo;
     try {
       fileInfo = await FileSystem.getInfoAsync(filepath);
@@ -165,49 +458,61 @@ export const exportLogsToFile = async (logs, format = 'csv', customDirectory = n
       console.error('Export: getInfoAsync failed:', infoErr);
       throw new Error(`Failed to verify file: ${infoErr.message}`);
     }
-    
+
     if (!fileInfo.exists) {
       throw new Error('File was created but does not exist - verify permissions');
     }
-    
+
     const normalized = normalizeLogs(logs);
     const foodCount = normalized.filter(l => l.type === 'food').length;
     const symptomCount = normalized.filter(l => l.type === 'symptom').length;
-    
+
     console.log(`Export: success - ${foodCount} food & ${symptomCount} symptom logs to ${filepath}`);
 
-    // Share the file if available (native platforms)
-    const canShare = await Sharing.isAvailableAsync();
-    console.log('Export: canShare =', canShare);
-    if (canShare) {
-      try {
-        await Sharing.shareAsync(filepath, {
-          mimeType: format === 'csv' ? 'text/csv' : 'application/json',
-          dialogTitle: `Share ${filename}`,
-        });
-      } catch (shareError) {
-        // On Android, app-private cache files can't be shared this way.
-        // The file is still created successfully; just log the error.
-        console.warn('Export: sharing not available for this file location:', shareError.message);
+    const fileMetadata = {
+      name: filename,
+      size: fileInfo.size || 0,
+      uri: filepath,
+      modificationTime: Date.now(),
+      format: format === 'csv' ? 'CSV' : format === 'json' ? 'JSON' : 'PDF',
+      location: options.directoryUri ? 'Custom Folder' : (directory === FileSystem.cacheDirectory ? 'Cache' : 'Downloads'),
+      dateRange: parseDateRangeFromFilename(filename),
+    };
+
+    if (options.share) {
+      const canShare = await Sharing.isAvailableAsync();
+      console.log('Export: canShare =', canShare);
+      if (canShare) {
+        try {
+          await Sharing.shareAsync(filepath, {
+            mimeType,
+            dialogTitle: `Share ${filename}`,
+          });
+        } catch (shareError) {
+          console.warn('Export: sharing not available for this file location:', shareError.message);
+        }
+      } else {
+        console.log('Export: sharing not available on this platform');
       }
-    } else {
-      console.log('Export: sharing not available on this platform');
     }
 
-    return true;
+    if (options.persist) {
+      await saveNativeExportMetadata(fileMetadata);
+    }
+
+    return filepath;
   } catch (error) {
     console.error('Export: fatal error:', error);
     throw error;
   }
 };
-
 /**
- * Filter logs by date range
- * @param {Array} logs - All logs
- * @param {Date} startDate - Start date (inclusive)
- * @param {Date} endDate - End date (inclusive)
- * @returns {Array} Filtered logs
- */
+* Filter logs by date range
+* @param {Array} logs - All logs
+* @param {Date} startDate - Start date (inclusive)
+* @param {Date} endDate - End date (inclusive)
+* @returns {Array} Filtered logs
+*/
 // helpers for backwards compatibility with older log entries that didn't include
 // `type` or `timestamp` fields.  New logs created by food_log.jsx now include
 // those properties, but existing records may still rely on `date`,
@@ -258,7 +563,7 @@ const normalizeLogs = (logs) => {
 export const filterLogsByDateRange = (logs, startDate, endDate) => {
   const start = new Date(startDate);
   start.setHours(0, 0, 0, 0);
-  
+
   const end = new Date(endDate);
   end.setHours(23, 59, 59, 999);
 
@@ -349,7 +654,7 @@ const getUniqueDays = (logs) => {
  */
 export const generateExportReport = (logs, startDate, endDate) => {
   const summary = generateExportSummary(logs, startDate, endDate);
-  
+
   let report = '═══════════════════════════════════════\n';
   report += '         FOOD LOG EXPORT REPORT\n';
   report += '═══════════════════════════════════════\n\n';
@@ -383,44 +688,11 @@ export const generateExportReport = (logs, startDate, endDate) => {
 
 export const getExportedFiles = async () => {
   try {
-    const allFiles = [];
-    const directories = [
-      { path: getDownloadsDirectory(), label: 'Downloads' },
-      { path: FileSystem.cacheDirectory, label: 'Cache' },
-    ];
-
-    for (const dir of directories) {
-      if (!dir.path) continue;
-      try {
-        const files = await FileSystem.readDirectoryAsync(dir.path);
-        console.log(`${dir.label} directory contents:`, files);
-        
-        // Filter for CSV and JSON export files
-        const exportFiles = files.filter(f => f.startsWith('FoodLog_') && (f.endsWith('.csv') || f.endsWith('.json')));
-        
-        // Get info for each file
-        const fileInfos = await Promise.all(
-          exportFiles.map(async (filename) => {
-            const filepath = `${dir.path}${filename}`;
-            const info = await FileSystem.getInfoAsync(filepath);
-            return {
-              name: filename,
-              size: info.size || 0,
-              uri: filepath,
-              modificationTime: info.modificationTime || 0,
-              format: filename.endsWith('.csv') ? 'CSV' : 'JSON',
-              location: dir.label,
-            };
-          })
-        );
-        allFiles.push(...fileInfos);
-      } catch (error) {
-        console.log(`Error reading ${dir.label} directory:`, error);
-      }
+    if (Platform.OS === 'web') {
+      return await getWebExportedFiles();
     }
-    
-    // Sort by modification time (newest first)
-    return allFiles.sort((a, b) => b.modificationTime - a.modificationTime);
+
+    return await getNativeExportedFiles();
   } catch (error) {
     console.error('Error getting exported files:', error);
     return [];
@@ -432,10 +704,41 @@ export const getExportedFiles = async () => {
  * @param {string} filepath - Full path to file to delete
  * @returns {Promise<boolean>} True if deleted
  */
-export const deleteExportedFile = async (filepath) => {
+export const deleteExportedFile = async (fileOrPath) => {
   try {
-    await FileSystem.deleteAsync(filepath);
-    console.log('Deleted:', filepath);
+    if (Platform.OS === 'web') {
+      const filename = fileOrPath?.name || fileOrPath;
+      await removeWebExportedFile(filename);
+      console.log('Deleted web export metadata:', filename);
+      return true;
+    }
+
+    let filename;
+    let uri;
+
+    if (fileOrPath && typeof fileOrPath === 'object') {
+      filename = fileOrPath.name;
+      uri = fileOrPath.uri;
+    } else {
+      uri = fileOrPath;
+      if (typeof fileOrPath === 'string') {
+        const segments = fileOrPath.split('/');
+        filename = segments[segments.length - 1];
+      }
+    }
+
+    if (filename) {
+      await removeNativeExportedFile(filename);
+    }
+
+    try {
+      if (uri) {
+        await FileSystem.deleteAsync(uri);
+      }
+    } catch (delErr) {
+      console.warn('Could not delete file from system:', delErr);
+    }
+
     return true;
   } catch (error) {
     console.error('Error deleting file:', error);
@@ -448,10 +751,14 @@ export const deleteExportedFile = async (filepath) => {
  * @param {string} filepath - Full path to file
  * @returns {Promise<string>} File contents
  */
-export const readExportedFile = async (filepath) => {
+export const readExportedFile = async (fileOrPath) => {
   try {
-    const content = await FileSystem.readAsStringAsync(filepath);
-    return content;
+    if (Platform.OS === 'web') {
+      if (fileOrPath?.base64Content) return atob(fileOrPath.base64Content);
+      return 'File preview unavailable — please re-export.';
+    }
+    const filepath = typeof fileOrPath === 'string' ? fileOrPath : fileOrPath.uri;
+    return await FileSystem.readAsStringAsync(filepath);
   } catch (error) {
     console.error('Error reading file:', error);
     throw error;
