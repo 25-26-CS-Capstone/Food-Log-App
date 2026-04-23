@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { searchFood as searchUSDA, getFoodDetails as getUSDADetails, formatFoodSearchResult as formatUSDA } from '../utils/usdaAPI';
 import { searchFood as searchOFF, getFoodDetails as getOFFDetails, formatFoodSearchResult as formatOFF } from '../utils/openFoodFactsAPI';
-import { NO_INGREDIENTS_LISTED, NO_KNOWN_ALLERGENS } from './constants';
+import { NO_INGREDIENTS_LISTED, NO_KNOWN_ALLERGENS } from '../lib/constants';
 
 const FoodInfo = () => {
   const [searchQuery, setSearchQuery] = useState('');

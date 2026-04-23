@@ -5,12 +5,20 @@ import NetInfo from '@react-native-community/netinfo';
 const LAST_SYNC_KEY = 'last_sync_timestamp';
 const SOFT_DELETE_TABLES = ['food_log', 'symptom_log'];
 
+// ============================================
+// MAPPING LOGIC (Fixed date_time handling)
+// ============================================
 const toSnakeCase = (entry: any) => {
   if (!entry) return {};
   return {
+    // Crucial: Pass the ID so upsert knows to update instead of create new
+    id:           entry.id           ?? undefined, 
     food_name:    entry.foodName     ?? entry.food_name   ?? null,
     meal_type:    entry.mealType     ?? entry.meal_type   ?? null,
-    date_time:    entry.date_time    ?? null,
+    
+    // FIX: Checks for both snake_case and camelCase, fallbacks to current time
+    date_time:    entry.date_time    ?? entry.dateTime    ?? new Date().toISOString(),
+    
     servings:     entry.servings     ?? null,
     calories:     entry.calories     ?? null,
     color:        entry.color        ?? null,
@@ -18,9 +26,9 @@ const toSnakeCase = (entry: any) => {
     brand:        entry.brand        ?? null,
     ingredients:  entry.ingredients  ?? null,
     allergens:    entry.allergens    ?? [],
-    protein: entry.protein ?? null,
-    carbs:   entry.carbs   ?? null,
-    fat:     entry.fat     ?? null,
+    protein:      entry.protein      ?? null,
+    carbs:        entry.carbs        ?? null,
+    fat:          entry.fat          ?? null,
   };
 };
 
@@ -41,7 +49,6 @@ export const syncLocalChangesToSupabase = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Get pending changes from local queue
     const pendingChanges = await getPendingChanges();
     
     for (const change of pendingChanges) {
@@ -64,13 +71,9 @@ export const syncSupabaseChangesToLocal = async () => {
 
     const lastSync = await getLastSyncTime();
 
-    // Pull food logs
     await syncTable('food_log', user.id, lastSync);
-
-    // Pull symptom logs
     await syncTable('symptom_log', user.id, lastSync);
 
-    // Update last sync time
     await setLastSyncTime(Date.now());
 
     console.log('✓ Supabase changes synced to local');
@@ -119,22 +122,13 @@ const syncTable = async (
 // ============================================
 const mergeRecords = (local: any[], remote: any[]) => {
   const map = new Map();
-
-  // Add all local records first
   local.forEach(record => map.set(record.id, record));
 
-  // Override with remote if newer
   remote.forEach(remoteRecord => {
     const localRecord = map.get(remoteRecord.id);
-    
-    if (!localRecord) {
-      // New record from another device
-      map.set(remoteRecord.id, remoteRecord);
-    } else if (new Date(remoteRecord.updated_at) > new Date(localRecord.updated_at)) {
-      // Remote is newer
+    if (!localRecord || new Date(remoteRecord.updated_at) > new Date(localRecord.updated_at)) {
       map.set(remoteRecord.id, remoteRecord);
     }
-    // Otherwise keep local (local is newer)
   });
 
   return Array.from(map.values());
@@ -144,9 +138,15 @@ const mergeRecords = (local: any[], remote: any[]) => {
 // SYNC SINGLE CHANGE (Push)
 // ============================================
 const syncSingleChange = async (change: SyncLog, userId: string) => {
+  let mapped: any = null; 
+
   try {
     const { action, table, data } = change;
-    const mapped = table === 'food_log' ? toSnakeCase(data) : data;
+    mapped = table === 'food_log' ? toSnakeCase(data) : data;
+
+    if (table === 'food_log' && !mapped.date_time) {
+      mapped.date_time = new Date().toISOString();
+    }
 
     if (action === 'create' || action === 'update') {
       const { error } = await supabase
@@ -155,6 +155,7 @@ const syncSingleChange = async (change: SyncLog, userId: string) => {
           { ...mapped, user_id: userId, updated_at: new Date().toISOString() },
           { onConflict: 'id' }
         );
+      
       if (error) throw error;
       await markChangeAsSynced(change.id);
     } else if (action === 'delete') {
@@ -163,11 +164,12 @@ const syncSingleChange = async (change: SyncLog, userId: string) => {
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', data.id)
         .eq('user_id', userId);
+      
       if (error) throw error;
       await markChangeAsSynced(change.id);
     }
   } catch (err) {
-    console.error('Error syncing change:', err);
+    console.error('Error syncing change:', err, 'Mapped Data:', mapped);
   }
 };
 

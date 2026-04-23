@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Modal, TextInput, Button, Pressable, Alert, Platform } from "react-native";
 import moment from "moment";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { supabase } from '../lib/supabase';
 import { Stack } from "expo-router";
@@ -716,17 +717,36 @@ export default function History() {
               title="Pick Time"
               onPress={() => setPickerVisible(true)}
             />
-
-            <DateTimePickerModal
-              isVisible={pickerVisible}
-              mode="datetime"
-              date={symptomFields.time || new Date()}
-              onConfirm={(date) => {
-                setSymptomFields({ ...symptomFields, time: date });
-                setPickerVisible(false);
-              }}
-              onCancel={() => setPickerVisible(false)}
-            />
+            
+                        {Platform.OS === 'ios' ? (
+              pickerVisible && symptomModal && (
+                <>
+                  <DateTimePicker
+                    value={symptomFields.time || new Date()}
+                    mode="datetime"
+                    display="spinner"
+                    textColor="black"
+                    onChange={(event, date) => {
+                      if (date) {
+                        setSymptomFields({ ...symptomFields, time: date });
+                      }
+                    }}
+                  />
+                  <Button title="Done" onPress={() => setPickerVisible(false)} />
+                </>
+              )
+            ) : (
+              <DateTimePickerModal
+                isVisible={pickerVisible && symptomModal}
+                mode="datetime"
+                date={symptomFields.time || new Date()}
+                onConfirm={(date) => {
+                  setSymptomFields({ ...symptomFields, time: date });
+                  setPickerVisible(false);
+                }}
+                onCancel={() => setPickerVisible(false)}
+              />
+            )}
 
             <View style={styles.row}>
               <Button title="Save" onPress={saveSymptom} />
@@ -739,7 +759,9 @@ export default function History() {
             <Button
               title="Cancel"
               color="gray"
-              onPress={() => setSymptomModal(false)}
+              onPress={() => {setSymptomModal(false);
+                setSymptomsModal(false);
+              }}
             />
           </View>
         </View>
@@ -755,23 +777,44 @@ export default function History() {
               onPress={() => setPickerVisible(true)}
             />
 
-            <DateTimePickerModal
-              isVisible={pickerVisible}
-              mode="datetime"
-              date={foodTime}
-              onConfirm={(date) => {
-                setFoodTime(date);
-                setPickerVisible(false);
-              }}
-              onCancel={() => setPickerVisible(false)}
-            />
+                        {Platform.OS === 'ios' ? (
+              pickerVisible && foodModal && (
+                <>
+                  <DateTimePicker
+                    value={foodTime || new Date()}
+                    mode="datetime"
+                    display="spinner"
+                    textColor="black"
+                    onChange={(event, date) => {
+                      if (date) {
+                        setFoodTime(date);
+                      }
+                    }}
+                  />
+                  <Button title="Done" onPress={() => setPickerVisible(false)} />
+                </>
+              )
+            ) : (
+              <DateTimePickerModal
+                isVisible={pickerVisible && foodModal}
+                mode="datetime"
+                date={foodTime || new Date()}
+                onConfirm={(date) => {
+                  setFoodTime(date);
+                  setPickerVisible(false);
+                }}
+                onCancel={() => setPickerVisible(false)}
+              />
+            )}
 
             <View style={styles.row}>
               <Button title="Save" onPress={saveFoodTime} />
               <Button
                 title="Cancel"
                 color="gray"
-                onPress={() => setFoodModal(false)}
+                onPress={() => {setFoodModal(false);
+                  setFoodModal(false);
+                }}
               />
             </View>
           </View>

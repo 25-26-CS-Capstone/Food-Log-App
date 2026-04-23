@@ -1,0 +1,77 @@
+/// \file Game.h
+/// \brief Interface for the game class CGame.
+
+#ifndef __L4RC_GAME_GAME_H__
+#define __L4RC_GAME_GAME_H__
+
+#include "Component.h"
+#include "Common.h"
+#include "ObjectManager.h"
+#include "Settings.h"
+#include  "Player.h"
+#include "Windows.h"
+#include "HUD.h"
+#include "Attack.h"
+#include "Room.h"
+#include "GraphGen.h"
+#include <vector>
+#include <algorithm>
+#include <random>
+#include <chrono>
+
+/// \brief The game class.
+///
+/// The game class is the object-oriented implementation of the game. This class
+/// must contain the following public member functions. `Initialize()` does
+/// initialization and will be run exactly once at the start of the game.
+/// `ProcessFrame()` will be called once per frame to create and render the
+/// next animation frame. `Release()` will be called at game exit but before
+/// any destructors are run.
+
+class CGame: 
+  public LComponent, 
+  public LSettings,
+  public CCommon{ 
+
+  private:
+    bool m_bDrawFrameRate = false; ///< Draw the frame rate.
+	bool m_bDrawGraph = false; ///< Draw the graph.
+    int gameState;  //0 = menu, 1 = gameplay
+    int currentButton;
+    bool itemSpawn = false;
+//    LSpriteDesc2D* m_pSpriteDesc = nullptr; ///< Sprite descriptor.
+//    LSpriteRenderer* m_pRenderer = nullptr; ///< Pointer to renderer.
+    void LoadImages(); ///< Load images.
+    void LoadSounds(); ///< Load sounds.
+    void StartMenu();
+    void MenuUpdate();
+    void BeginGame(); ///< Begin playing the game.
+    void CreateObjects(); ///< Create game objects.
+    void KeyboardHandler(); ///< The keyboard handler.
+    void RenderFrame(); ///< Render an animation frame.
+    void DrawFrameRateText(); ///< Draw frame rate text to screen.
+    void gameOver();
+    void gameOverUpdate();
+    void gameWin();
+    void gameWinUpdate();
+
+	
+
+    Graph m_Graph;
+	CRoom* m_pRoom; ///< The room.
+    vector<int> rareItemList = { 1,2,3,4,5,6 };
+    int itemListPos = 0;
+
+  public:
+    ~CGame(); ///< Destructor.
+
+    void Initialize(); ///< Initialize the game.
+    void ProcessFrame(); ///< Process an animation frame.
+    void Release(); ///< Release the renderer.
+	void ChangeRoom();
+    void createItemList();
+    void spawnRareItem(Vector2, bool, int);
+    void spawnCommonItem(Vector2, bool, int);
+}; //CGame
+
+#endif //__L4RC_GAME_GAME_H__

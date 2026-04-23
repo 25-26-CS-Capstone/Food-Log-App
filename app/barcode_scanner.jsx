@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -25,26 +25,35 @@ const BarcodeScanner = () => {
   const [scanned, setScanned] = useState(false);
   const [loading, setLoading] = useState(false);
   const [manualCode, setManualCode] = useState('');
+  const [torchOn, setTorchOn] = useState(false);
 
+  const scanLockRef = useRef(false);
   const canScan = useMemo(() => !scanned && !loading, [scanned, loading]);
   const canSearchManual = useMemo(() => manualCode.trim().length > 0 && !loading, [manualCode, loading]);
 
 
   const handleLookup = async (barcode) => {
+    if (scanLockRef.current) return;
+    scanLockRef.current = true;
+
     const code = (barcode || '').trim();
 
-    // Barcode validaton
+    // Barcode validation
     if (!/^\d{8,14}$/.test(code)) {
+      scanLockRef.current = false;
       Alert.alert('Invalid barcode', 'Enter 8–14 digits only.');
       return;
     }
 
     try {
+      setScanned(true);
       setLoading(true);
 
       const product = await offGetProductByBarcode(code);
       if (!product) {
         Alert.alert('Not found', 'No product found for this barcode.');
+        scanLockRef.current = false;
+        setScanned(false);
         return;
       }
 
@@ -54,11 +63,14 @@ const BarcodeScanner = () => {
       router.replace({
         pathname: '/food_log',
         params: {
-          scannedName: product.product_name,
+          scannedProduct: JSON.stringify(product),
+          //scannedName: product.product_name,
         },
       });
     } catch (err) {
       Alert.alert('Error', err?.message || 'Something went wrong.');
+      scanLockRef.current = false;
+      setScanned(false);
     } finally {
       setLoading(false);
     }
@@ -103,6 +115,7 @@ const BarcodeScanner = () => {
           <View style={styles.cameraWrap}>
             <CameraView
               style={styles.camera}
+              enableTorch={torchOn}
               onBarcodeScanned={canScan ? onBarcodeScanned : undefined}
               barcodeScannerSettings={{ barcodeTypes: ['upc_a', 'upc_e', 'ean13', 'ean8'] }}
             />
@@ -156,6 +169,7 @@ const BarcodeScanner = () => {
                 <Pressable
                   style={[styles.outlineBtn, loading && styles.btnDisabled]}
                   onPress={() => {
+                    scanLockRef.current = false;
                     setScanned(false);
                     setManualCode('');
                   }}
@@ -165,9 +179,20 @@ const BarcodeScanner = () => {
                 </Pressable>
 
                 <Pressable
+                style={[styles.outlineBtn, loading && styles.btnDisabled]}
+                  onPress={() => setTorchOn((prev) => !prev)}
+                  disabled={loading}
+                >
+                  <Text style={styles.outlineBtnText}>
+                    {torchOn ? 'Flash Off' : 'Flash On'}
+                  </Text>
+                </Pressable>
+
+                <Pressable
                   style={[styles.ghostBtnSmall, loading && styles.btnDisabled]}
                   onPress={() => router.back()}
                   disabled={loading}
+                  
                 >
                   <Text style={styles.ghostBtnText}>Back</Text>
                 </Pressable>
@@ -193,7 +218,7 @@ export default BarcodeScanner;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000'
+    backgroundColor: '#000',
   },
   cameraWrap: {
     flex: 1,

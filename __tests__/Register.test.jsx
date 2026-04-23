@@ -3,6 +3,14 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react-nativ
 import Register from '../app/register'
 import { supabase } from '../lib/supabase'
 
+const mockPush = jest.fn()
+
+jest.mock('expo-router', () => ({
+  useRouter: () => ({
+    push: mockPush
+  })
+}))
+
 jest.mock('../lib/supabase', () => ({
   supabase: {
     auth: {
@@ -16,6 +24,15 @@ jest.mock('react-native')
 describe('Register Component', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockPush.mockClear()
+  })
+
+  test('navigates back to login page', () => {
+    render(<Register />)
+
+    fireEvent.press(screen.getByTestId('BackToLogin'))
+
+    expect(mockPush).toHaveBeenCalledWith('/login')
   })
 
   test('submits valid credentials to Supabase', async () => {

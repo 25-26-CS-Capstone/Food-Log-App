@@ -9,7 +9,7 @@ const home = () => {
       <View style={styles.header}>
         <Text style={styles.title}>Food Log Dashboard</Text>
         <Text style={styles.subtitle}>
-          Track food, symptoms & get health insights
+          Track your food, symptoms, and get health insights
         </Text>
       </View>
 
