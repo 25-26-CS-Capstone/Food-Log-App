@@ -639,8 +639,10 @@ export const generateExportSummary = (logs, startDate, endDate) => {
 const getUniqueDays = (logs) => {
   const days = new Set();
   logs.forEach(log => {
-    const date = new Date(log.timestamp).toLocaleDateString();
-    days.add(date);
+    if (log.type === 'food') {
+      const date = new Date(log.timestamp).toLocaleDateString();
+      days.add(date);
+    }
   });
   return days.size;
 };

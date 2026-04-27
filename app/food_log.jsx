@@ -261,11 +261,19 @@ const FoodLog = () => {
   };
 
   return (
-    <ScrollView 
-      style={styles.container} 
+    <ScrollView
+      style={styles.container}
       contentContainerStyle={styles.scrollContent}
       keyboardShouldPersistTaps="handled"
     >
+      <Stack.Screen
+        options={{
+          title: 'Add Food Log',
+          headerStyle: { backgroundColor: "#22c55e" },
+          headerTintColor: '#fff',
+          headerTitleStyle: { fontWeight: 'bold' },
+        }}
+      />
       <View style={styles.searchRow}>
         <TextInput
           style={styles.searchInput}
@@ -374,13 +382,46 @@ const FoodLog = () => {
         </>
       )}
 
+      {Platform.OS === 'web' && (
+        <Modal visible={isDatePickerVisible} transparent animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Pick Date & Time</Text>
+              <input
+                type="datetime-local"
+                value={webDateTimeInput}
+                onChange={(e) => setWebDateTimeInput(e.target.value)}
+                style={{
+                  height: 44,
+                  width: '100%',
+                  border: '1px solid #ccc',
+                  borderRadius: 8,
+                  paddingLeft: 10,
+                  paddingRight: 10,
+                  marginTop: 16,
+                  marginBottom: 16,
+                  backgroundColor: 'white',
+                  color: '#000',
+                  fontSize: 16,
+                  boxSizing: 'border-box',
+                }}
+              />
+              <View style={styles.modalButtons}>
+                <Button title="Cancel" onPress={handleCancelWebDateTime} />
+                <Button title="Save" onPress={handleConfirmWebDateTime} />
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
+
       <Pressable style={styles.navButton} onPress={() => router.push({ pathname: '/symptom_log', params: { foodLogData: JSON.stringify(log) } })}>
         <Text style={styles.navButtonText}>Go to Symptom Log</Text>
       </Pressable>
 
       {Platform.OS === 'ios' ? (
         <Modal visible={isDatePickerVisible} transparent animationType="slide" onRequestClose={closeIOSPicker}>
-          <View style={styles.modalOverlay}>
+          <View style={styles.iosModalOverlay}>
             <View style={styles.iosPickerCard}>
               <Text style={styles.iosPickerTitle}>Pick Date & Time</Text>
               <DateTimePicker
@@ -617,7 +658,7 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: '600',
   },
-  modalOverlay: {
+  iosModalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0,0,0,0.35)',
