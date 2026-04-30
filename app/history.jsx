@@ -38,6 +38,7 @@ export default function History() {
   const [timeTo, setTimeTo] = useState(null);
   const [filterPickerMode, setFilterPickerMode] = useState(null); // null | 'dateFrom' | 'dateTo' | 'timeFrom' | 'timeTo'
   const [webFilterInput, setWebFilterInput] = useState('');
+  const [showFlaggedOnly, setShowFlaggedOnly] = useState(false);
 
   useEffect(() => {
     loadFoodLogs();
@@ -356,6 +357,10 @@ export default function History() {
       filtered = [...filtered].sort((a, b) => b.food_name?.localeCompare(a.food_name));
     }
 
+    if (showFlaggedOnly) {
+      const flagMap = getFlaggedFoodNames();
+      filtered = filtered.filter((food) => flagMap[food.food_name?.toLowerCase()]);
+    }
     return filtered;
   };
 
@@ -607,6 +612,16 @@ export default function History() {
               </Pressable>
             </View>
 
+            <Text style={styles.label}>Flagged Foods:</Text>
+            <Pressable
+              style={[styles.toggleBtn, showFlaggedOnly && styles.toggleBtnActive]}
+              onPress={() => setShowFlaggedOnly((prev) => !prev)}
+            >
+              <Text style={[styles.toggleBtnText, showFlaggedOnly && { color: '#fff' }]}>
+                {showFlaggedOnly ? '⚠️ Showing flagged only' : '⚠️ Show flagged only'}
+              </Text>
+            </Pressable>
+
             {/* Date/Time picker for filter fields */}
             {Platform.OS !== 'web' ? (
               <DateTimePickerModal
@@ -686,6 +701,7 @@ export default function History() {
                 setDateTo(null);
                 setTimeFrom(null);
                 setTimeTo(null);
+                setShowFlaggedOnly(false);
               }}
             />
             <Button
@@ -717,8 +733,8 @@ export default function History() {
               title="Pick Time"
               onPress={() => setPickerVisible(true)}
             />
-            
-                        {Platform.OS === 'ios' ? (
+
+            {Platform.OS === 'ios' ? (
               pickerVisible && symptomModal && (
                 <>
                   <DateTimePicker
@@ -759,7 +775,8 @@ export default function History() {
             <Button
               title="Cancel"
               color="gray"
-              onPress={() => {setSymptomModal(false);
+              onPress={() => {
+                setSymptomModal(false);
                 setSymptomsModal(false);
               }}
             />
@@ -777,7 +794,7 @@ export default function History() {
               onPress={() => setPickerVisible(true)}
             />
 
-                        {Platform.OS === 'ios' ? (
+            {Platform.OS === 'ios' ? (
               pickerVisible && foodModal && (
                 <>
                   <DateTimePicker
@@ -812,7 +829,8 @@ export default function History() {
               <Button
                 title="Cancel"
                 color="gray"
-                onPress={() => {setFoodModal(false);
+                onPress={() => {
+                  setFoodModal(false);
                   setFoodModal(false);
                 }}
               />

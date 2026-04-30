@@ -17,13 +17,16 @@ const MOCK_SYMPTOM_LOGS = [
 
 let insertMock = jest.fn().mockResolvedValue({ data: null, error: null });
 
+// Component calls: .from(table).select('*').eq(...).is(...).order(...).limit(10)
+// So .order() must return `this` and .limit() must resolve the promise.
 const makeChain = ({ data, error }) => ({
   select: jest.fn().mockReturnThis(),
   insert: insertMock,
   update: jest.fn().mockReturnThis(),
   eq:     jest.fn().mockReturnThis(),
   is:     jest.fn().mockReturnThis(),
-  order:  jest.fn().mockResolvedValue({ data, error }),
+  order:  jest.fn().mockReturnThis(),           // changed: returns this so .limit() can be chained
+  limit:  jest.fn().mockResolvedValue({ data, error }), // new: terminal call that resolves
   in:     jest.fn().mockReturnThis(),
 });
 
@@ -65,80 +68,82 @@ describe('SymptomLog — log symptom(s)', () => {
   });
 
   it('does not show symptom input before a food is selected', async () => {
+    // Component shows the TextArea only when selectedFood is set.
+    // The actual placeholder is "E.g. Bloating, itchy throat, headache..."
     const { queryByPlaceholderText } = render(<SymptomLog />);
-    await waitFor(() => {}); // let effects settle
-    expect(queryByPlaceholderText('Describe symptoms (e.g. hives, nausea)')).toBeNull();
+    await waitFor(() => {});
+    expect(queryByPlaceholderText('E.g. Bloating, itchy throat, headache...')).toBeNull();
   });
 
   it('shows symptom input after selecting a food item', async () => {
     const { getByText, getByPlaceholderText } = render(<SymptomLog />);
     await waitFor(() => getByText('Peanut Butter Toast'));
     await act(async () => { fireEvent.press(getByText('Peanut Butter Toast')); });
-    expect(getByPlaceholderText('Describe symptoms (e.g. hives, nausea)')).toBeTruthy();
+    // Actual placeholder text from symptom_log.jsx
+    expect(getByPlaceholderText('E.g. Bloating, itchy throat, headache...')).toBeTruthy();
   });
 
   it('severity defaults to 1', async () => {
     const { getByText } = render(<SymptomLog />);
     await waitFor(() => getByText('Peanut Butter Toast'));
     await act(async () => { fireEvent.press(getByText('Peanut Butter Toast')); });
-    expect(getByText('Severity: 1/10')).toBeTruthy();
+    // Actual label text from SeverityPicker: "How severe is the symptom? (N/10)"
+    expect(getByText('How severe is the symptom? (1/10)')).toBeTruthy();
   });
 
-  it('increments severity with + button', async () => {
-    const { getByText, getAllByText } = render(<SymptomLog />);
+  it('increments severity by tapping a higher number', async () => {
+    const { getByText } = render(<SymptomLog />);
     await waitFor(() => getByText('Peanut Butter Toast'));
     await act(async () => { fireEvent.press(getByText('Peanut Butter Toast')); });
-    await act(async () => { fireEvent.press(getAllByText('+')[0]); });
-    expect(getByText('Severity: 2/10')).toBeTruthy();
+    // Tap the "2" circle to set severity to 2
+    await act(async () => { fireEvent.press(getByText('2')); });
+    expect(getByText('How severe is the symptom? (2/10)')).toBeTruthy();
   });
 
-  it('decrements severity with - button', async () => {
-    const { getByText, getAllByText } = render(<SymptomLog />);
+  it('decrements severity by tapping a lower number', async () => {
+    const { getByText } = render(<SymptomLog />);
     await waitFor(() => getByText('Peanut Butter Toast'));
     await act(async () => { fireEvent.press(getByText('Peanut Butter Toast')); });
-    await act(async () => { fireEvent.press(getAllByText('+')[0]); }); // → 2
-    await act(async () => { fireEvent.press(getAllByText('+')[0]); }); // → 3
-    await act(async () => { fireEvent.press(getAllByText('-')[0]); }); // → 2
-    expect(getByText('Severity: 2/10')).toBeTruthy();
+    await act(async () => { fireEvent.press(getByText('3')); }); // set to 3
+    await act(async () => { fireEvent.press(getByText('2')); }); // back to 2
+    expect(getByText('How severe is the symptom? (2/10)')).toBeTruthy();
   });
 
   it('severity does not exceed 10', async () => {
-    const { getByText, getAllByText } = render(<SymptomLog />);
+    const { getByText } = render(<SymptomLog />);
     await waitFor(() => getByText('Peanut Butter Toast'));
     await act(async () => { fireEvent.press(getByText('Peanut Butter Toast')); });
-    for (let i = 0; i < 12; i++) {
-      await act(async () => { fireEvent.press(getAllByText('+')[0]); });
-    }
-    expect(getByText('Severity: 10/10')).toBeTruthy();
+    // Tap 10 — the maximum circle
+    await act(async () => { fireEvent.press(getByText('10')); });
+    expect(getByText('How severe is the symptom? (10/10)')).toBeTruthy();
   });
 
   it('severity does not go below 1', async () => {
-    const { getByText, getAllByText } = render(<SymptomLog />);
+    const { getByText } = render(<SymptomLog />);
     await waitFor(() => getByText('Peanut Butter Toast'));
     await act(async () => { fireEvent.press(getByText('Peanut Butter Toast')); });
-    await act(async () => { fireEvent.press(getAllByText('-')[0]); });
-    await act(async () => { fireEvent.press(getAllByText('-')[0]); });
-    expect(getByText('Severity: 1/10')).toBeTruthy();
+    // Tap 1 — the minimum circle; severity stays at 1
+    await act(async () => { fireEvent.press(getByText('1')); });
+    expect(getByText('How severe is the symptom? (1/10)')).toBeTruthy();
   });
 
   it('inserts a symptom log with correct fields on submit', async () => {
-    const { getByText, getByPlaceholderText, getAllByText } = render(<SymptomLog />);
+    const { getByText, getByPlaceholderText } = render(<SymptomLog />);
     await waitFor(() => getByText('Peanut Butter Toast'));
     await act(async () => { fireEvent.press(getByText('Peanut Butter Toast')); });
 
     await act(async () => {
       fireEvent.changeText(
-        getByPlaceholderText('Describe symptoms (e.g. hives, nausea)'),
+        getByPlaceholderText('E.g. Bloating, itchy throat, headache...'),
         'stomach cramps',
       );
     });
 
-    // Increase severity to 5
-    for (let i = 0; i < 4; i++) {
-      await act(async () => { fireEvent.press(getAllByText('+')[0]); });
-    }
+    // Set severity to 5 by tapping the "5" circle
+    await act(async () => { fireEvent.press(getByText('5')); });
 
-    await act(async () => { fireEvent.press(getByText('Submit Symptom')); });
+    // Actual submit button label from symptom_log.jsx
+    await act(async () => { fireEvent.press(getByText('Save Symptom Log')); });
 
     await waitFor(() =>
       expect(insertMock).toHaveBeenCalledWith(
@@ -156,10 +161,22 @@ describe('SymptomLog — log symptom(s)', () => {
     const { getByText, getByPlaceholderText } = render(<SymptomLog />);
     await waitFor(() => getByText('Peanut Butter Toast'));
     await act(async () => { fireEvent.press(getByText('Peanut Butter Toast')); });
-    const input = getByPlaceholderText('Describe symptoms (e.g. hives, nausea)');
-    await act(async () => { fireEvent.changeText(input, 'nausea'); });
-    await act(async () => { fireEvent.press(getByText('Submit Symptom')); });
-    await waitFor(() => expect(input.props.value).toBe(''));
+    await act(async () => {
+      fireEvent.changeText(
+        getByPlaceholderText('E.g. Bloating, itchy throat, headache...'),
+        'nausea',
+      );
+    });
+    await act(async () => { fireEvent.press(getByText('Save Symptom Log')); });
+    // selectedFood is set to null after submit, which re-renders the form section away
+    // and then back once a new food is selected. Re-query after re-selecting the food.
+    await waitFor(() => getByText('Peanut Butter Toast'));
+    await act(async () => { fireEvent.press(getByText('Peanut Butter Toast')); });
+    await waitFor(() =>
+      expect(
+        getByPlaceholderText('E.g. Bloating, itchy throat, headache...').props.value,
+      ).toBe(''),
+    );
   });
 
   it('shows alert when symptom text is empty on submit', async () => {
@@ -167,11 +184,12 @@ describe('SymptomLog — log symptom(s)', () => {
     const { getByText } = render(<SymptomLog />);
     await waitFor(() => getByText('Peanut Butter Toast'));
     await act(async () => { fireEvent.press(getByText('Peanut Butter Toast')); });
-    await act(async () => { fireEvent.press(getByText('Submit Symptom')); });
+    await act(async () => { fireEvent.press(getByText('Save Symptom Log')); });
     await waitFor(() =>
+      // Actual alert title/message from symptom_log.jsx
       expect(Alert.alert).toHaveBeenCalledWith(
-        'Error',
-        'Please select a food and enter a symptom.',
+        'Missing Info',
+        'Please select a meal and describe your symptom.',
       ),
     );
   });
@@ -182,16 +200,16 @@ describe('SymptomLog — log symptom(s)', () => {
 
     await act(async () => { fireEvent.press(getByText('Pasta Salad')); });
     await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('Describe symptoms (e.g. hives, nausea)'), 'bloating');
+      fireEvent.changeText(getByPlaceholderText('E.g. Bloating, itchy throat, headache...'), 'bloating');
     });
-    await act(async () => { fireEvent.press(getByText('Submit Symptom')); });
+    await act(async () => { fireEvent.press(getByText('Save Symptom Log')); });
     await waitFor(() => expect(insertMock).toHaveBeenCalledTimes(1));
 
     await act(async () => { fireEvent.press(getByText('Peanut Butter Toast')); });
     await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('Describe symptoms (e.g. hives, nausea)'), 'itching');
+      fireEvent.changeText(getByPlaceholderText('E.g. Bloating, itchy throat, headache...'), 'itching');
     });
-    await act(async () => { fireEvent.press(getByText('Submit Symptom')); });
+    await act(async () => { fireEvent.press(getByText('Save Symptom Log')); });
     await waitFor(() => expect(insertMock).toHaveBeenCalledTimes(2));
   });
 });

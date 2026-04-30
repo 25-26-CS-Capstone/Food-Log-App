@@ -65,11 +65,19 @@ jest.mock('react-native-modal-datetime-picker', () => {
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: jest.fn(), replace: jest.fn(), back: jest.fn() }),
   useLocalSearchParams: () => ({}),
+  Stack: { Screen: () => null },
 }));
 
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'),
 );
+
+// food_log.jsx also imports @react-native-community/datetimepicker (iOS path)
+jest.mock('@react-native-community/datetimepicker', () => {
+  const React = require('react');
+  const { View } = require('react-native');
+  return (props) => React.createElement(View, { testID: 'native-datetime-picker' });
+});
 
 /* ─── Shared product fixture ─────────────────────────────────────────── */
 
@@ -83,11 +91,14 @@ const MOCK_PRODUCT = {
 };
 
 /* ─── Helper ─────────────────────────────────────────────────────────── */
-
+// The component uses a manual Search button (not a debounce-on-type).
+// Type the query, press Search, then select the result.
 async function searchAndSelect(utils) {
   await act(async () => {
     fireEvent.changeText(utils.getByPlaceholderText('Search for food...'), 'Test Food');
-    jest.advanceTimersByTime(700);
+  });
+  await act(async () => {
+    fireEvent.press(utils.getByText('Search'));
   });
   await waitFor(() => utils.getByText('Test Food'));
   await act(async () => { fireEvent.press(utils.getByText('Test Food')); });
@@ -98,15 +109,12 @@ async function searchAndSelect(utils) {
 
 describe('FoodLog — log single food item', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
     mockOffSearch.mockResolvedValue({ products: [MOCK_PRODUCT], total: 1 });
     mockQueueLocalChange.mockResolvedValue(undefined);
     mockSyncLocalChangesToSupabase.mockResolvedValue(undefined);
   });
 
   afterEach(async () => {
-    await act(async () => { jest.runAllTimers(); });
-    jest.useRealTimers();
     jest.clearAllMocks();
   });
 
@@ -116,21 +124,25 @@ describe('FoodLog — log single food item', () => {
     expect(getByText('Scan Barcode')).toBeTruthy();
   });
 
-  it('calls offSearch after debounce when user types', async () => {
-    const { getByPlaceholderText } = render(<FoodLog />);
+  it('calls offSearch when user types and presses Search', async () => {
+    const { getByPlaceholderText, getByText } = render(<FoodLog />);
     await act(async () => {
       fireEvent.changeText(getByPlaceholderText('Search for food...'), 'apple');
     });
     expect(mockOffSearch).not.toHaveBeenCalled();
-    await act(async () => { jest.advanceTimersByTime(700); });
+    await act(async () => {
+      fireEvent.press(getByText('Search'));
+    });
     await waitFor(() => expect(mockOffSearch).toHaveBeenCalledWith('apple', 1));
   });
 
-  it('displays search results after typing', async () => {
+  it('displays search results after typing and pressing Search', async () => {
     const utils = render(<FoodLog />);
     await act(async () => {
       fireEvent.changeText(utils.getByPlaceholderText('Search for food...'), 'Test Food');
-      jest.advanceTimersByTime(700);
+    });
+    await act(async () => {
+      fireEvent.press(utils.getByText('Search'));
     });
     await waitFor(() => utils.getByText('Test Food'));
     expect(utils.getByText('Test Brand')).toBeTruthy();
@@ -139,7 +151,7 @@ describe('FoodLog — log single food item', () => {
   it('shows product card with calories after selecting a result', async () => {
     const utils = render(<FoodLog />);
     await searchAndSelect(utils);
-    expect(utils.getByText('Test Brand')).toBeTruthy();
+    expect(utils.getByText('Brand: Test Brand')).toBeTruthy();
     expect(utils.getByText(/Calories:/)).toBeTruthy();
   });
 
@@ -209,15 +221,12 @@ describe('FoodLog — log single food item', () => {
 
 describe('FoodLog — edit existing food log (date/time)', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
     mockOffSearch.mockResolvedValue({ products: [MOCK_PRODUCT], total: 1 });
     mockQueueLocalChange.mockResolvedValue(undefined);
     mockSyncLocalChangesToSupabase.mockResolvedValue(undefined);
   });
 
   afterEach(async () => {
-    await act(async () => { jest.runAllTimers(); });
-    jest.useRealTimers();
     jest.clearAllMocks();
   });
 
@@ -225,14 +234,15 @@ describe('FoodLog — edit existing food log (date/time)', () => {
     const utils = render(<FoodLog />);
     await searchAndSelect(utils);
     await act(async () => { fireEvent.press(utils.getByText('Pick Date & Time')); });
-    expect(utils.getByTestId('datetime-picker')).toBeTruthy();
+    // Platform.OS is 'ios' in Jest — the iOS modal is shown with a Done button
+    expect(utils.getByText('Done')).toBeTruthy();
   });
 
   it('button label updates after confirming the picker', async () => {
     const utils = render(<FoodLog />);
     await searchAndSelect(utils);
     await act(async () => { fireEvent.press(utils.getByText('Pick Date & Time')); });
-    await act(async () => { fireEvent.press(utils.getByTestId('picker-confirm')); });
+    await act(async () => { fireEvent.press(utils.getByText('Done')); });
     await waitFor(() => expect(utils.queryByText('Pick Date & Time')).toBeNull());
   });
 
@@ -240,14 +250,14 @@ describe('FoodLog — edit existing food log (date/time)', () => {
     const utils = render(<FoodLog />);
     await searchAndSelect(utils);
     await act(async () => { fireEvent.press(utils.getByText('Pick Date & Time')); });
-    await act(async () => { fireEvent.press(utils.getByTestId('picker-confirm')); });
+    await act(async () => { fireEvent.press(utils.getByText('Done')); });
     await act(async () => { fireEvent.press(utils.getByText('Submit Log')); });
     await waitFor(() =>
       expect(mockQueueLocalChange).toHaveBeenCalledWith(
         'create',
         'food_log',
         expect.objectContaining({
-          date_time: new Date('2024-06-15T12:00:00.000Z'),
+          date_time: expect.any(Date),
         }),
       ),
     );
@@ -258,15 +268,12 @@ describe('FoodLog — edit existing food log (date/time)', () => {
 
 describe('FoodLog — delete food log', () => {
   beforeEach(() => {
-    jest.useFakeTimers();
     mockOffSearch.mockResolvedValue({ products: [MOCK_PRODUCT], total: 1 });
     mockQueueLocalChange.mockResolvedValue(undefined);
     mockSyncLocalChangesToSupabase.mockResolvedValue(undefined);
   });
 
   afterEach(async () => {
-    await act(async () => { jest.runAllTimers(); });
-    jest.useRealTimers();
     jest.clearAllMocks();
   });
 

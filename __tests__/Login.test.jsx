@@ -22,6 +22,24 @@ jest.mock('../app/AuthContext', () => ({
   })
 }))
 
+// Mock expo-router (login.jsx uses `router` named export, not useRouter)
+jest.mock('expo-router', () => ({
+  router: { replace: jest.fn(), push: jest.fn(), back: jest.fn() },
+  useRouter: () => ({ replace: jest.fn(), push: jest.fn(), back: jest.fn() }),
+  Stack: { Screen: () => null },
+}))
+
+// Mock utils used after successful login
+jest.mock('../utils/notifications', () => ({
+  sendWelcomeWithLogsLink: jest.fn().mockResolvedValue(undefined),
+}))
+
+jest.mock('../utils/storage', () => ({
+  getUserData: jest.fn().mockResolvedValue({}),
+  recordTodayLoginDay: jest.fn().mockResolvedValue(1),
+  saveUserData: jest.fn().mockResolvedValue(undefined),
+}))
+
 describe('Login Component', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -41,11 +59,8 @@ describe('Login Component', () => {
       const passwordInput = screen.getByTestId('Password')
       const loginButton = screen.getByTestId('Login')
 
-      // Fill in valid credentials
       fireEvent.changeText(emailInput, 'test@example.com')
       fireEvent.changeText(passwordInput, 'ValidPassword123!')
-
-      // Submit the form
       fireEvent.press(loginButton)
 
       await waitFor(() => {
@@ -67,8 +82,8 @@ describe('Login Component', () => {
 
       const loginButton = screen.getByTestId('Login')
 
-      // Initially button should be enabled (loading is false)
-      expect(loginButton.props.disabled).toBe(false)
+      // React Native's Button `disabled` prop surfaces as accessibilityState.disabled
+      expect(loginButton.props.accessibilityState?.disabled).toBeFalsy()
 
       const emailInput = screen.getByTestId('Email')
       const passwordInput = screen.getByTestId('Password')
@@ -76,8 +91,7 @@ describe('Login Component', () => {
       fireEvent.changeText(emailInput, 'valid@example.com')
       fireEvent.changeText(passwordInput, 'ValidPass123!')
 
-      // Button should still be enabled
-      expect(loginButton.props.disabled).toBe(false)
+      expect(loginButton.props.accessibilityState?.disabled).toBeFalsy()
     })
 
     test('should successfully retrieve user data on login', async () => {
@@ -89,13 +103,9 @@ describe('Login Component', () => {
 
       render(<Login />)
 
-      const emailInput = screen.getByTestId('Email')
-      const passwordInput = screen.getByTestId('Password')
-      const loginButton = screen.getByTestId('Login')
-
-      fireEvent.changeText(emailInput, 'user@example.com')
-      fireEvent.changeText(passwordInput, 'SecurePass456!')
-      fireEvent.press(loginButton)
+      fireEvent.changeText(screen.getByTestId('Email'), 'user@example.com')
+      fireEvent.changeText(screen.getByTestId('Password'), 'SecurePass456!')
+      fireEvent.press(screen.getByTestId('Login'))
 
       await waitFor(() => {
         expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
@@ -117,13 +127,9 @@ describe('Login Component', () => {
 
       render(<Login />)
 
-      const emailInput = screen.getByTestId('Email')
-      const passwordInput = screen.getByTestId('Password')
-      const loginButton = screen.getByTestId('Login')
-
-      fireEvent.changeText(emailInput, 'user@example.com')
-      fireEvent.changeText(passwordInput, 'WrongPassword123!')
-      fireEvent.press(loginButton)
+      fireEvent.changeText(screen.getByTestId('Email'), 'user@example.com')
+      fireEvent.changeText(screen.getByTestId('Password'), 'WrongPassword123!')
+      fireEvent.press(screen.getByTestId('Login'))
 
       await waitFor(() => {
         expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
@@ -144,13 +150,9 @@ describe('Login Component', () => {
 
       render(<Login />)
 
-      const emailInput = screen.getByTestId('Email')
-      const passwordInput = screen.getByTestId('Password')
-      const loginButton = screen.getByTestId('Login')
-
-      fireEvent.changeText(emailInput, 'test@example.com')
-      fireEvent.changeText(passwordInput, 'IncorrectPass')
-      fireEvent.press(loginButton)
+      fireEvent.changeText(screen.getByTestId('Email'), 'test@example.com')
+      fireEvent.changeText(screen.getByTestId('Password'), 'IncorrectPass')
+      fireEvent.press(screen.getByTestId('Login'))
 
       await waitFor(() => {
         expect(Alert.alert).toHaveBeenCalledWith('Email or password is incorrect')
@@ -158,33 +160,23 @@ describe('Login Component', () => {
     })
 
     test('should allow user to retry after incorrect password', async () => {
-      supabase.auth.signInWithPassword.mockResolvedValueOnce({
-        data: null,
-        error: { message: 'Invalid login credentials' }
-      }).mockResolvedValueOnce({
-        data: { user: { id: '123', email: 'test@example.com' } },
-        error: null
-      })
+      supabase.auth.signInWithPassword
+        .mockResolvedValueOnce({ data: null, error: { message: 'Invalid login credentials' } })
+        .mockResolvedValueOnce({ data: { user: { id: '123', email: 'test@example.com' } }, error: null })
 
       render(<Login />)
 
-      const emailInput = screen.getByTestId('Email')
-      const passwordInput = screen.getByTestId('Password')
-      const loginButton = screen.getByTestId('Login')
-
-      // First attempt with wrong password
-      fireEvent.changeText(emailInput, 'test@example.com')
-      fireEvent.changeText(passwordInput, 'WrongPassword')
-      fireEvent.press(loginButton)
+      fireEvent.changeText(screen.getByTestId('Email'), 'test@example.com')
+      fireEvent.changeText(screen.getByTestId('Password'), 'WrongPassword')
+      fireEvent.press(screen.getByTestId('Login'))
 
       await waitFor(() => {
         expect(supabase.auth.signInWithPassword).toHaveBeenCalledTimes(1)
       })
 
-      // Second attempt with correct password
-      fireEvent.changeText(emailInput, 'test@example.com')
-      fireEvent.changeText(passwordInput, 'CorrectPassword123!')
-      fireEvent.press(loginButton)
+      fireEvent.changeText(screen.getByTestId('Email'), 'test@example.com')
+      fireEvent.changeText(screen.getByTestId('Password'), 'CorrectPassword123!')
+      fireEvent.press(screen.getByTestId('Login'))
 
       await waitFor(() => {
         expect(supabase.auth.signInWithPassword).toHaveBeenCalledTimes(2)
@@ -203,13 +195,9 @@ describe('Login Component', () => {
 
       render(<Login />)
 
-      const emailInput = screen.getByTestId('Email')
-      const passwordInput = screen.getByTestId('Password')
-      const loginButton = screen.getByTestId('Login')
-
-      fireEvent.changeText(emailInput, 'nonexistent@example.com')
-      fireEvent.changeText(passwordInput, 'AnyPassword123!')
-      fireEvent.press(loginButton)
+      fireEvent.changeText(screen.getByTestId('Email'), 'nonexistent@example.com')
+      fireEvent.changeText(screen.getByTestId('Password'), 'AnyPassword123!')
+      fireEvent.press(screen.getByTestId('Login'))
 
       await waitFor(() => {
         expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
@@ -230,13 +218,9 @@ describe('Login Component', () => {
 
       render(<Login />)
 
-      const emailInput = screen.getByTestId('Email')
-      const passwordInput = screen.getByTestId('Password')
-      const loginButton = screen.getByTestId('Login')
-
-      fireEvent.changeText(emailInput, 'unknown@example.com')
-      fireEvent.changeText(passwordInput, 'SomePassword')
-      fireEvent.press(loginButton)
+      fireEvent.changeText(screen.getByTestId('Email'), 'unknown@example.com')
+      fireEvent.changeText(screen.getByTestId('Password'), 'SomePassword')
+      fireEvent.press(screen.getByTestId('Login'))
 
       await waitFor(() => {
         expect(Alert.alert).toHaveBeenCalledWith('User not found')
@@ -248,13 +232,9 @@ describe('Login Component', () => {
 
       render(<Login />)
 
-      const emailInput = screen.getByTestId('Email')
-      const passwordInput = screen.getByTestId('Password')
-      const loginButton = screen.getByTestId('Login')
-
-      fireEvent.changeText(emailInput, '')
-      fireEvent.changeText(passwordInput, 'Password123!')
-      fireEvent.press(loginButton)
+      fireEvent.changeText(screen.getByTestId('Email'), '')
+      fireEvent.changeText(screen.getByTestId('Password'), 'Password123!')
+      fireEvent.press(screen.getByTestId('Login'))
 
       await waitFor(() => {
         expect(Alert.alert).toHaveBeenCalledWith(
@@ -271,13 +251,9 @@ describe('Login Component', () => {
 
       render(<Login />)
 
-      const emailInput = screen.getByTestId('Email')
-      const passwordInput = screen.getByTestId('Password')
-      const loginButton = screen.getByTestId('Login')
-
-      fireEvent.changeText(emailInput, '')
-      fireEvent.changeText(passwordInput, '')
-      fireEvent.press(loginButton)
+      fireEvent.changeText(screen.getByTestId('Email'), '')
+      fireEvent.changeText(screen.getByTestId('Password'), '')
+      fireEvent.press(screen.getByTestId('Login'))
 
       await waitFor(() => {
         expect(Alert.alert).toHaveBeenCalledWith(
@@ -292,13 +268,9 @@ describe('Login Component', () => {
 
       render(<Login />)
 
-      const emailInput = screen.getByTestId('Email')
-      const passwordInput = screen.getByTestId('Password')
-      const loginButton = screen.getByTestId('Login')
-
-      fireEvent.changeText(emailInput, 'test@example.com')
-      fireEvent.changeText(passwordInput, '')
-      fireEvent.press(loginButton)
+      fireEvent.changeText(screen.getByTestId('Email'), 'test@example.com')
+      fireEvent.changeText(screen.getByTestId('Password'), '')
+      fireEvent.press(screen.getByTestId('Login'))
 
       await waitFor(() => {
         expect(Alert.alert).toHaveBeenCalledWith(
@@ -310,9 +282,9 @@ describe('Login Component', () => {
 
     test('should disable login button during loading', async () => {
       let resolveSignIn
-      supabase.auth.signInWithPassword.mockImplementation(() => new Promise(resolve => {
-        resolveSignIn = resolve
-      }))
+      supabase.auth.signInWithPassword.mockImplementation(
+        () => new Promise((resolve) => { resolveSignIn = resolve })
+      )
 
       render(<Login />)
 
@@ -324,14 +296,14 @@ describe('Login Component', () => {
       fireEvent.changeText(passwordInput, 'Password123!')
       fireEvent.press(loginButton)
 
-      // Button should be disabled while loading
+      // Button disabled state surfaces via accessibilityState in RN's Button
       await waitFor(() => {
-        expect(loginButton.props.disabled).toBe(true)
+        expect(loginButton.props.accessibilityState?.disabled).toBe(true)
       }, { timeout: 100 })
 
       resolveSignIn({ data: null, error: null })
       await waitFor(() => {
-        expect(loginButton.props.disabled).toBe(false)
+        expect(loginButton.props.accessibilityState?.disabled).toBeFalsy()
       })
     })
 
@@ -343,15 +315,12 @@ describe('Login Component', () => {
 
       render(<Login />)
 
-      const emailInput = screen.getByTestId('Email')
-      const passwordInput = screen.getByTestId('Password')
-      const loginButton = screen.getByTestId('Login')
-
-      fireEvent.changeText(emailInput, '  test@example.com  ')
-      fireEvent.changeText(passwordInput, '  Password123!  ')
-      fireEvent.press(loginButton)
+      fireEvent.changeText(screen.getByTestId('Email'), '  test@example.com  ')
+      fireEvent.changeText(screen.getByTestId('Password'), '  Password123!  ')
+      fireEvent.press(screen.getByTestId('Login'))
 
       await waitFor(() => {
+        // The component passes values as-is to supabase but trims for the empty check
         expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
           email: '  test@example.com  ',
           password: '  Password123!  '
@@ -369,13 +338,9 @@ describe('Login Component', () => {
 
       render(<Login />)
 
-      const emailInput = screen.getByTestId('Email')
-      const passwordInput = screen.getByTestId('Password')
-      const loginButton = screen.getByTestId('Login')
-
-      fireEvent.changeText(emailInput, 'test@example.com')
-      fireEvent.changeText(passwordInput, 'Password123!')
-      fireEvent.press(loginButton)
+      fireEvent.changeText(screen.getByTestId('Email'), 'test@example.com')
+      fireEvent.changeText(screen.getByTestId('Password'), 'Password123!')
+      fireEvent.press(screen.getByTestId('Login'))
 
       await waitFor(() => {
         expect(Alert.alert).toHaveBeenCalledWith('Network error')
@@ -383,3 +348,4 @@ describe('Login Component', () => {
     })
   })
 })
+

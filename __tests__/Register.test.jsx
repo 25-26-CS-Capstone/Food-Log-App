@@ -6,9 +6,8 @@ import { supabase } from '../lib/supabase'
 const mockPush = jest.fn()
 
 jest.mock('expo-router', () => ({
-  useRouter: () => ({
-    push: mockPush
-  })
+  useRouter: () => ({ push: mockPush }),
+  Stack: { Screen: () => null },
 }))
 
 jest.mock('../lib/supabase', () => ({
@@ -21,6 +20,10 @@ jest.mock('../lib/supabase', () => ({
 
 jest.mock('react-native')
 
+jest.mock('../utils/storage', () => ({
+  saveUserData: jest.fn().mockResolvedValue(undefined),
+}))
+
 describe('Register Component', () => {
   beforeEach(() => {
     jest.clearAllMocks()
@@ -29,9 +32,7 @@ describe('Register Component', () => {
 
   test('navigates back to login page', () => {
     render(<Register />)
-
     fireEvent.press(screen.getByTestId('BackToLogin'))
-
     expect(mockPush).toHaveBeenCalledWith('/login')
   })
 
@@ -124,9 +125,9 @@ describe('Register Component', () => {
 
   test('disables submit button while signup is pending', async () => {
     let resolveSignUp
-    supabase.auth.signUp.mockImplementation(() => new Promise((resolve) => {
-      resolveSignUp = resolve
-    }))
+    supabase.auth.signUp.mockImplementation(
+      () => new Promise((resolve) => { resolveSignUp = resolve })
+    )
 
     render(<Register />)
 
@@ -135,13 +136,14 @@ describe('Register Component', () => {
     fireEvent.changeText(screen.getByTestId('Password'), 'Password123!')
     fireEvent.press(submitButton)
 
+    // React Native's Button disabled state surfaces via accessibilityState
     await waitFor(() => {
-      expect(submitButton.props.disabled).toBe(true)
+      expect(submitButton.props.accessibilityState?.disabled).toBe(true)
     }, { timeout: 100 })
 
     resolveSignUp({ data: null, error: null })
     await waitFor(() => {
-      expect(submitButton.props.disabled).toBe(false)
+      expect(submitButton.props.accessibilityState?.disabled).toBeFalsy()
     })
   })
 })
