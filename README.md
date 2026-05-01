@@ -1,13 +1,13 @@
 # 🍽️ Food Log App
 
-The **Food Log App** is a simple and interactive nutrition tracking project that allows users to search for food items, view their ingredients, and detect potential allergens automatically using the **USDA FoodData Central API**.  
+The **Food Log App** is a simple and interactive nutrition tracking project that allows users to search for food items, view their ingredients, and detect potential allergens automatically using the **OpenFoodFacts API**.  
 It aims to help users make healthier dietary choices and keep track of their daily meals in an organized way.
 
 ---
 
 ##  Features
 
-Search for foods using the USDA API  
+Search for foods using the OpenFoodFacts API  
 Display ingredients and basic details  
 Automatically detect common allergens  
 Modular structure (frontend and backend separated)  
